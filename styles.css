@@ -1,0 +1,54 @@
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 40px;
+  /* Ajusta el tamaño aquí */
+  height: auto;
+  margin-right: 10px;
+}
+
+.header-images {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.header-img {
+  max-width: 30%;
+  /* Ajusta el tamaño de las imágenes */
+  height: auto;
+}
+
+.lead {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.bg-green {
+  background-color: #a8d08d;
+  /* Ajusta el color verde aquí */
+}
+
+footer {
+  background: #f8f9fa;
+  color: #333;
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: #333;
+}
