@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veterinaria San Antón</title>
+  <title>Veterinaria San Antón - Iniciar Sesión</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
 </head>
@@ -25,10 +26,10 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.html">Inicio</a>
+            <a class="nav-link" href="index.html">Inicio</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
+            <a class="nav-link active" href="iniciar-sesion.php">Iniciar sesión</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="registrarse.php">Registrarse</a>
@@ -49,41 +50,42 @@
     </div>
   </nav>
 
-  <!-- Encabezado -->
-  <header class="container text-center my-4">
-    <div class="row">
-      <div class="col">
-        <div class="header-images">
-          <img src="https://cdn.goconqr.com/uploads/media/image/23700948/desktop_bcca9a25-c871-4ad6-bb7c-2cec7bffdcd8.jpg" alt="Mascota 1" class="img-fluid header-img">
-          <img src="https://www.shutterstock.com/image-photo/vet-doctor-cute-domestic-dog-260nw-1955838685.jpg" alt="Mascota 2" class="img-fluid header-img">
-          <img src="https://media.istockphoto.com/id/1353103116/es/foto/veterinario-examinando-lindo-perro-pug-y-gato-en-la-cl%C3%ADnica-primer-plano-d%C3%ADa-de-vacunaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=y8RP8tBmuAApVU6Ga6OkizZoAnuHHjimBgtSRoAJBEI=" alt="Mascota 3" class="img-fluid header-img">
-        </div>
-        <p class="lead">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
-      </div>
-    </div>
-  </header>
+  <!-- Barra de Navegación Secundaria -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Iniciar sesión</li>
+    </ol>
+  </nav>
 
-<!-- Franja Verde -->
-<section class="bg-green text-white py-2 text-center">
+  <!-- Formulario de Inicio de Sesión -->
   <div class="container">
-    <p class="mb-0">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
-  </div>
-</section>
-
-  <!-- Sección de Bienvenida -->
-  <section class="container my-4">
-    <div class="row">
-      <div class="col-md-8">
-        <p>Desde su apertura en 1986 la veterinaria San Antón se dedicó a brindar servicios y productos de primerísima
-          calidad para vos y tus mascotas, para ello contamos con los mejores profesionales y con equipamiento médico de
-          última generación.</p>
-      </div>
-      <div class="col-md-4">
-        <p>Encontranos en:</p>
-        <img src="https://st2.depositphotos.com/4242631/6430/v/450/depositphotos_64302369-stock-illustration-map-icon-with-pin-pointer.jpg" alt="Mapa" class="img-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card bg-light mb-3">
+          <div class="card-header text-center">Iniciar sesión</div>
+          <div class="card-body">
+            <form action="login.php" method="post">
+              <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña"
+                  required>
+              </div>
+              <button type="submit" class="btn btn-secondary">Confirmar</button>
+              <button type="button" class="btn btn-primary"
+                onclick="location.href='registrarse.html'">Registrarse</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+
 
   <!-- Franja Verde -->
   <section class="bg-green text-white py-2 text-center">
@@ -92,6 +94,13 @@
     </div>
   </section>
 
+  <!-- Pie de página -->
+  <footer class="bg-light py-4">
+    <div class="container text-center">
+      <p>Teléfono de contacto: 115673346</p>
+      <p>Mail: sananton24@gmail.com</p>
+    </div>
+  </footer>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

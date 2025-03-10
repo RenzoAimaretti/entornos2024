@@ -10,6 +10,8 @@
 </head>
 
 <body>
+  <?php session_start(); ?>
+
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
@@ -25,14 +27,23 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.html">Inicio</a>
+            <a class="nav-link active" href="index.php">Inicio</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="registrarse.php">Registrarse</a>
-          </li>
+          <?php if (isset($_SESSION['usuario_nombre'])): ?>
+            <li class="nav-item d-flex align-items-center">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
+                class="mr-2">
+              <span><?php echo $_SESSION['usuario_nombre']; ?></span>
+              <a href="logout.php" class="btn btn-danger ml-3">Cerrar sesión</a>
+            </li>
+          <?php else: ?>
+            <li class="nav-item">
+              <a class="nav-link" href="iniciar-sesion.html">Iniciar sesión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="registrarse.php">Registrarse</a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
               aria-haspopup="true" aria-expanded="false">
@@ -54,21 +65,26 @@
     <div class="row">
       <div class="col">
         <div class="header-images">
-          <img src="https://cdn.goconqr.com/uploads/media/image/23700948/desktop_bcca9a25-c871-4ad6-bb7c-2cec7bffdcd8.jpg" alt="Mascota 1" class="img-fluid header-img">
-          <img src="https://www.shutterstock.com/image-photo/vet-doctor-cute-domestic-dog-260nw-1955838685.jpg" alt="Mascota 2" class="img-fluid header-img">
-          <img src="https://media.istockphoto.com/id/1353103116/es/foto/veterinario-examinando-lindo-perro-pug-y-gato-en-la-cl%C3%ADnica-primer-plano-d%C3%ADa-de-vacunaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=y8RP8tBmuAApVU6Ga6OkizZoAnuHHjimBgtSRoAJBEI=" alt="Mascota 3" class="img-fluid header-img">
+          <img
+            src="https://cdn.goconqr.com/uploads/media/image/23700948/desktop_bcca9a25-c871-4ad6-bb7c-2cec7bffdcd8.jpg"
+            alt="Mascota 1" class="img-fluid header-img">
+          <img src="https://www.shutterstock.com/image-photo/vet-doctor-cute-domestic-dog-260nw-1955838685.jpg"
+            alt="Mascota 2" class="img-fluid header-img">
+          <img
+            src="https://media.istockphoto.com/id/1353103116/es/foto/veterinario-examinando-lindo-perro-pug-y-gato-en-la-cl%C3%ADnica-primer-plano-d%C3%ADa-de-vacunaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=y8RP8tBmuAApVU6Ga6OkizZoAnuHHjimBgtSRoAJBEI="
+            alt="Mascota 3" class="img-fluid header-img">
         </div>
         <p class="lead">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
       </div>
     </div>
   </header>
 
-<!-- Franja Verde -->
-<section class="bg-green text-white py-2 text-center">
-  <div class="container">
-    <p class="mb-0">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
-  </div>
-</section>
+  <!-- Franja Verde -->
+  <section class="bg-green text-white py-2 text-center">
+    <div class="container">
+      <p class="mb-0">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
+    </div>
+  </section>
 
   <!-- Sección de Bienvenida -->
   <section class="container my-4">
@@ -80,7 +96,9 @@
       </div>
       <div class="col-md-4">
         <p>Encontranos en:</p>
-        <img src="https://st2.depositphotos.com/4242631/6430/v/450/depositphotos_64302369-stock-illustration-map-icon-with-pin-pointer.jpg" alt="Mapa" class="img-fluid">
+        <img
+          src="https://st2.depositphotos.com/4242631/6430/v/450/depositphotos_64302369-stock-illustration-map-icon-with-pin-pointer.jpg"
+          alt="Mapa" class="img-fluid">
       </div>
     </div>
   </section>
@@ -92,10 +110,10 @@
     </div>
   </section>
 
-
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>

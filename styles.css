@@ -52,3 +52,16 @@ footer p {
   font-weight: bold;
   color: #333;
 }
+
+.btn .icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.user-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
