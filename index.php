@@ -1,3 +1,7 @@
+<?php
+session_start()
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -10,10 +14,8 @@
 </head>
 
 <body>
-  <?php session_start(); ?>
-  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+<?php if (isset($_SESSION['usuario_nombre'])): ?>
   <script>
-    // Guardar datos de sesión en el local storage
     localStorage.setItem('usuario_id', '<?php echo $_SESSION['usuario_id']; ?>');
     localStorage.setItem('usuario_nombre', '<?php echo $_SESSION['usuario_nombre']; ?>');
   </script>
@@ -22,7 +24,7 @@
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -57,7 +59,7 @@
               Secciones
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Servicios</a>
+              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
             </div>

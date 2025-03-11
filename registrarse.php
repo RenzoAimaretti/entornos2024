@@ -26,7 +26,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+            <a class="nav-link" href="index.php">Inicio</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
@@ -40,9 +40,9 @@
               Secciones
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Servicios</a>
-              <a class="dropdown-item" href="nosotros.html">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.html">Contacto</a>
+              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
+              <a class="dropdown-item" href="nosotros.php">Nosotros</a>
+              <a class="dropdown-item" href="contactanos.php">Contacto</a>
             </div>
           </li>
         </ul>
