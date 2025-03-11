@@ -6,7 +6,7 @@ $password = "";
 $dbname = "veterinaria";
 
 // Crear conexión
-$conn = new mysqli("localhost", "root", "", "veterinaria");
+$conn = new mysqli("localhost", "root", "marcoruben9", "veterinaria");
 
 if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
@@ -42,7 +42,7 @@ if ($stmt->num_rows > 0) {
 // $password_hashed = password_hash($password, PASSWORD_BCRYPT);
 
 // Insertar usuario en la base de datos
-$sql = "INSERT INTO usuarios (nombre, email, password,tipo) VALUES (?, ?, ?, 'cliente')"; 
+$sql = "INSERT INTO usuarios (nombre, email, password,tipo) VALUES (?, ?, ?, 'cliente')";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $nombre, $email, $password);
 

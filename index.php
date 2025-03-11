@@ -1,6 +1,6 @@
 <?php
 session_start()
-?>
+  ?>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -14,11 +14,11 @@ session_start()
 </head>
 
 <body>
-<?php if (isset($_SESSION['usuario_nombre'])): ?>
-  <script>
-    localStorage.setItem('usuario_id', '<?php echo $_SESSION['usuario_id']; ?>');
-    localStorage.setItem('usuario_nombre', '<?php echo $_SESSION['usuario_nombre']; ?>');
-  </script>
+  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+    <script>
+      localStorage.setItem('usuario_id', '<?php echo $_SESSION['usuario_id']; ?>');
+      localStorage.setItem('usuario_nombre', '<?php echo $_SESSION['usuario_nombre']; ?>');
+    </script>
   <?php endif; ?>
 
   <!-- Navegación -->
@@ -70,12 +70,11 @@ session_start()
   </nav>
 
   <!-- Encabezado -->
-  <h2 
-  class="text-center my-4"
-  style="background-color: #a8d08d;, width=100%" >Vista de tipo: <?php echo $_SESSION['usuario_tipo']; ?>
+  <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
+    <?php echo $_SESSION['usuario_tipo']; ?>
   </h2>
+
   <header class="container text-center my-4">
-    
     <div class="row">
       <div class="col">
         <div class="header-images">
@@ -92,6 +91,15 @@ session_start()
       </div>
     </div>
   </header>
+
+  <!-- Sección de Autogestión de Turnos -->
+  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+    <section class="container text-center my-4">
+      <h3>Autogestión de Turnos</h3>
+      <p>Solicita y administra tus turnos de forma rápida y sencilla.</p>
+      <a href="autogestion-turnos.php" class="btn btn-primary">Acceder</a>
+    </section>
+  <?php endif; ?>
 
   <!-- Franja Verde -->
   <section class="bg-green text-white py-2 text-center">
