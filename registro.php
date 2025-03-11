@@ -39,28 +39,19 @@ if ($stmt->num_rows > 0) {
 }
 
 // Encriptar la contraseña
-$password_hashed = password_hash($password, PASSWORD_BCRYPT);
+// $password_hashed = password_hash($password, PASSWORD_BCRYPT);
 
 // Insertar usuario en la base de datos
-$sql = "INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)";
+$sql = "INSERT INTO usuarios (nombre, email, password,tipo) VALUES (?, ?, ?, 'cliente')"; 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sss", $nombre, $email, $password_hashed);
+$stmt->bind_param("sss", $nombre, $email, $password);
 
 if ($stmt->execute()) {
   $_SESSION['usuario_id'] = $stmt->insert_id;
   $_SESSION['usuario_nombre'] = $nombre;
+  $_SESSION['usuario_tipo'] = 'cliente';
   header("Location: index.php");
   exit();
-  if ($stmt->execute()) {
-    $_SESSION['usuario_id'] = $stmt->insert_id;
-    $_SESSION['usuario_nombre'] = $nombre;
-  
-  
-    header("Location: index.php");
-    exit();
-  } else {
-    echo "Error al registrar: " . $stmt->error;
-  }
 } else {
   echo "Error al registrar: " . $stmt->error;
 }

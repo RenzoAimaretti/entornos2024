@@ -70,7 +70,12 @@ session_start()
   </nav>
 
   <!-- Encabezado -->
+  <h2 
+  class="text-center my-4"
+  style="background-color: #a8d08d;, width=100%" >Vista de tipo: <?php echo $_SESSION['usuario_tipo']; ?>
+  </h2>
   <header class="container text-center my-4">
+    
     <div class="row">
       <div class="col">
         <div class="header-images">
