@@ -47,21 +47,12 @@ if ($result->num_rows > 0) {
   $row = $result->fetch_assoc();
 
   if (password_verify($password, $row['password'])) {
+    // Guardar en la sesión
     $_SESSION['usuario_id'] = $row['id'];
     $_SESSION['usuario_nombre'] = $row['nombre'];
+
     header("Location: index.php");
     exit();
-    if ($stmt->execute()) {
-      $_SESSION['usuario_id'] = $stmt->insert_id;
-      $_SESSION['usuario_nombre'] = $nombre;
-    
-      // Guardar datos de sesión en una cookie
-      setcookie('usuario_id', $stmt->insert_id, time() + (86400 * 30), "/"); // 86400 = 1 día
-      setcookie('usuario_nombre', $nombre, time() + (86400 * 30), "/");
-    
-      header("Location: index.php");
-      exit();}
-
   } else {
     echo "Contraseña incorrecta. <a href='iniciar-sesion.html'>Intentar de nuevo</a>";
   }

@@ -55,9 +55,6 @@ if ($stmt->execute()) {
     $_SESSION['usuario_id'] = $stmt->insert_id;
     $_SESSION['usuario_nombre'] = $nombre;
   
-    // Guardar datos de sesión en una cookie
-    setcookie('usuario_id', $stmt->insert_id, time() + (86400 * 30), "/"); // 86400 = 1 día
-    setcookie('usuario_nombre', $nombre, time() + (86400 * 30), "/");
   
     header("Location: index.php");
     exit();
