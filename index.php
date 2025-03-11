@@ -11,6 +11,13 @@
 
 <body>
   <?php session_start(); ?>
+  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+  <script>
+    // Guardar datos de sesión en el local storage
+    localStorage.setItem('usuario_id', '<?php echo $_SESSION['usuario_id']; ?>');
+    localStorage.setItem('usuario_nombre', '<?php echo $_SESSION['usuario_nombre']; ?>');
+  </script>
+  <?php endif; ?>
 
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -38,7 +45,7 @@
             </li>
           <?php else: ?>
             <li class="nav-item">
-              <a class="nav-link" href="iniciar-sesion.html">Iniciar sesión</a>
+              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="registrarse.php">Registrarse</a>

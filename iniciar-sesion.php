@@ -26,7 +26,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+            <a class="nav-link" href="index.php">Inicio</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="iniciar-sesion.php">Iniciar sesión</a>
@@ -78,7 +78,7 @@
               </div>
               <button type="submit" class="btn btn-secondary">Confirmar</button>
               <button type="button" class="btn btn-primary"
-                onclick="location.href='registrarse.html'">Registrarse</button>
+                onclick="location.href='registrarse.php'">Registrarse</button>
             </form>
           </div>
         </div>

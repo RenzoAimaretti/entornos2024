@@ -6,7 +6,7 @@ $password = "";
 $dbname = "veterinaria";
 
 // Crear conexión
-$conn = new mysqli("localhost", "root", "laclavedeustedes", "veterinaria");
+$conn = new mysqli("localhost", "root", "", "veterinaria");
 
 if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
@@ -51,6 +51,16 @@ if ($result->num_rows > 0) {
     $_SESSION['usuario_nombre'] = $row['nombre'];
     header("Location: index.php");
     exit();
+    if ($stmt->execute()) {
+      $_SESSION['usuario_id'] = $stmt->insert_id;
+      $_SESSION['usuario_nombre'] = $nombre;
+    
+      // Guardar datos de sesión en una cookie
+      setcookie('usuario_id', $stmt->insert_id, time() + (86400 * 30), "/"); // 86400 = 1 día
+      setcookie('usuario_nombre', $nombre, time() + (86400 * 30), "/");
+    
+      header("Location: index.php");
+      exit();}
 
   } else {
     echo "Contraseña incorrecta. <a href='iniciar-sesion.html'>Intentar de nuevo</a>";

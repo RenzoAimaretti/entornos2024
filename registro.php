@@ -6,7 +6,7 @@ $password = "";
 $dbname = "veterinaria";
 
 // Crear conexión
-$conn = new mysqli("localhost", "root", "laclavedeustedes", "veterinaria");
+$conn = new mysqli("localhost", "root", "", "veterinaria");
 
 if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
@@ -42,7 +42,7 @@ if ($stmt->num_rows > 0) {
 $password_hashed = password_hash($password, PASSWORD_BCRYPT);
 
 // Insertar usuario en la base de datos
-$sql = "INSERT INTO usuarios (nombre, email, contraseña) VALUES (?, ?, ?)";
+$sql = "INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("sss", $nombre, $email, $password_hashed);
 
@@ -51,6 +51,19 @@ if ($stmt->execute()) {
   $_SESSION['usuario_nombre'] = $nombre;
   header("Location: index.php");
   exit();
+  if ($stmt->execute()) {
+    $_SESSION['usuario_id'] = $stmt->insert_id;
+    $_SESSION['usuario_nombre'] = $nombre;
+  
+    // Guardar datos de sesión en una cookie
+    setcookie('usuario_id', $stmt->insert_id, time() + (86400 * 30), "/"); // 86400 = 1 día
+    setcookie('usuario_nombre', $nombre, time() + (86400 * 30), "/");
+  
+    header("Location: index.php");
+    exit();
+  } else {
+    echo "Error al registrar: " . $stmt->error;
+  }
 } else {
   echo "Error al registrar: " . $stmt->error;
 }
