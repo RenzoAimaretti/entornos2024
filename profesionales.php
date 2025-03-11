@@ -1,3 +1,6 @@
+<?php
+session_start()
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -13,7 +16,7 @@
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -25,14 +28,23 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" href="index.php">Inicio</a>
+            <a class="nav-link active" href="index.php">Inicio</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="registrarse.php">Registrarse</a>
-          </li>
+          <?php if (isset($_SESSION['usuario_nombre'])): ?>
+            <li class="nav-item d-flex align-items-center">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
+                class="mr-2">
+              <span><?php echo $_SESSION['usuario_nombre']; ?></span>
+              <a href="logout.php" class="btn btn-danger ml-3">Cerrar sesión</a>
+            </li>
+          <?php else: ?>
+            <li class="nav-item">
+              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="registrarse.php">Registrarse</a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
               aria-haspopup="true" aria-expanded="false">
@@ -81,7 +93,7 @@
   if (isset($_GET['search'])) {
     $search = $_GET['search'];
     // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-    $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+    $conn = new mysqli('localhost', 'root', '', 'veterinaria');
 
     if ($conn->connect_error) {
       die("Conexión fallida: " . $conn->connect_error);
