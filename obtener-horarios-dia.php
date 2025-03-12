@@ -1,4 +1,5 @@
 <?php
+session_start();
 if (isset($_GET['id']) && isset($_GET['fecha'])) {
   $profesionalId = $_GET['id'];
   $fecha = $_GET['fecha'];
@@ -18,13 +19,11 @@ if (isset($_GET['id']) && isset($_GET['fecha'])) {
   $result = $stmt->get_result();
 
   if ($result->num_rows > 0) {
-    echo '<div class="d-flex flex-wrap">';
     while ($row = $result->fetch_assoc()) {
       $horaInicio = $row['hora_inicio'];
       $horaFin = $row['hora_fin'];
-      echo '<button class="btn btn-outline-primary m-2">' . $horaInicio . '</button>';
+      echo '<button class="btn btn-outline-primary m-2" onclick="seleccionarHorario(\'' . $horaInicio . '\')">' . $horaInicio . ' - ' . $horaFin . '</button>';
     }
-    echo '</div>';
   } else {
     echo '<p>No hay horarios disponibles para esta fecha.</p>';
   }

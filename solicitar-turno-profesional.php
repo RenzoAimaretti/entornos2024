@@ -160,15 +160,12 @@ session_start();
           <?php
           // Conexión a la base de datos (ajusta los parámetros según tu configuración)
           $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
-
           if ($conn->connect_error) {
             die("Conexión fallida: " . $conn->connect_error);
           }
-
           // Consulta para obtener todos los profesionales
           $sql = "SELECT * FROM profesionales";
           $result = $conn->query($sql);
-
           if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
               echo "<div class='list-group-item d-flex justify-content-between align-items-center'>";
@@ -182,7 +179,6 @@ session_start();
           } else {
             echo "<p>No se encontraron profesionales.</p>";
           }
-
           $conn->close();
           ?>
         </div>
@@ -256,6 +252,60 @@ session_start();
     </div>
   </div>
 
+  <!-- Modal para confirmar turno -->
+  <div class="modal fade" id="confirmarTurnoModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmarTurnoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmarTurnoModalLabel">Confirme el turno</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="confirmarTurnoForm">
+            <div class="form-group">
+              <label for="profesional">Profesional</label>
+              <input type="text" class="form-control" id="profesional" readonly>
+            </div>
+            <div class="form-group">
+              <label for="fecha">Fecha</label>
+              <input type="text" class="form-control" id="fecha" readonly>
+            </div>
+            <div class="form-group">
+              <label for="hora">Hora</label>
+              <input type="text" class="form-control" id="hora" readonly>
+            </div>
+            <div class="form-group">
+              <label for="correo">Ingrese su correo electrónico</label>
+              <input type="email" class="form-control" id="correo" required>
+            </div>
+            <div class="form-group">
+              <label for="telefono">Ingrese su teléfono</label>
+              <input type="text" class="form-control" id="telefono" required>
+            </div>
+            <div class="form-group">
+              <label for="celular">Ingrese su celular (10 dígitos y sólo números)</label>
+              <input type="text" class="form-control" id="celular" required>
+            </div>
+            <div class="form-group">
+              <label for="icalendar">¿Recibir iCalendar por correo electrónico?</label>
+              <select class="form-control" id="icalendar">
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Franja Verde -->
   <section class="bg-green text-white py-2 text-center">
     <div class="container">
@@ -278,6 +328,7 @@ session_start();
     var profesionalId;
     var mesActual = 3; // Marzo
     var anioActual = 2025;
+    var fechaSeleccionada;
 
     // Filtrar profesionales
     document.getElementById('search').addEventListener('input', function () {
@@ -345,6 +396,7 @@ session_start();
 
     // Seleccionar día
     function seleccionarDia(fecha) {
+      fechaSeleccionada = fecha;
       $('#calendarioModal').modal('hide');
       $('#horariosDiaModal').modal('show');
 
@@ -357,6 +409,50 @@ session_start();
         }
       });
     }
+
+    // Seleccionar horario
+    function seleccionarHorario(hora) {
+      $('#horariosDiaModal').modal('hide');
+      $('#confirmarTurnoModal').modal('show');
+
+      // Obtener datos del profesional
+      var profesional = $('#professional-list .list-group-item[data-id="' + profesionalId + '"] span').text();
+
+      // Llenar los campos del modal de confirmación
+      $('#confirmarTurnoModal #profesional').val(profesional);
+      $('#confirmarTurnoModal #fecha').val(fechaSeleccionada);
+      $('#confirmarTurnoModal #hora').val(hora);
+    }
+
+    // Manejar la confirmación del turno
+    $('#confirmarTurnoForm').on('submit', function (event) {
+      event.preventDefault();
+
+      // Obtener los datos del formulario
+      var datos = {
+        profesional: $('#confirmarTurnoModal #profesional').val(),
+        fecha: $('#confirmarTurnoModal #fecha').val(),
+        hora: $('#confirmarTurnoModal #hora').val(),
+        correo: $('#confirmarTurnoModal #correo').val(),
+        telefono: $('#confirmarTurnoModal #telefono').val(),
+        celular: $('#confirmarTurnoModal #celular').val(),
+        icalendar: $('#confirmarTurnoModal #icalendar').val()
+      };
+
+      // Enviar los datos al servidor (puedes ajustar la URL y el método según tu configuración)
+      $.ajax({
+        url: 'confirmar-turno.php',
+        method: 'POST',
+        data: datos,
+        success: function (response) {
+          alert('Turno confirmado con éxito');
+          $('#confirmarTurnoModal').modal('hide');
+        },
+        error: function () {
+          alert('Error al confirmar el turno');
+        }
+      });
+    });
   </script>
 </body>
 
