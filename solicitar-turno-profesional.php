@@ -158,13 +158,16 @@ session_start();
         <input type="text" class="form-control mb-3" id="search" placeholder="Buscar profesional...">
         <div class="list-group" id="professional-list">
           <?php
-          // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-          $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+          require 'vendor/autoload.php';
+          $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+          $dotenv->load();
+          // Crear conexión
+          $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
           if ($conn->connect_error) {
             die("Conexión fallida: " . $conn->connect_error);
           }
           // Consulta para obtener todos los profesionales
-          $sql = "SELECT * FROM profesionales";
+          $sql = "SELECT * FROM profesionales p inner join usuarios u on p.id=u.id";
           $result = $conn->query($sql);
           if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {

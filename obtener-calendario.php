@@ -4,8 +4,11 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   $mesActual = $_GET['mes'];
   $anioActual = $_GET['anio'];
 
-  // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-  $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+  require 'vendor/autoload.php';
+  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+  $dotenv->load();
+  // Crear conexión
+  $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
   if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
