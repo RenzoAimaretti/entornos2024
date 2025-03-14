@@ -99,14 +99,14 @@ session_start()
   if (isset($_GET['search'])) {
     $search = $_GET['search'];
     // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-    $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+    $conn = new mysqli('localhost', 'root', '', 'veterinaria');
 
     if ($conn->connect_error) {
       die("Conexión fallida: " . $conn->connect_error);
     }
 
     // Consulta para buscar profesionales por nombre o especialidad
-    $sql = "SELECT * FROM profesionales WHERE nombre LIKE ? OR especialidad LIKE ?";
+    $sql = "SELECT * FROM profesionales  inner join usuarios on profesionales.id=usuarios.id WHERE nombre LIKE ? OR especialidad LIKE ?";
     $stmt = $conn->prepare($sql);
     $searchParam = '%' . $search . '%';
     $stmt->bind_param('ss', $searchParam, $searchParam);
