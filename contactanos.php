@@ -17,7 +17,7 @@ session_start();
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -29,23 +29,38 @@ session_start();
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link" href="index.html">Inicio</a>
+            <a class="nav-link" href="index.php">Inicio</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.html">Iniciar sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="registrarse.php">Registrarse</a>
-          </li>
+          <?php if (isset($_SESSION['usuario_nombre'])): ?>
+            <li class="nav-item dropdown d-flex align-items-center">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
+                class="mr-2">
+              <a class="nav-link dropdown-toggle" href="#" id="usuarioDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <?php echo $_SESSION['usuario_nombre']; ?>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
+                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
+              </div>
+            </li>
+          <?php else: ?>
+            <li class="nav-item">
+              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="registrarse.php">Registrarse</a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
               aria-haspopup="true" aria-expanded="false">
               Secciones
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Servicios</a>
+              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.php">Contacto</a>
+              <a class="dropdown-item active" href="contactanos.php">Contacto</a>
             </div>
           </li>
         </ul>
@@ -56,7 +71,7 @@ session_start();
   <!-- Barra de Navegación Secundaria -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
       <li class="breadcrumb-item"><a href="iniciar-sesion.php">Iniciar sesión</a></li>
       <li class="breadcrumb-item"><a href="registrarse.php">Registrarse</a></li>
       <li class="breadcrumb-item"><a href="servicios.php">Servicios</a></li>
