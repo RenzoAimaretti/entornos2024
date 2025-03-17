@@ -23,6 +23,12 @@ $query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono
           where u.id = $id";
 
 $result = $conn->query($query);
+
+$queryMascotas = "SELECT m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue 
+                  FROM mascotas m 
+                  WHERE m.id_cliente = $id";
+
+$resultMascotas = $conn->query($queryMascotas);
 ?>
 
 <!DOCTYPE html>
@@ -87,9 +93,6 @@ $result = $conn->query($query);
                             Raza
                         </th>
                         <th>
-                            Color
-                        </th>
-                        <th>
                             Fecha de Nacimiento
                         </th>
                         <th>
@@ -102,17 +105,29 @@ $result = $conn->query($query);
 
                 </thead>
                 <tbody>
-                    <tr>
-                        <td colspan="6" class="text-center">Pendiente de desarrollo</td>
-
-                        </td>
-                    </tr>
+                    <?php
+                    if ($resultMascotas && $resultMascotas->num_rows > 0) {
+                        while ($mascota = $resultMascotas->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($mascota['mascota_nombre'] ?? '-') . "</td>";
+                            echo "<td>" . htmlspecialchars($mascota['raza'] ?? '-') . "</td>";
+                            echo "<td>" . htmlspecialchars($mascota['fecha_nac'] ?? '-') . "</td>";
+                            echo "<td>" . htmlspecialchars($mascota['fecha_mue'] ?? '-') . "</td>";
+                            echo "<td><button class='btn btn-warning btn-sm'>Editar</button> <button class='btn btn-danger btn-sm'>Eliminar</button></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr>";
+                        echo "<td colspan='6' class='text-center'>No posee mascotas.</td>";
+                        echo "</tr>";
+                    }
+                    ?>
                 </tbody>
                 <!-- Agregar para agregar mascota?? -->
 
 
             </table>
-            <button class='btn btn-primary' style="margin: 1rem;">Agregar mascota</button>
+            <a class='btn btn-primary' href="agregar-mascota.php?id=<?php echo $id?>" style="margin: 1rem;">Agregar mascota</a>
 
             
             
