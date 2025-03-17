@@ -51,9 +51,9 @@ if (!$stmt->execute()) {
 $usuario_id = $stmt->insert_id; // Obtener el ID del usuario recién insertado
 
 // Insertar en la tabla clientes
-$sql2 = "INSERT INTO clientes (id, email) VALUES (?, ?)";
+$sql2 = "INSERT INTO clientes (id) VALUES (?)";
 $stmt = $conn->prepare($sql2);
-$stmt->bind_param("is", $usuario_id, $email);
+$stmt->bind_param("i", $usuario_id);
 
 if (!$stmt->execute()) {
     die("Error al registrar cliente: " . $stmt->error);
