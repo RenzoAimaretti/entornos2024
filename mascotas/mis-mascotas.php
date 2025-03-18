@@ -129,6 +129,10 @@ if (!isset($_SESSION['usuario_id'])) {
             }
             echo "<p>Raza: " . $row['raza'] . "</p>";
             echo "<p>Fecha de Nacimiento: " . $row['fecha_nac'] . "</p>";
+            echo "<form action='eliminar-mascota.php' method='POST' style='display:inline;' onsubmit='return confirmarEliminacion()'>";
+            echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
+            echo "<button type='submit' class='btn btn-danger btn-sm'>Eliminar</button>";
+            echo "</form>";
             echo "</li>";
           }
           echo "</ul>";
@@ -146,6 +150,11 @@ if (!isset($_SESSION['usuario_id'])) {
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    function confirmarEliminacion() {
+      return confirm('¿Estás seguro de que deseas eliminar esta mascota?');
+    }
+  </script>
 </body>
 
 </html>
