@@ -40,6 +40,7 @@ session_start();
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
                 <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
               </div>

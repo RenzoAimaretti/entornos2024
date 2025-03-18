@@ -14,21 +14,30 @@ if (isset($_GET['id']) && isset($_GET['fecha'])) {
     die("Conexión fallida: " . $conn->connect_error);
   }
 
-  // Obtener los horarios disponibles del profesional para la fecha seleccionada
-  $sql = "SELECT hora_inicio, hora_fin FROM horarios WHERE profesional_id = ? AND dia = ?";
+  // Obtener los horarios disponibles del profesional en la fecha seleccionada
+  $sql = "SELECT horarios_turnos.hora 
+          FROM profesionales_horarios 
+          INNER JOIN horarios_turnos ON profesionales_horarios.id_horario = horarios_turnos.id 
+          WHERE profesionales_horarios.id_pro = ? 
+          AND horarios_turnos.hora NOT IN (
+            SELECT hora 
+            FROM atenciones 
+            WHERE id_pro = ? 
+            AND DATE(fecha) = ?
+          )";
   $stmt = $conn->prepare($sql);
-  $stmt->bind_param("is", $profesionalId, $fecha);
+  $stmt->bind_param("iis", $profesionalId, $profesionalId, $fecha);
   $stmt->execute();
   $result = $stmt->get_result();
 
   if ($result->num_rows > 0) {
+    echo "<ul class='list-group'>";
     while ($row = $result->fetch_assoc()) {
-      $horaInicio = $row['hora_inicio'];
-      $horaFin = $row['hora_fin'];
-      echo '<button class="btn btn-outline-primary m-2" onclick="seleccionarHorario(\'' . $horaInicio . '\')">' . $horaInicio . ' - ' . $horaFin . '</button>';
+      echo "<li class='list-group-item' onclick='seleccionarHorario(\"" . $row['hora'] . "\")'>" . $row['hora'] . "</li>";
     }
+    echo "</ul>";
   } else {
-    echo '<p>No hay horarios disponibles para esta fecha.</p>';
+    echo "<p>No hay horarios disponibles.</p>";
   }
 
   $stmt->close();

@@ -47,6 +47,7 @@ session_start()
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
                 <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
               </div>
@@ -68,11 +69,11 @@ session_start()
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
-            
-            <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-              <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-              <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
-            <?php endif; ?>
+
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+              <?php endif; ?>
             </div>
           </li>
         </ul>
@@ -81,10 +82,10 @@ session_start()
   </nav>
 
   <!-- Encabezado -->
-   <?php if (isset($_SESSION['usuario_nombre'])): ?>
-  <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
-    <?php echo $_SESSION['usuario_tipo']; ?>
-  </h2>
+  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+    <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
+      <?php echo $_SESSION['usuario_tipo']; ?>
+    </h2>
   <?php endif; ?>
 
   <header class="container text-center my-4">

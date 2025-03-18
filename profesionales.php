@@ -39,6 +39,7 @@ session_start()
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
                 <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
               </div>
@@ -99,14 +100,18 @@ session_start()
   if (isset($_GET['search'])) {
     $search = $_GET['search'];
     // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-    $conn = new mysqli('localhost', 'root', '', 'veterinaria');
+    $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
 
     if ($conn->connect_error) {
       die("Conexión fallida: " . $conn->connect_error);
     }
 
     // Consulta para buscar profesionales por nombre o especialidad
-    $sql = "SELECT * FROM profesionales  inner join usuarios on profesionales.id=usuarios.id WHERE nombre LIKE ? OR especialidad LIKE ?";
+    $sql = "SELECT usuarios.nombre, usuarios.email, profesionales.telefono, especialidad.nombre AS especialidad 
+            FROM profesionales 
+            INNER JOIN usuarios ON profesionales.id = usuarios.id 
+            INNER JOIN especialidad ON profesionales.id_esp = especialidad.id 
+            WHERE usuarios.nombre LIKE ? OR especialidad.nombre LIKE ?";
     $stmt = $conn->prepare($sql);
     $searchParam = '%' . $search . '%';
     $stmt->bind_param('ss', $searchParam, $searchParam);
