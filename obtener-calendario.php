@@ -12,7 +12,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   }
 
   // Obtener los días con turnos disponibles del profesional en el mes y año especificados
-  $sql = "SELECT DISTINCT DATE_FORMAT(dia, '%Y-%m-%d') as dia FROM horarios_turnos WHERE profesional_id = ? AND MONTH(dia) = ? AND YEAR(dia) = ?";
+  $sql = "SELECT DISTINCT DATE_FORMAT(fecha, '%Y-%m-%d') as fecha FROM atenciones WHERE id_pro = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("iii", $profesionalId, $mesActual, $anioActual);
   $stmt->execute();
@@ -20,7 +20,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
 
   $disponibles = [];
   while ($row = $result->fetch_assoc()) {
-    $disponibles[] = $row['dia'];
+    $disponibles[] = $row['fecha'];
   }
 
   $stmt->close();

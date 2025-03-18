@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+  header('Location: iniciar-sesion.php');
+  exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $profesional = $_POST['profesional'];
   $fecha = $_POST['fecha'];
@@ -15,10 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     die("Conexión fallida: " . $conn->connect_error);
   }
 
-  // Insertar el turno confirmado en la base de datos
-  $sql = "INSERT INTO turnos_confirmados (profesional, fecha, hora, correo, telefono, celular, icalendar) VALUES (?, ?, ?, ?, ?, ?, ?)";
+  // Insertar el turno en la base de datos
+  $sql = "INSERT INTO turnos (profesional, fecha, hora, correo, telefono, celular, icalendar) VALUES (?, ?, ?, ?, ?, ?, ?)";
   $stmt = $conn->prepare($sql);
-  $stmt->bind_param("sssssss", $profesional, $fecha, $hora, $correo, $telefono, $celular, $icalendar);
+  $stmt->bind_param('sssssss', $profesional, $fecha, $hora, $correo, $telefono, $celular, $icalendar);
   $stmt->execute();
 
   if ($stmt->affected_rows > 0) {

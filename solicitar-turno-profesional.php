@@ -159,7 +159,61 @@ $conn->close();
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <!-- Modal para confirmar turno -->
+  <div class="modal fade" id="confirmarTurnoModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmarTurnoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmarTurnoModalLabel">Confirme el turno</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="confirmarTurnoForm">
+            <div class="form-group">
+              <label for="profesional">Profesional</label>
+              <input type="text" class="form-control" id="profesional" readonly>
+            </div>
+            <div class="form-group">
+              <label for="fecha">Fecha</label>
+              <input type="text" class="form-control" id="fecha" readonly>
+            </div>
+            <div class="form-group">
+              <label for="hora">Hora</label>
+              <input type="text" class="form-control" id="hora" readonly>
+            </div>
+            <div class="form-group">
+              <label for="correo">Ingrese su correo electrónico</label>
+              <input type="email" class="form-control" id="correo" required>
+            </div>
+            <div class="form-group">
+              <label for="telefono">Ingrese su teléfono</label>
+              <input type="text" class="form-control" id="telefono" required>
+            </div>
+            <div class="form-group">
+              <label for="celular">Ingrese su celular (10 dígitos y sólo números)</label>
+              <input type="text" class="form-control" id="celular" required>
+            </div>
+            <div class="form-group">
+              <label for="icalendar">¿Recibir iCalendar por correo electrónico?</label>
+              <select class="form-control" id="icalendar">
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
@@ -169,9 +223,7 @@ $conn->close();
 
     // Cargar calendario en el modal
     $('#calendarioModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
       profesionalId = $('#profesional').val();
-
       cargarCalendario(mesActual, anioActual);
     });
 
@@ -216,6 +268,50 @@ $conn->close();
         }
       });
     }
+
+    // Seleccionar horario
+    function seleccionarHorario(hora) {
+      $('#horariosDiaModal').modal('hide');
+      $('#confirmarTurnoModal').modal('show');
+
+      // Obtener datos del profesional
+      var profesional = $('#profesional option:selected').text();
+
+      // Llenar los campos del modal de confirmación
+      $('#confirmarTurnoModal #profesional').val(profesional);
+      $('#confirmarTurnoModal #fecha').val(fechaSeleccionada);
+      $('#confirmarTurnoModal #hora').val(hora);
+    }
+
+    // Manejar la confirmación del turno
+    $('#confirmarTurnoForm').on('submit', function (event) {
+      event.preventDefault();
+
+      // Obtener los datos del formulario
+      var datos = {
+        profesional: $('#confirmarTurnoModal #profesional').val(),
+        fecha: $('#confirmarTurnoModal #fecha').val(),
+        hora: $('#confirmarTurnoModal #hora').val(),
+        correo: $('#confirmarTurnoModal #correo').val(),
+        telefono: $('#confirmarTurnoModal #telefono').val(),
+        celular: $('#confirmarTurnoModal #celular').val(),
+        icalendar: $('#confirmarTurnoModal #icalendar').val()
+      };
+
+      // Enviar los datos al servidor (puedes ajustar la URL y el método según tu configuración)
+      $.ajax({
+        url: 'confirmar-turno.php',
+        method: 'POST',
+        data: datos,
+        success: function (response) {
+          alert('Turno confirmado con éxito');
+          $('#confirmarTurnoModal').modal('hide');
+        },
+        error: function () {
+          alert('Error al confirmar el turno');
+        }
+      });
+    });
   </script>
 </body>
 
