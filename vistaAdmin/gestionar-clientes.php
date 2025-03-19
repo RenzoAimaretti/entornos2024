@@ -76,17 +76,23 @@ $result = $conn->query($query);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = $result->fetch_assoc()): ?>
+                    <?php if ($result->num_rows > 0): ?>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td><?php echo htmlspecialchars($row['direccion']); ?></td>
+                                <td><?php echo htmlspecialchars($row['telefono']); ?></td>
+                                <td>
+                                    <a href="detalle-cliente.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">Ver</a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($row['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($row['email']); ?></td>
-                            <td><?php echo htmlspecialchars($row['direccion']); ?></td>
-                            <td><?php echo htmlspecialchars($row['telefono']); ?></td>
-                            <td>
-                                <a href="ver_cliente.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">Ver</a>
-                            </td>
+                            <td colspan="5" class="text-center">Clientes no encontrados, intente más tarde.</td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
