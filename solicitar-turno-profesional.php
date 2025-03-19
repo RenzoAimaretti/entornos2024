@@ -1,5 +1,32 @@
 <?php
 session_start();
+if (!isset($_SESSION['usuario_id'])) {
+  header('Location: iniciar-sesion.php');
+  exit();
+}
+
+// Conexión a la base de datos (ajusta los parámetros según tu configuración)
+$conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+
+if ($conn->connect_error) {
+  die("Conexión fallida: " . $conn->connect_error);
+}
+
+// Obtener los profesionales y sus especialidades
+$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad 
+        FROM profesionales 
+        INNER JOIN usuarios ON profesionales.id = usuarios.id 
+        INNER JOIN especialidad ON profesionales.id_esp = especialidad.id";
+$result = $conn->query($sql);
+
+$profesionales = [];
+if ($result->num_rows > 0) {
+  while ($row = $result->fetch_assoc()) {
+    $profesionales[] = $row;
+  }
+}
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -8,91 +35,9 @@ session_start();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veterinaria San Antón - Seleccionar Profesional</title>
+  <title>Solicitar Turno</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
-  <style>
-    .calendar {
-      font-family: Arial, sans-serif;
-      width: 100%;
-    }
-
-    .month {
-      padding: 20px 25px;
-      width: 100%;
-      background: #1abc9c;
-      text-align: center;
-    }
-
-    .month ul {
-      margin: 0;
-      padding: 0;
-      list-style-type: none;
-    }
-
-    .month ul li {
-      color: white;
-      font-size: 20px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-    }
-
-    .month .prev,
-    .month .next {
-      cursor: pointer;
-      float: left;
-      padding-top: 10px;
-      padding-bottom: 10px;
-    }
-
-    .month .next {
-      float: right;
-    }
-
-    .weekdays {
-      margin: 0;
-      padding: 10px 0;
-      background-color: #ddd;
-    }
-
-    .weekdays li {
-      display: inline-block;
-      width: 13.6%;
-      color: #666;
-      text-align: center;
-    }
-
-    .days {
-      padding: 10px 0;
-      background: #eee;
-      margin: 0;
-    }
-
-    .days li {
-      list-style-type: none;
-      display: inline-block;
-      width: 13.6%;
-      text-align: center;
-      margin-bottom: 5px;
-      font-size: 12px;
-      color: #777;
-    }
-
-    .days li.ocupado {
-      background: #e74c3c;
-      color: white;
-    }
-
-    .days li.disponible {
-      background: #2ecc71;
-      color: white;
-      cursor: pointer;
-    }
-
-    .days li.disponible:hover {
-      background: #27ae60;
-    }
-  </style>
 </head>
 
 <body>
@@ -122,6 +67,7 @@ session_start();
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
                 <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
               </div>
@@ -143,6 +89,10 @@ session_start();
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+              <?php endif; ?>
             </div>
           </li>
         </ul>
@@ -150,169 +100,130 @@ session_start();
     </div>
   </nav>
 
-  <!-- Sección de Selección de Profesional -->
-  <section class="container my-4">
-    <h3 class="text-center">Seleccione un profesional</h3>
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <input type="text" class="form-control mb-3" id="search" placeholder="Buscar profesional...">
-        <div class="list-group" id="professional-list">
-          <?php
-          // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-          $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
-
-          if ($conn->connect_error) {
-            die("Conexión fallida: " . $conn->connect_error);
-          }
-
-          // Consulta para obtener todos los profesionales
-          $sql = "SELECT * FROM profesionales";
-          $result = $conn->query($sql);
-
-          if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-              echo "<div class='list-group-item d-flex justify-content-between align-items-center'>";
-              echo "<span>" . $row['nombre'] . " - " . $row['especialidad'] . "</span>";
-              echo "<div>";
-              echo "<button class='btn btn-warning btn-sm mr-2' data-toggle='modal' data-target='#horariosModal' data-id='" . $row['id'] . "'>Horarios</button>";
-              echo "<button class='btn btn-primary btn-sm' data-toggle='modal' data-target='#calendarioModal' data-id='" . $row['id'] . "'>&#x2192;</button>";
-              echo "</div>";
-              echo "</div>";
-            }
-          } else {
-            echo "<p>No se encontraron profesionales.</p>";
-          }
-
-          $conn->close();
-          ?>
-        </div>
-      </div>
-    </div>
-    <a href="solicitar-turno.php" class="btn btn-secondary mt-3">Cancelar</a>
-  </section>
-
-  <!-- Modal para mostrar horarios -->
-  <div class="modal fade" id="horariosModal" tabindex="-1" role="dialog" aria-labelledby="horariosModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="horariosModalLabel">Horarios de atención</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div id="horariosContent"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
+  <div class="container mt-5">
+    <h1>Solicitar Turno</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h2>Seleccionar Profesional</h2>
+        <form>
+          <div class="form-group">
+            <label for="profesional">Profesional:</label>
+            <select class="form-control" id="profesional" name="profesional" required>
+              <?php foreach ($profesionales as $profesional): ?>
+                <option value="<?php echo $profesional['id']; ?>">
+                  <?php echo $profesional['nombre'] . ' - ' . $profesional['especialidad']; ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calendarioModal">Seleccionar
+            Fecha</button>
+        </form>
       </div>
     </div>
   </div>
 
-  <!-- Modal para mostrar calendario -->
+  <!-- Modal de Calendario -->
   <div class="modal fade" id="calendarioModal" tabindex="-1" role="dialog" aria-labelledby="calendarioModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="calendarioModalLabel">Seleccione una fecha</h5>
+          <h5 class="modal-title" id="calendarioModalLabel">Seleccionar Fecha</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          <div id="calendarioContent">
-            <!-- Aquí se cargará el calendario -->
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <div class="modal-body" id="calendarioContent">
+          <!-- El contenido del calendario se cargará aquí -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal para mostrar horarios del día -->
+  <!-- Modal de Horarios -->
   <div class="modal fade" id="horariosDiaModal" tabindex="-1" role="dialog" aria-labelledby="horariosDiaModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="horariosDiaModalLabel">Seleccione un horario</h5>
+          <h5 class="modal-title" id="horariosDiaModalLabel">Seleccionar Horario</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          <div id="horariosDiaContent"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <div class="modal-body" id="horariosDiaContent">
+          <!-- El contenido de los horarios se cargará aquí -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Franja Verde -->
-  <section class="bg-green text-white py-2 text-center">
-    <div class="container">
-      <p class="mb-0">Teléfono de contacto: 115673346 | Mail: sananton24@gmail.com</p>
+  <!-- Modal para confirmar turno -->
+  <div class="modal fade" id="confirmarTurnoModal" tabindex="-1" role="dialog"
+    aria-labelledby="confirmarTurnoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmarTurnoModalLabel">Confirme el turno</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="confirmarTurnoForm">
+            <div class="form-group">
+              <label for="profesional">Profesional</label>
+              <input type="text" class="form-control" id="profesional" readonly>
+            </div>
+            <div class="form-group">
+              <label for="fecha">Fecha</label>
+              <input type="text" class="form-control" id="fecha" readonly>
+            </div>
+            <div class="form-group">
+              <label for="hora">Hora</label>
+              <input type="text" class="form-control" id="hora" readonly>
+            </div>
+            <div class="form-group">
+              <label for="correo">Ingrese su correo electrónico</label>
+              <input type="email" class="form-control" id="correo" required>
+            </div>
+            <div class="form-group">
+              <label for="telefono">Ingrese su teléfono</label>
+              <input type="text" class="form-control" id="telefono" required>
+            </div>
+            <div class="form-group">
+              <label for="celular">Ingrese su celular (10 dígitos y sólo números)</label>
+              <input type="text" class="form-control" id="celular" required>
+            </div>
+            <div class="form-group">
+              <label for="icalendar">¿Recibir iCalendar por correo electrónico?</label>
+              <select class="form-control" id="icalendar">
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
     </div>
-  </section>
-
-  <!-- Pie de página -->
-  <footer class="bg-light py-4">
-    <div class="container text-center">
-      <p>Teléfono de contacto: 115673346</p>
-      <p>Mail: sananton24@gmail.com</p>
-    </div>
-  </footer>
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
     var profesionalId;
-    var mesActual = 3; // Marzo
-    var anioActual = 2025;
-
-    // Filtrar profesionales
-    document.getElementById('search').addEventListener('input', function () {
-      var filter = this.value.toUpperCase();
-      var items = document.getElementById('professional-list').getElementsByClassName('list-group-item');
-      for (var i = 0; i < items.length; i++) {
-        var text = items[i].getElementsByTagName('span')[0].textContent || items[i].getElementsByTagName('span')[0].innerText;
-        if (text.toUpperCase().indexOf(filter) > -1) {
-          items[i].style.display = '';
-        } else {
-          items[i].style.display = 'none';
-        }
-      }
-    });
-
-    // Cargar horarios en el modal
-    $('#horariosModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
-      profesionalId = button.data('id');
-
-      $.ajax({
-        url: 'obtener-horarios.php',
-        method: 'GET',
-        data: { id: profesionalId },
-        success: function (response) {
-          $('#horariosContent').html(response);
-        }
-      });
-    });
+    var mesActual = new Date().getMonth() + 1; // Mes actual
+    var anioActual = new Date().getFullYear(); // Año actual
 
     // Cargar calendario en el modal
     $('#calendarioModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
-      profesionalId = button.data('id');
-
+      profesionalId = $('#profesional').val();
       cargarCalendario(mesActual, anioActual);
     });
 
@@ -357,6 +268,50 @@ session_start();
         }
       });
     }
+
+    // Seleccionar horario
+    function seleccionarHorario(hora) {
+      $('#horariosDiaModal').modal('hide');
+      $('#confirmarTurnoModal').modal('show');
+
+      // Obtener datos del profesional
+      var profesional = $('#profesional option:selected').text();
+
+      // Llenar los campos del modal de confirmación
+      $('#confirmarTurnoModal #profesional').val(profesional);
+      $('#confirmarTurnoModal #fecha').val(fechaSeleccionada);
+      $('#confirmarTurnoModal #hora').val(hora);
+    }
+
+    // Manejar la confirmación del turno
+    $('#confirmarTurnoForm').on('submit', function (event) {
+      event.preventDefault();
+
+      // Obtener los datos del formulario
+      var datos = {
+        profesional: $('#confirmarTurnoModal #profesional').val(),
+        fecha: $('#confirmarTurnoModal #fecha').val(),
+        hora: $('#confirmarTurnoModal #hora').val(),
+        correo: $('#confirmarTurnoModal #correo').val(),
+        telefono: $('#confirmarTurnoModal #telefono').val(),
+        celular: $('#confirmarTurnoModal #celular').val(),
+        icalendar: $('#confirmarTurnoModal #icalendar').val()
+      };
+
+      // Enviar los datos al servidor (puedes ajustar la URL y el método según tu configuración)
+      $.ajax({
+        url: 'confirmar-turno.php',
+        method: 'POST',
+        data: datos,
+        success: function (response) {
+          alert('Turno confirmado con éxito');
+          $('#confirmarTurnoModal').modal('hide');
+        },
+        error: function () {
+          alert('Error al confirmar el turno');
+        }
+      });
+    });
   </script>
 </body>
 

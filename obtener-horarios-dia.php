@@ -1,32 +1,43 @@
 <?php
+session_start();
 if (isset($_GET['id']) && isset($_GET['fecha'])) {
   $profesionalId = $_GET['id'];
   $fecha = $_GET['fecha'];
 
-  // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-  $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+  require 'vendor/autoload.php';
+  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+  $dotenv->load();
+  // Crear conexión
+  $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
   if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
   }
 
-  // Obtener los horarios disponibles del profesional para la fecha seleccionada
-  $sql = "SELECT hora_inicio, hora_fin FROM horarios WHERE profesional_id = ? AND dia = ?";
+  // Obtener los horarios disponibles del profesional en la fecha seleccionada
+  $sql = "SELECT horarios_turnos.hora 
+          FROM profesionales_horarios 
+          INNER JOIN horarios_turnos ON profesionales_horarios.id_horario = horarios_turnos.id 
+          WHERE profesionales_horarios.id_pro = ? 
+          AND horarios_turnos.hora NOT IN (
+            SELECT hora 
+            FROM atenciones 
+            WHERE id_pro = ? 
+            AND DATE(fecha) = ?
+          )";
   $stmt = $conn->prepare($sql);
-  $stmt->bind_param("is", $profesionalId, $fecha);
+  $stmt->bind_param("iis", $profesionalId, $profesionalId, $fecha);
   $stmt->execute();
   $result = $stmt->get_result();
 
   if ($result->num_rows > 0) {
-    echo '<div class="d-flex flex-wrap">';
+    echo "<ul class='list-group'>";
     while ($row = $result->fetch_assoc()) {
-      $horaInicio = $row['hora_inicio'];
-      $horaFin = $row['hora_fin'];
-      echo '<button class="btn btn-outline-primary m-2">' . $horaInicio . '</button>';
+      echo "<li class='list-group-item' onclick='seleccionarHorario(\"" . $row['hora'] . "\")'>" . $row['hora'] . "</li>";
     }
-    echo '</div>';
+    echo "</ul>";
   } else {
-    echo '<p>No hay horarios disponibles para esta fecha.</p>';
+    echo "<p>No hay horarios disponibles.</p>";
   }
 
   $stmt->close();

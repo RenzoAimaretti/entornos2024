@@ -1,5 +1,42 @@
 <?php
 session_start();
+if (!isset($_SESSION['usuario_id'])) {
+  header('Location: iniciar-sesion.php');
+  exit();
+}
+
+// Conexión a la base de datos (ajusta los parámetros según tu configuración)
+$conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+
+if ($conn->connect_error) {
+  die("Conexión fallida: " . $conn->connect_error);
+}
+
+$usuario_id = $_SESSION['usuario_id'];
+
+// Obtener los turnos del usuario
+$sql = "SELECT atenciones.fecha, servicios.nombre AS servicio, usuarios.nombre AS profesional
+        FROM atenciones
+        INNER JOIN servicios ON atenciones.id_serv = servicios.id
+        INNER JOIN profesionales ON atenciones.id_pro = profesionales.id
+        INNER JOIN usuarios ON profesionales.id = usuarios.id
+        INNER JOIN mascotas ON atenciones.id_mascota = mascotas.id
+        WHERE mascotas.id_cliente = ?
+        ORDER BY atenciones.fecha DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $usuario_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$turnos = [];
+if ($result->num_rows > 0) {
+  while ($row = $result->fetch_assoc()) {
+    $turnos[] = $row;
+  }
+}
+
+$stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -8,16 +45,9 @@ session_start();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veterinaria San Antón - Solicitar Turno</title>
+  <title>Mis Turnos</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
-  <style>
-    .card img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-    }
-  </style>
 </head>
 
 <body>
@@ -69,6 +99,10 @@ session_start();
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+              <?php endif; ?>
             </div>
           </li>
         </ul>
@@ -76,62 +110,23 @@ session_start();
     </div>
   </nav>
 
-  <!-- Sección de Solicitar Turno -->
-  <section class="container text-center my-4">
-    <h3>Solicitar turno</h3>
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-profesional.php" class="btn btn-light btn-block">
-              <img src="https://images.emojiterra.com/google/android-oreo/512px/1f468-1f4bc.png" alt="Profesional"
-                class="img-fluid mb-2">
-              <p>Profesional</p>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-servicio.php" class="btn btn-light btn-block">
-              <img
-                src="https://w7.pngwing.com/pngs/142/988/png-transparent-computer-icons-medical-chart-smiley-emoticon-mask.png"
-                alt="Servicio" class="img-fluid mb-2">
-              <p>Servicio</p>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-servicio-profesional.php" class="btn btn-light btn-block">
-              <img src="https://w7.pngwing.com/pngs/151/69/png-transparent-briefcase-medical-solid-icon.png"
-                alt="Servicio / Profesional" class="img-fluid mb-2">
-              <p>Servicio / Profesional</p>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <a href="autogestion-turnos.php" class="btn btn-secondary mt-3">Volver al listado</a>
-  </section>
-
-  <!-- Franja Verde -->
-  <section class="bg-green text-white py-2 text-center">
-    <div class="container">
-      <p class="mb-0">Teléfono de contacto: 115673346 | Mail: sananton24@gmail.com</p>
-    </div>
-  </section>
-
-  <!-- Pie de página -->
-  <footer class="bg-light py-4">
-    <div class="container text-center">
-      <p>Teléfono de contacto: 115673346</p>
-      <p>Mail: sananton24@gmail.com</p>
-    </div>
-  </footer>
+  <div class="container mt-5">
+    <h1>Mis Turnos</h1>
+    <?php if (count($turnos) > 0): ?>
+      <ul class="list-group">
+        <?php foreach ($turnos as $turno): ?>
+          <li class="list-group-item">
+            <h5><?php echo $turno['servicio']; ?></h5>
+            <p>Profesional: <?php echo $turno['profesional']; ?></p>
+            <p>Fecha: <?php echo date('d-m-Y H:i', strtotime($turno['fecha'])); ?></p>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php else: ?>
+      <p>No hay turnos pendientes.</p>
+    <?php endif; ?>
+    <a href="solicitar-turno-profesional.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

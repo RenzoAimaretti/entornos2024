@@ -14,7 +14,7 @@
   <!-- Navegación -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -53,7 +53,7 @@
   <!-- Barra de Navegación Secundaria -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
       <li class="breadcrumb-item"><a href="iniciar-sesion.php">Iniciar sesión</a></li>
       <li class="breadcrumb-item active" aria-current="page">Registrarse</li>
     </ol>

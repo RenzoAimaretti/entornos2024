@@ -39,11 +39,18 @@ session_start()
             <a class="nav-link active" href="index.php">Inicio</a>
           </li>
           <?php if (isset($_SESSION['usuario_nombre'])): ?>
-            <li class="nav-item d-flex align-items-center">
+            <li class="nav-item dropdown d-flex align-items-center">
               <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
                 class="mr-2">
-              <span><?php echo $_SESSION['usuario_nombre']; ?></span>
-              <a href="logout.php" class="btn btn-danger ml-3">Cerrar sesión</a>
+              <a class="nav-link dropdown-toggle" href="#" id="usuarioDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <?php echo $_SESSION['usuario_nombre']; ?>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
+                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
+                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
+                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
+              </div>
             </li>
           <?php else: ?>
             <li class="nav-item">
@@ -62,11 +69,11 @@ session_start()
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
-            
-            <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-              <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-              <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
-            <?php endif; ?>
+
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+              <?php endif; ?>
             </div>
           </li>
         </ul>
@@ -75,10 +82,10 @@ session_start()
   </nav>
 
   <!-- Encabezado -->
-   <?php if (isset($_SESSION['usuario_nombre'])): ?>
-  <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
-    <?php echo $_SESSION['usuario_tipo']; ?>
-  </h2>
+  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+    <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
+      <?php echo $_SESSION['usuario_tipo']; ?>
+    </h2>
   <?php endif; ?>
 
   <header class="container text-center my-4">

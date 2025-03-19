@@ -53,10 +53,10 @@ if ($result->num_rows > 0) {
     header("Location: index.php");
     exit();
   } else {
-    echo "Contraseña incorrecta. <a href='iniciar-sesion.html'>Intentar de nuevo</a>";
+    echo "Contraseña incorrecta. <a href='iniciar-sesion.php'>Intentar de nuevo</a>";
   }
 } else {
-  echo "Usuario no encontrado. <a href='registrarse.html'>Registrarse</a>";
+  echo "Usuario no encontrado. <a href='registrarse.php'>Registrarse</a>";
 }
 
 

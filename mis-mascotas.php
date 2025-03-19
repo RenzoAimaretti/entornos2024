@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['usuario_id'])) {
+  header('Location: iniciar-sesion.php');
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -8,16 +12,9 @@ session_start();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veterinaria San Antón - Solicitar Turno</title>
+  <title>Mis Mascotas</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
-  <style>
-    .card img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-    }
-  </style>
 </head>
 
 <body>
@@ -69,6 +66,10 @@ session_start();
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+              <?php endif; ?>
             </div>
           </li>
         </ul>
@@ -76,66 +77,84 @@ session_start();
     </div>
   </nav>
 
-  <!-- Sección de Solicitar Turno -->
-  <section class="container text-center my-4">
-    <h3>Solicitar turno</h3>
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-profesional.php" class="btn btn-light btn-block">
-              <img src="https://images.emojiterra.com/google/android-oreo/512px/1f468-1f4bc.png" alt="Profesional"
-                class="img-fluid mb-2">
-              <p>Profesional</p>
-            </a>
+  <div class="container mt-5">
+    <h1>Mis Mascotas</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h2>Registrar Nueva Mascota</h2>
+        <form action="registrar-mascota.php" method="POST">
+          <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" required>
           </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-servicio.php" class="btn btn-light btn-block">
-              <img
-                src="https://w7.pngwing.com/pngs/142/988/png-transparent-computer-icons-medical-chart-smiley-emoticon-mask.png"
-                alt="Servicio" class="img-fluid mb-2">
-              <p>Servicio</p>
-            </a>
+          <div class="form-group">
+            <label for="foto">Foto (URL):</label>
+            <input type="text" class="form-control" id="foto" name="foto">
           </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-servicio-profesional.php" class="btn btn-light btn-block">
-              <img src="https://w7.pngwing.com/pngs/151/69/png-transparent-briefcase-medical-solid-icon.png"
-                alt="Servicio / Profesional" class="img-fluid mb-2">
-              <p>Servicio / Profesional</p>
-            </a>
+          <div class="form-group">
+            <label for="raza">Raza:</label>
+            <input type="text" class="form-control" id="raza" name="raza">
           </div>
-        </div>
+          <div class="form-group">
+            <label for="fecha_nac">Fecha de Nacimiento:</label>
+            <input type="date" class="form-control" id="fecha_nac" name="fecha_nac">
+          </div>
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </form>
       </div>
-    </div>
-    <a href="autogestion-turnos.php" class="btn btn-secondary mt-3">Volver al listado</a>
-  </section>
+      <div class="col-md-6">
+        <h2>Mascotas Registradas</h2>
+        <?php
+        // Conexión a la base de datos (ajusta los parámetros según tu configuración)
+        $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
 
-  <!-- Franja Verde -->
-  <section class="bg-green text-white py-2 text-center">
-    <div class="container">
-      <p class="mb-0">Teléfono de contacto: 115673346 | Mail: sananton24@gmail.com</p>
-    </div>
-  </section>
+        if ($conn->connect_error) {
+          die("Conexión fallida: " . $conn->connect_error);
+        }
 
-  <!-- Pie de página -->
-  <footer class="bg-light py-4">
-    <div class="container text-center">
-      <p>Teléfono de contacto: 115673346</p>
-      <p>Mail: sananton24@gmail.com</p>
+        $usuario_id = $_SESSION['usuario_id'];
+        $sql = "SELECT * FROM mascotas WHERE id_cliente = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('i', $usuario_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+          echo "<ul class='list-group'>";
+          while ($row = $result->fetch_assoc()) {
+            echo "<li class='list-group-item'>";
+            echo "<h5>" . $row['nombre'] . "</h5>";
+            if ($row['foto']) {
+              echo "<img src='" . $row['foto'] . "' alt='" . $row['nombre'] . "' class='img-fluid' style='max-width: 100px;'>";
+            }
+            echo "<p>Raza: " . $row['raza'] . "</p>";
+            echo "<p>Fecha de Nacimiento: " . $row['fecha_nac'] . "</p>";
+            echo "<form action='eliminar-mascota.php' method='POST' style='display:inline;' onsubmit='return confirmarEliminacion()'>";
+            echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
+            echo "<button type='submit' class='btn btn-danger btn-sm'>Eliminar</button>";
+            echo "</form>";
+            echo "</li>";
+          }
+          echo "</ul>";
+        } else {
+          echo "<p>No tienes mascotas registradas.</p>";
+        }
+
+        $stmt->close();
+        $conn->close();
+        ?>
+      </div>
     </div>
-  </footer>
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    function confirmarEliminacion() {
+      return confirm('¿Estás seguro de que deseas eliminar esta mascota?');
+    }
+  </script>
 </body>
 
 </html>

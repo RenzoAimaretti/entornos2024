@@ -12,7 +12,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   }
 
   // Obtener los días ocupados del servicio
-  $sql = "SELECT DISTINCT DATE_FORMAT(dia, '%Y-%m-%d') as dia FROM horarios_servicio WHERE servicio_id = ? AND MONTH(dia) = ? AND YEAR(dia) = ?";
+  $sql = "SELECT DISTINCT DATE_FORMAT(dia, '%Y-%m-%d') as dia FROM horarios_servicios WHERE servicio_id = ? AND MONTH(dia) = ? AND YEAR(dia) = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("iii", $servicioId, $mesActual, $anioActual);
   $stmt->execute();
@@ -69,7 +69,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
 
   for ($dia = 1; $dia <= $diasMes; $dia++) {
     $fecha = "$anioActual-$mesActual-$dia";
-    $clase = in_array($fecha, $ocupados) ? 'disponible' : 'ocupado';
+    $clase = in_array($fecha, $ocupados) ? 'ocupado' : 'disponible';
     echo '<li class="' . $clase . '" onclick="seleccionarDia(\'' . $fecha . '\')">' . $dia . '</li>';
   }
 
@@ -77,3 +77,59 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   echo '</div>';
 }
 ?>
+
+<script>
+  var servicioId;
+  var mesActual = new Date().getMonth() + 1; // Mes actual
+  var anioActual = new Date().getFullYear(); // Año actual
+
+  // Cargar calendario en el modal
+  $('#calendarioModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    servicioId = button.data('id');
+
+    cargarCalendario(mesActual, anioActual);
+  });
+
+  // Cambiar mes
+  function cambiarMes(direccion) {
+    mesActual += direccion;
+
+    if (mesActual < 1) {
+      mesActual = 12;
+      anioActual--;
+    } else if (mesActual > 12) {
+      mesActual = 1;
+      anioActual++;
+    }
+
+    cargarCalendario(mesActual, anioActual);
+  }
+
+  // Cargar calendario
+  function cargarCalendario(mes, anio) {
+    $.ajax({
+      url: 'obtener-calendario-servicio.php',
+      method: 'GET',
+      data: { id: servicioId, mes: mes, anio: anio },
+      success: function (response) {
+        $('#calendarioContent').html(response);
+      }
+    });
+  }
+
+  // Seleccionar día
+  function seleccionarDia(fecha) {
+    $('#calendarioModal').modal('hide');
+    $('#horariosDiaModal').modal('show');
+
+    $.ajax({
+      url: 'obtener-horarios-dia.php',
+      method: 'GET',
+      data: { id: servicioId, fecha: fecha },
+      success: function (response) {
+        $('#horariosDiaContent').html(response);
+      }
+    });
+  }
+</script>

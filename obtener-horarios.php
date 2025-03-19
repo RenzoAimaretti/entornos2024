@@ -9,29 +9,24 @@ if (isset($_GET['id'])) {
     die("Conexión fallida: " . $conn->connect_error);
   }
 
-  // Consulta para obtener los horarios del profesional
-  $sql = "SELECT dia, hora_inicio, hora_fin, especialidad FROM horarios JOIN profesionales ON horarios.profesional_id = profesionales.id WHERE profesional_id = ?";
+  // Obtener los horarios del profesional
+  $sql = "SELECT horarios_turnos.hora 
+          FROM profesionales_horarios 
+          INNER JOIN horarios_turnos ON profesionales_horarios.id_horario = horarios_turnos.id 
+          WHERE profesionales_horarios.id_pro = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("i", $profesionalId);
   $stmt->execute();
   $result = $stmt->get_result();
 
   if ($result->num_rows > 0) {
-    echo "<table class='table'>";
-    echo "<tbody>";
+    echo "<ul class='list-group'>";
     while ($row = $result->fetch_assoc()) {
-      echo "<tr>";
-      echo "<td>" . $row['dia'] . "</td>";
-      echo "<td>";
-      echo "<strong>De " . date('H:i', strtotime($row['hora_inicio'])) . " a " . date('H:i', strtotime($row['hora_fin'])) . "</strong><br>";
-      echo $row['especialidad'];
-      echo "</td>";
-      echo "</tr>";
+      echo "<li class='list-group-item'>" . $row['hora'] . "</li>";
     }
-    echo "</tbody>";
-    echo "</table>";
+    echo "</ul>";
   } else {
-    echo "<p>No se encontraron horarios.</p>";
+    echo "<p>No hay horarios disponibles.</p>";
   }
 
   $stmt->close();
