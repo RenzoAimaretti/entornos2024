@@ -6,12 +6,10 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
 }
 
 // Conexión a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "veterinaria";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+require '../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));$dotenv->load();
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
@@ -24,7 +22,7 @@ $query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono
 
 $result = $conn->query($query);
 
-$queryMascotas = "SELECT m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue 
+$queryMascotas = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue 
                   FROM mascotas m 
                   WHERE m.id_cliente = $id";
 
@@ -113,7 +111,7 @@ $resultMascotas = $conn->query($queryMascotas);
                             echo "<td>" . htmlspecialchars($mascota['raza'] ?? '-') . "</td>";
                             echo "<td>" . htmlspecialchars($mascota['fecha_nac'] ?? '-') . "</td>";
                             echo "<td>" . htmlspecialchars($mascota['fecha_mue'] ?? '-') . "</td>";
-                            echo "<td><button class='btn btn-warning btn-sm'>Editar</button> <button class='btn btn-danger btn-sm'>Eliminar</button></td>";
+                            echo "<td> <a class='btn btn-warning' href='../shared/detalle-mascota.php?idMascota=" . htmlspecialchars($mascota['id']) . "'>Ver Detalles</a> </td>";
                             echo "</tr>";
                         }
                     } else {
