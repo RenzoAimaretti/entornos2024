@@ -1,7 +1,60 @@
+<?php
+session_start();
+require 'vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+
+// Verificar si el formulario fue enviado
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Recibir datos del formulario
+    $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : null;
+    $password = isset($_POST['password']) ? htmlspecialchars($_POST['password']) : null;
+
+    if ($email && $password) {
+        // Buscar usuario en la base de datos con consulta preparada
+        $sql = "SELECT id, nombre, tipo, password FROM usuarios WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+
+            // Verificar la contraseña
+            if ($password === $row['password']) {
+                // Guardar en la sesión
+                $_SESSION['usuario_id'] = $row['id'];
+                $_SESSION['usuario_nombre'] = $row['nombre'];
+                $_SESSION['usuario_tipo'] = $row['tipo'];
+
+                header("Location: index.php");
+                exit();
+            } else {
+                $error = "Contraseña incorrecta.";
+            }
+        } else {
+            $error = "Usuario no encontrado.";
+        }
+
+        $stmt->close();
+    } else {
+        $error = "Por favor, complete todos los campos.";
+    }
+}
+
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="es">
-
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,63 +62,17 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
 </head>
-
 <body>
   <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
-        <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
-          alt="Logo" class="logo">
-        <span>Veterinaria San Antón</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="index.php">Inicio</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="iniciar-sesion.php">Iniciar sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="registrarse.php">Registrarse</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false">
-              Secciones
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Servicios</a>
-              <a class="dropdown-item" href="nosotros.php">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.php">Contacto</a>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Iniciar sesión</li>
-    </ol>
-  </nav>
-
-  <!-- Formulario de Inicio de Sesión -->
-  <div class="container">
+  <?php require_once 'shared/navbar.php'; ?>
+<div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card bg-light mb-3">
           <div class="card-header text-center">Iniciar sesión</div>
           <div class="card-body">
-            <form action="login.php" method="post">
+            <!-- Llamo al php de este documento usando  -->
+            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"])?>" method="post">
               <div class="form-group">
                 <label for="email">Correo electrónico</label>
                 <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico"
