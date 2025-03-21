@@ -12,8 +12,8 @@ if ($conn->connect_error) {
 }
 
 // Verificar si se recibió el ID de la mascota
-if (isset($_GET['idMascota'])) {
-    $idMascota = $_GET['idMascota'];
+if (isset($_POST['idMascota'])) {
+    $idMascota = $_POST['idMascota'];
 
     // Obtener los datos actuales de la mascota
     $sql = "SELECT * FROM mascotas WHERE id = ?";
@@ -46,7 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssi", $nombre_mascota, $raza, $fecha_nacimiento, $fecha_muerte, $idMascota);
 
         if ($stmt->execute()) {
-            echo "Mascota actualizada correctamente.";
+            // Redirigir a la página anterior
+            header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit();
         } else {
             echo "Error al actualizar la mascota: " . $stmt->error;
         }

@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
+      <a class="navbar-brand d-flex align-items-center" href="../index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -12,7 +12,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.php">Inicio</a>
+            <a class="nav-link active" href="../index.php">Inicio</a>
           </li>
           <?php if (isset($_SESSION['usuario_nombre'])): ?>
             <li class="nav-item dropdown d-flex align-items-center">
@@ -30,10 +30,10 @@
             </li>
           <?php else: ?>
             <li class="nav-item">
-              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
+              <a class="nav-link" href="../iniciar-sesion.php">Iniciar sesión</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="registrarse.php">Registrarse</a>
+              <a class="nav-link" href="../registrarse.php">Registrarse</a>
             </li>
           <?php endif; ?>
           <li class="nav-item dropdown">
