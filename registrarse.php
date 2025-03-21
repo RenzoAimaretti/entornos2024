@@ -1,3 +1,80 @@
+<?php
+session_start();
+require 'vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+
+if ($conn->connect_error) {
+  die("Error de conexión: " . $conn->connect_error);
+}
+//Verificar si el formulario fue enviado
+if($_SERVER['REQUEST_METHOD']==='POST'){
+  // Recibir datos del formulario
+$nombre = trim($_POST['username']);
+$email = trim($_POST['email']);
+$password = $_POST['password'];
+$confirm_password = $_POST['confirm_password'];
+
+// Validaciones
+if ($password !== $confirm_password) {
+  die("Error: Las contraseñas no coinciden. <a href='registrarse.html'>Volver</a>");
+}
+
+if (!preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
+  die("Error: La contraseña debe contener al menos una letra mayúscula y un número. <a href='registrarse.html'>Volver</a>");
+}
+
+// Verificar si el correo ya está registrado
+$sql_check = "SELECT id FROM usuarios WHERE email = ?";
+$stmt = $conn->prepare($sql_check);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
+    die("Error: El correo ya está registrado. <a href='registrarse.html'>Volver</a>");
+}
+
+// Encriptar la contraseña
+// $password_hashed = password_hash($password, PASSWORD_BCRYPT);
+
+// Insertar usuario en la base de datos
+$sql = "INSERT INTO usuarios (nombre, email, password, tipo) VALUES (?, ?, ?, 'cliente')";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("sss", $nombre, $email, $password);
+
+if (!$stmt->execute()) {
+    die("Error al registrar usuario: " . $stmt->error);
+}
+
+$usuario_id = $stmt->insert_id; // Obtener el ID del usuario recién insertado
+
+// Insertar en la tabla clientes
+$sql2 = "INSERT INTO clientes (id) VALUES (?)";
+$stmt = $conn->prepare($sql2);
+$stmt->bind_param("i", $usuario_id);
+
+if (!$stmt->execute()) {
+    die("Error al registrar cliente: " . $stmt->error);
+}
+
+// Guardar datos en la sesión
+$_SESSION['usuario_id'] = $usuario_id;
+$_SESSION['usuario_nombre'] = $nombre;
+$_SESSION['usuario_tipo'] = 'cliente';
+
+// Redirigir al usuario
+header("Location: index.php");
+exit();
+
+$stmt->close();
+
+
+}
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -11,53 +88,8 @@
 </head>
 
 <body>
-  <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
-        <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
-          alt="Logo" class="logo">
-        <span>Veterinaria San Antón</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="index.php">Inicio</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="registrarse.php">Registrarse</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false">
-              Secciones
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
-              <a class="dropdown-item" href="nosotros.php">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.php">Contacto</a>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item"><a href="iniciar-sesion.php">Iniciar sesión</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Registrarse</li>
-    </ol>
-  </nav>
+ <!-- Navegación -->
+ <?php require_once 'shared/navbar.php'; ?>
 
   <!-- Formulario de Registro -->
   <div class="container">
@@ -66,7 +98,7 @@
         <div class="card bg-light mb-3">
           <div class="card-header text-center">Registrarse</div>
           <div class="card-body">
-            <form action="registro.php" method="post">
+            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"])?>" method="post">
               <div class="form-group">
                 <label for="username">Nombre de usuario</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Nombre de usuario"
