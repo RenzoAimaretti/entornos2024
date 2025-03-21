@@ -22,6 +22,7 @@
                 aria-haspopup="true" aria-expanded="false">
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
+              <!-- hay que meter todos estos en una carpeta y meter validaciones de tipo de usuario -->
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
                 <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
@@ -30,10 +31,10 @@
             </li>
           <?php else: ?>
             <li class="nav-item">
-              <a class="nav-link" href="../iniciar-sesion.php">Iniciar sesión</a>
+              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="../registrarse.php">Registrarse</a>
+              <a class="nav-link" href="registrarse.php">Registrarse</a>
             </li>
           <?php endif; ?>
           <li class="nav-item dropdown">
@@ -45,8 +46,8 @@
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
-
-              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+              <?php 
+              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
                 <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
                 <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
               <?php endif; ?>

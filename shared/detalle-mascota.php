@@ -47,7 +47,7 @@ if ($result->num_rows > 0) {
         <div class="card-header">
             <h2>Detalles de <?php echo $mascota_nombre?> </h2>
         </div>
-        <div class="card-body">
+    <div class="card-body">
         <div>
             <p><strong>Nombre:</strong> <?php echo htmlspecialchars($mascota_nombre); ?></p>
             <p><strong>Raza:</strong> <?php echo htmlspecialchars($raza); ?></p>
@@ -93,7 +93,42 @@ if ($result->num_rows > 0) {
                 </div>
             </div>
         </div>
+        <div style="margin-top:1rem;" class="tabla-historia-clinica">
+            <h3>Historia Clínica</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Servicio</th>
+                        <th>Profesional a cargo</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $query = "SELECT a.fecha, s.nombre as nombreServicio, u.nombre as nombrePro from atenciones a
+                                inner join usuarios u on a.id_pro = u.id
+                                inner join servicios s on a.id_serv = s.id
+                                where a.id_mascota = $idMascota
+                              ";
+                    $result = $conn->query($query);
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['fecha']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombreServicio']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombrePro']) . "</td>";
+                            echo "<td><a class=\"btn btn-info\" href='detalle-atencion.php'>Ver detalles</a></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='3'>No hay registros</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
         </div>
+    </div>
     
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
