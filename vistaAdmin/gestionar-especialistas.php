@@ -29,7 +29,7 @@ $result = $conn->query($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionar Clientes - Veterinaria San Antón</title>
+    <title>Gestionar Especialistas - Veterinaria San Antón</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../styles.css" rel="stylesheet">
 </head>
@@ -39,7 +39,7 @@ $result = $conn->query($query);
 
     <!-- Título -->
     <div class="container my-4">
-        <h2 class="text-center text-white py-2" style="background-color: #a8d08d;">Gestión de Clientes</h2>
+        <h2 class="text-center text-white py-2" style="background-color: #a8d08d;">Gestión de Especialistas</h2>
     </div>
 
     <!-- Tabla de Clientes -->
@@ -78,6 +78,9 @@ $result = $conn->query($query);
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+        <div class="text-center">
+            <a class="btn btn-primary" href="alta-especialista.php">Registrar especialista</a>
         </div>
     </div>
 
