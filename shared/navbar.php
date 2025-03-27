@@ -49,8 +49,9 @@
               <?php 
               if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-                <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
 
               <?php endif; ?>
             </div>
