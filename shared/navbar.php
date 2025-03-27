@@ -26,7 +26,7 @@
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
                 <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
                 <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
-                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
+                <a class="dropdown-item" href="../logout.php">Cerrar sesión</a>
               </div>
             </li>
           <?php else: ?>
@@ -48,8 +48,10 @@
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
               <?php 
               if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
+
               <?php endif; ?>
             </div>
           </li>
