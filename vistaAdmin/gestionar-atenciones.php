@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,15 +43,7 @@
     });
 
     function verDetalles(id) {
-        $.ajax({
-            url: 'detalle-atencionAP.php',
-            type: 'POST',
-            data: { id: id },
-            success: function(response) {
-                alert(response);
-                location.reload();
-            }
-        });
+        window.location.href = '../shared/detalle-atencionAP.php?id=' + id;
     }
     </script>
 
