@@ -40,13 +40,18 @@ $resultMascotas = $conn->query($queryMascotas);
     <link href="../styles.css" rel="stylesheet">
 </head>
 <body>
+    <?php require_once '../shared/navbar.php'; ?>
+
     <!-- Título -->
-    <div class="container-fluid my-4">
+    <div class="container my-4">
         <?php 
         $nombre = "Cliente no encontrado";
         if ($result && $result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $nombre = $row['nombre'];
+            $email = $row['email'];
+            $direccion = $row['direccion'];
+            $telefono = $row['telefono'];
         }
         ?>
         <h2 class="text-center text-white py-2" style="background-color: #a8d08d; width: 100%;">Detalles de <?php echo htmlspecialchars($nombre); ?></h2>
@@ -59,7 +64,6 @@ $resultMascotas = $conn->query($queryMascotas);
         <div class="card-body">
             <?php
             if ($result && $result->num_rows > 0) {
-                $row = $result->fetch_assoc();
             ?>
             <table class="table table-bordered">
                 <tr>
@@ -68,18 +72,50 @@ $resultMascotas = $conn->query($queryMascotas);
                 </tr>
                 <tr>
                     <th>Email</th>
-                    <td><?php echo htmlspecialchars($row['email'] ?? 'No definido'); ?></td>
+                    <td><?php echo htmlspecialchars($email ?? 'No definido'); ?></td>
                 </tr>
                 <tr>
                     <th>Dirección</th>
-                    <td><?php echo htmlspecialchars($row['direccion'] ?? 'No definido'); ?></td>
+                    <td><?php echo htmlspecialchars($direccion ?? 'No definido'); ?></td>
                 </tr>
                 <tr>
                     <th>Teléfono</th>
-                    <td><?php echo htmlspecialchars($row['telefono'] ?? 'No definido'); ?></td>
+                    <td><?php echo htmlspecialchars($telefono ?? 'No definido'); ?></td>
                 </tr>
             </table>
-            <button class='btn btn-primary' style="margin: 1rem;">Editar informacion</button>
+            <!-- Botón para abrir el modal -->
+            <button class='btn btn-primary' style="margin: 1rem;" data-toggle="modal" data-target="#editarModal">Editar información</button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editarModalLabel">Editar Información del Cliente</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form method="POST" action="../shared/editar-cliente.php">
+                            <div class="modal-body">
+                                <input type="hidden" name="id" value="<?php echo $id; ?>">
+                                <div class="form-group">
+                                    <label for="direccion">Dirección</label>
+                                    <input type="text" class="form-control" id="direccion" name="direccion" value="<?php echo htmlspecialchars($direccion ?? ''); ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="telefono">Teléfono</label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono" value="<?php echo htmlspecialchars($telefono ?? ''); ?>" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <table class="table table-striped" >
                 <thead class="thead">

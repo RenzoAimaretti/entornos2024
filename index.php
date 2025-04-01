@@ -49,7 +49,7 @@ session_start()
   </header>
 
   <!-- Sección de Autogestión de Turnos -->
-  <?php if (isset($_SESSION['usuario_nombre'])): ?>
+  <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] ==='cliente'): ?>
     <section class="container text-center my-4">
       <h3>Autogestión de Turnos</h3>
       <p>Solicita y administra tus turnos de forma rápida y sencilla.</p>

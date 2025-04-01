@@ -60,8 +60,8 @@ $result = $conn->query($query);
                             <tr>
                                 <td><?php echo htmlspecialchars($row['nombre']); ?></td>
                                 <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                <td><?php echo htmlspecialchars($row['direccion']); ?></td>
-                                <td><?php echo htmlspecialchars($row['telefono']); ?></td>
+                                <td><?php echo htmlspecialchars($row['direccion']??'-'); ?></td>
+                                <td><?php echo htmlspecialchars($row['telefono']??'-'); ?></td>
                                 <td>
                                     <a href="detalle-cliente.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">Ver</a>
                                 </td>

@@ -24,8 +24,10 @@
               </a>
               <!-- hay que meter todos estos en una carpeta y meter validaciones de tipo de usuario -->
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
-                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
-                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
+                <?php if ($_SESSION['usuario_tipo'] === 'cliente'): ?>
+                  <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
+                  <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
+                <?php endif; ?>
                 <a class="dropdown-item" href="../logout.php">Cerrar sesión</a>
               </div>
             </li>
@@ -48,7 +50,7 @@
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
               <?php 
               if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
-                <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Especialistas</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profecionales</a>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
