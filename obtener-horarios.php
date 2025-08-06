@@ -2,8 +2,13 @@
 if (isset($_GET['id'])) {
   $profesionalId = $_GET['id'];
 
-  // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-  $conn = new mysqli('localhost', 'root', '', 'veterinaria');
+  session_start();
+  require 'vendor/autoload.php';
+  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+  $dotenv->load();
+  // Crear conexión
+  $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+
 
   if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);

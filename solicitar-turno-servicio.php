@@ -161,7 +161,7 @@ session_start();
         <div class="list-group" id="service-list">
           <?php
           // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-          $conn = new mysqli('localhost', 'root', '', 'veterinaria');
+          $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
 
           if ($conn->connect_error) {
             die("Conexión fallida: " . $conn->connect_error);
