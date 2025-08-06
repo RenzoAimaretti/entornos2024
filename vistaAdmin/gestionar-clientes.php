@@ -34,26 +34,7 @@ $result = $conn->query($query);
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="../index.php">
-                <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png" 
-                    alt="Logo" class="logo">
-                <span>Veterinaria San Antón</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link active" href="../index.php">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="../logout.php">Cerrar sesión</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php require_once '../shared/navbar.php'; ?> 
 
     <!-- Título -->
     <div class="container my-4">
@@ -79,8 +60,8 @@ $result = $conn->query($query);
                             <tr>
                                 <td><?php echo htmlspecialchars($row['nombre']); ?></td>
                                 <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                <td><?php echo htmlspecialchars($row['direccion']); ?></td>
-                                <td><?php echo htmlspecialchars($row['telefono']); ?></td>
+                                <td><?php echo htmlspecialchars($row['direccion']??'-'); ?></td>
+                                <td><?php echo htmlspecialchars($row['telefono']??'-'); ?></td>
                                 <td>
                                     <a href="detalle-cliente.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">Ver</a>
                                 </td>

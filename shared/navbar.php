@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
+      <a class="navbar-brand d-flex align-items-center" href="../index.php">
         <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
           alt="Logo" class="logo">
         <span>Veterinaria San Antón</span>
@@ -12,7 +12,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.php">Inicio</a>
+            <a class="nav-link active" href="../index.php">Inicio</a>
           </li>
           <?php if (isset($_SESSION['usuario_nombre'])): ?>
             <li class="nav-item dropdown d-flex align-items-center">
@@ -22,10 +22,13 @@
                 aria-haspopup="true" aria-expanded="false">
                 <?php echo $_SESSION['usuario_nombre']; ?>
               </a>
+              <!-- hay que meter todos estos en una carpeta y meter validaciones de tipo de usuario -->
               <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
-                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
-                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
-                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
+                <?php if ($_SESSION['usuario_tipo'] === 'cliente'): ?>
+                  <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
+                  <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
+                <?php endif; ?>
+                <a class="dropdown-item" href="../logout.php">Cerrar sesión</a>
               </div>
             </li>
           <?php else: ?>
@@ -45,10 +48,13 @@
               <a class="dropdown-item" href="profesionales.php">Profesionales</a>
               <a class="dropdown-item" href="nosotros.php">Nosotros</a>
               <a class="dropdown-item" href="contactanos.php">Contacto</a>
+              <?php 
+              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profecionales</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
 
-              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
               <?php endif; ?>
             </div>
           </li>
