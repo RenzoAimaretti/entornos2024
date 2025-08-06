@@ -87,6 +87,7 @@ if ($result->num_rows > 0) {
                             </div>
                             <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                             <!-- cambiar a post -->
+                             <!-- Disable si tiene atenciones ya registradas -->
                             <button type="button" class="btn btn-danger" onclick="window.location.href='eliminar-mascota.php?idMascota=<?php echo $idMascota; ?>'">Eliminar Mascota</button>
                         </form>
                     </div>

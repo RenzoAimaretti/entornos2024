@@ -5,7 +5,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   $anioActual = $_GET['anio'];
 
   // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-  $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+  $conn = new mysqli('localhost', 'root', '', 'veterinaria');
 
   if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);

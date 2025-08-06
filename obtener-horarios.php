@@ -3,7 +3,7 @@ if (isset($_GET['id'])) {
   $profesionalId = $_GET['id'];
 
   // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-  $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+  $conn = new mysqli('localhost', 'root', '', 'veterinaria');
 
   if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);

@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $proximosTurnos = "SELECT a.fecha, s.nombre as nombreServicio, u.nombre as nombrePro from atenciones a
                     inner join usuarios u on a.id_pro = u.id
                     inner join servicios s on a.id_serv = s.id
-                    where a.fecha > now() and a.id_pro = $id";
+                    where a.fecha >= now() and a.id_pro = $id";
                     $result = $conn->query($proximosTurnos);
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
