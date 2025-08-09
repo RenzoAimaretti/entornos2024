@@ -42,7 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             // Redirigir a la página anterior
-            header("Location: " . $_SERVER['HTTP_REFERER']);
+            // Redirigir usando POST mediante un formulario autoenviado
+            echo '<form id="redirigir" action="' . htmlspecialchars($_SERVER['HTTP_REFERER']) . '" method="post">';
+            echo '<input type="hidden" name="id" value="' . htmlspecialchars($_POST['id']) . '">';
+            echo '</form>';
+            echo '<script>document.getElementById("redirigir").submit();</script>';
             exit();
         } else {
             echo "Error al actualizar el usuario: " . $stmt->error;
@@ -53,5 +57,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $conn->close();
-
 ?>
