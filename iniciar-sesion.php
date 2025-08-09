@@ -9,52 +9,53 @@ $dotenv->load();
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+  die("Error de conexión: " . $conn->connect_error);
 }
 
 // Verificar si el formulario fue enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Recibir datos del formulario
-    $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : null;
-    $password = isset($_POST['password']) ? htmlspecialchars($_POST['password']) : null;
+  // Recibir datos del formulario
+  $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : null;
+  $password = isset($_POST['password']) ? htmlspecialchars($_POST['password']) : null;
 
-    if ($email && $password) {
-        // Buscar usuario en la base de datos con consulta preparada
-        $sql = "SELECT id, nombre, tipo, password FROM usuarios WHERE email = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+  if ($email && $password) {
+    // Buscar usuario en la base de datos con consulta preparada
+    $sql = "SELECT id, nombre, tipo, password FROM usuarios WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
+    if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
 
-            // Verificar la contraseña
-            if ($password === $row['password']) {
-                // Guardar en la sesión
-                $_SESSION['usuario_id'] = $row['id'];
-                $_SESSION['usuario_nombre'] = $row['nombre'];
-                $_SESSION['usuario_tipo'] = $row['tipo'];
+      // Verificar la contraseña
+      if ($password === $row['password']) {
+        // Guardar en la sesión
+        $_SESSION['usuario_id'] = $row['id'];
+        $_SESSION['usuario_nombre'] = $row['nombre'];
+        $_SESSION['usuario_tipo'] = $row['tipo'];
 
-                header("Location: index.php");
-                exit();
-            } else {
-                $error = "Contraseña incorrecta.";
-            }
-        } else {
-            $error = "Usuario no encontrado.";
-        }
-
-        $stmt->close();
+        header("Location: index.php");
+        exit();
+      } else {
+        $error = "Contraseña incorrecta.";
+      }
     } else {
-        $error = "Por favor, complete todos los campos.";
+      $error = "Usuario no encontrado.";
     }
+
+    $stmt->close();
+  } else {
+    $error = "Por favor, complete todos los campos.";
+  }
 }
 
 $conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,17 +63,18 @@ $conn->close();
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
 </head>
+
 <body>
   <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
-<div class="container">
+  <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card bg-light mb-3">
           <div class="card-header text-center">Iniciar sesión</div>
           <div class="card-body">
             <!-- Llamo al php de este documento usando  -->
-            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"])?>" method="post">
+            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
               <div class="form-group">
                 <label for="email">Correo electrónico</label>
                 <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico"

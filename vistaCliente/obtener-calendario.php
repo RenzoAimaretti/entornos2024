@@ -68,7 +68,7 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   }
 
   for ($dia = 1; $dia <= $diasMes; $dia++) {
-    $fecha = "$anioActual-$mesActual-$dia";
+    $fecha = "$anioActual-$mesActual-" . str_pad($dia, 2, '0', STR_PAD_LEFT);
     $clase = in_array($fecha, $disponibles) ? 'disponible' : 'ocupado';
     echo '<li class="' . $clase . '" onclick="seleccionarDia(\'' . $fecha . '\')">' . $dia . '</li>';
   }
@@ -132,6 +132,26 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
   </div>
 </div>
 
+<!-- Modal para seleccionar fecha y horario -->
+<div class="modal fade" id="calendarioModal" tabindex="-1" role="dialog" aria-labelledby="calendarioModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="calendarioModalLabel">Seleccione fecha y horario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="calendarioContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
   var profesionalId;
   var mesActual = 3; // Marzo
@@ -259,6 +279,18 @@ if (isset($_GET['id']) && isset($_GET['mes']) && isset($_GET['anio'])) {
       }
     });
   });
+
+  let fechaSeleccionada = null;
+
+  flatpickr("#fechaTurno", {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    onChange: function (selectedDates, dateStr, instance) {
+      fechaSeleccionada = dateStr;
+      console.log("Fecha seleccionada:", fechaSeleccionada);
+      // Aquí puedes usar fechaSeleccionada para cargar horarios, etc.
+    }
+  });
 </script>
 
 <?php
@@ -294,3 +326,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $conn->close();
 }
 ?>
+<button onclick="seleccionarDia('2025-08-10')">10 de Agosto</button>
+<li>
+  <button class="btn btn-link" onclick="seleccionarDia('2025-03-01')">1</button>
+</li>
+</li>
+<input type="text" id="fechaTurno" class="form-control" placeholder="Selecciona una fecha">

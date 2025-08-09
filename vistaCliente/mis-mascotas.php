@@ -7,11 +7,11 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 ?>
 <?php
-require 'vendor/autoload.php';
-  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-  $dotenv->load();
+require __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
 // Crear conexión
-  $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
@@ -37,47 +37,47 @@ $result = $conn->query($query);
 
 <body>
   <!-- Navegación -->
-  <?php require_once 'shared/navbar.php'; ?>
+  <?php require_once '../shared/navbar.php'; ?>
 
 
   <div class="container mt-5">
     <h1>Mis Mascotas</h1>
     <div class="row">
       <div class="col-md-6">
-        
-        <?php 
+
+        <?php
         if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $nombre = $row['nombre'];
+          $row = $result->fetch_assoc();
+          $nombre = $row['nombre'];
         }
         ?>
-        <h2>Registrar Nueva Mascota para <?php echo $nombre?></h2>
-         <form action="../shared/alta-mascota.php" method="POST">
-    <input type="hidden" name="id_cliente" value="<?php echo $id ?>">
-    <div class="form-group">
-        <label for="nombre">Nombre de la mascota</label>
-        <input type="text" class="form-control" id="nombre" name="nombre" required>
-    </div>
-    <div class="form-group">
-        <label for="raza">Raza (opcional)</label>
-        <input type="text" class="form-control" id="raza" name="raza">
-    </div>
-    <div class="form-group">
-        <label for="fecha_nacimiento">Fecha de nacimiento (opcional)</label>
-        <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento">
-    </div>
-    <div class="form-group">
-        <label for="fecha_muerte">Fecha de muerte (opcional)</label>
-        <input type="date" class="form-control" id="fecha_muerte" name="fecha_muerte">
-    </div>
-    <button type="submit" class="btn btn-primary">Registrar Mascota</button>
-    </form>
+        <h2>Registrar Nueva Mascota para <?php echo $nombre ?></h2>
+        <form action="../shared/alta-mascota.php" method="POST">
+          <input type="hidden" name="id_cliente" value="<?php echo $id ?>">
+          <div class="form-group">
+            <label for="nombre">Nombre de la mascota</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" required>
+          </div>
+          <div class="form-group">
+            <label for="raza">Raza (opcional)</label>
+            <input type="text" class="form-control" id="raza" name="raza">
+          </div>
+          <div class="form-group">
+            <label for="fecha_nacimiento">Fecha de nacimiento (opcional)</label>
+            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento">
+          </div>
+          <div class="form-group">
+            <label for="fecha_muerte">Fecha de muerte (opcional)</label>
+            <input type="date" class="form-control" id="fecha_muerte" name="fecha_muerte">
+          </div>
+          <button type="submit" class="btn btn-primary">Registrar Mascota</button>
+        </form>
       </div>
       <div class="col-md-6">
         <h2>Mascotas Registradas</h2>
         <h2 style="color: red;">LAS MASCOTAS NO SE BORRAN, SOLO SE LES DA BAJA LOGICA</h2>
         <?php
-        
+
 
         $usuario_id = $_SESSION['usuario_id'];
         $sql = "SELECT * FROM mascotas WHERE id_cliente = ?";
