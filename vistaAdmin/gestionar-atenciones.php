@@ -17,13 +17,80 @@ session_start();
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <link href="../styles.css" rel="stylesheet">
+
+    <style>
+    .autocomplete-list {
+        border: 1px solid #ccc;
+        background: #fff;
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .autocomplete-list div {
+        padding: 5px;
+        cursor: pointer;
+    }
+    .autocomplete-list div:hover {
+        background: #eee;
+    }
+    </style>
 </head>
 <body>
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container">
         <h2 class="text-center mt-3">Calendario de Atenciones</h2>
-        <div id="calendario"></div>
+        <div class="row">
+            <!-- Calendario -->
+            <div class="col-md-7 mb-4">
+                <div id="calendario"></div>
+            </div>
+            <!-- Formulario -->
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class='card-title'>Registrar nueva atención</h2>
+                        <form action="../shared/alta-atencion.php" method="POST">
+                            <div class="form-group">
+                                <label for="fecha">Fecha</label>
+                                <input type="date" class="form-control" id="fecha" name="fecha" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hora">Hora</label>
+                                <input type="time" class="form-control" id="hora" name="hora" required>
+                            </div>
+
+                            <!-- Campo Mascota con Autocomplete -->
+                            <div class="form-group position-relative">
+                                <label for="mascota">Mascota</label>
+                                <input type="text" class="form-control" id="mascota" name="mascota" autocomplete="off" required>
+                                <input type="hidden" id="mascota_id" name="mascota_id">
+                                <div id="mascota_sugerencias" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+
+                            <!-- Campo especialista con Autocomplete -->
+                            <div class="form-group position-relative">
+                                <label for="especialista">Especialista</label>
+                                <input type="text" class="form-control" id="especialista" name="especialista" autocomplete="off" required>
+                                <input type="hidden" id="especialista_id" name="especialista_id">
+                                <div id="especialista_sugerencias" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="servicio">Servicio</label>
+                                <input type="text" class="form-control" id="servicio" name="servicio" autocomplete="off" required>
+                                <input type="hidden" id="servicio_id" name="servicio_id">
+                                <div id="servicio_sugerencias" class="autocomplete-list" style="display:none;"></div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Registrar Atención</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -33,7 +100,7 @@ session_start();
             initialView: 'dayGridMonth',
             events: '../shared/atenciones.php',
             eventClick: function(info) {
-                let confirmacion = confirm(`Ver detalles de: "${info.event.title}"?`);
+                let confirmacion = confirm(`Ver detalles de atención para: "${info.event.title}"?`);
                 if (confirmacion) {
                     verDetalles(info.event.id);
                 }
@@ -45,6 +112,44 @@ session_start();
     function verDetalles(id) {
         window.location.href = '../shared/detalle-atencionAP.php?id=' + id;
     }
+
+    // Función genérica de autocomplete
+    function buscar(tipo, texto) {
+        if (texto.length < 2) {
+            $("#" + tipo + "_sugerencias").hide();
+            return;
+        }
+
+        $.getJSON("../shared/buscar-" + tipo + ".php", { q: texto }, function(data) {
+            let contenedor = $("#" + tipo + "_sugerencias");
+            contenedor.empty();
+            if (data.length > 0) {
+                data.forEach(function(item) {
+                    contenedor.append("<div data-id='" + item.id + "'>" + item.nombre + "</div>");
+                });
+                contenedor.show();
+
+                contenedor.find("div").on("click", function() {
+                    $("#" + tipo).val($(this).text());
+                    $("#" + tipo + "_id").val($(this).data("id"));
+                    contenedor.hide();
+                });
+            } else {
+                contenedor.hide();
+            }
+        });
+    }
+
+    $("#mascota").on("input", function() {
+        buscar("mascota", $(this).val());
+    });
+
+    $("#especialista").on("input", function() {
+        buscar("especialista", $(this).val());
+    });
+    $("#servicio").on("input", function() {
+        buscar("servicio", $(this).val());
+    });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
