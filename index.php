@@ -53,11 +53,11 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
   </header>
 
   <!-- Sección de Autogestión de Turnos -->
-  <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] ==='cliente'): ?>
+  <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'cliente'): ?>
     <section class="container text-center my-4">
       <h3>Autogestión de Turnos</h3>
       <p>Solicita y administra tus turnos de forma rápida y sencilla.</p>
-      <a href="autogestion-turnos.php" class="btn btn-primary">Acceder</a>
+      <a href="vistaCliente/autogestion-turnos.php" class="btn btn-primary">Acceder</a>
     </section>
   <?php endif; ?>
 
