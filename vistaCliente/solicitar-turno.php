@@ -52,7 +52,7 @@ session_start();
         </div>
       </div>
     </div>
-    <a href="autogestion-turnos.php" class="btn btn-secondary mt-3">Volver al listado</a>
+    <a href="autogestion-turnos.php" class="btn btn-secondary mt-3">Volver</a>
   </section>
 
   <!-- Franja Verde -->

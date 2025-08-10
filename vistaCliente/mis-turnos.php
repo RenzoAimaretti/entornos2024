@@ -5,11 +5,14 @@ if (!isset($_SESSION['usuario_id'])) {
   exit();
 }
 
-// Conexión a la base de datos (ajusta los parámetros según tu configuración)
-$conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+require __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
-  die("Conexión fallida: " . $conn->connect_error);
+  die("Error de conexión: " . $conn->connect_error);
 }
 
 $usuario_id = $_SESSION['usuario_id'];
@@ -22,7 +25,7 @@ $sql = "SELECT atenciones.fecha, servicios.nombre AS servicio, usuarios.nombre A
         INNER JOIN usuarios ON profesionales.id = usuarios.id
         INNER JOIN mascotas ON atenciones.id_mascota = mascotas.id
         WHERE mascotas.id_cliente = ?
-        ORDER BY atenciones.fecha DESC";
+        ORDER BY atenciones.fecha ASC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $usuario_id);
 $stmt->execute();
