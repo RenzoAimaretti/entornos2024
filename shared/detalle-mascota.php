@@ -10,9 +10,10 @@ $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
-if ($_SESSION['usuario_tipo'] !== 'admin') {
+if (!in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
     die("Acceso denegado");
 }
+
 
 $query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue
           FROM mascotas m 

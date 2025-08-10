@@ -3,7 +3,7 @@ session_start();
 require '../vendor/autoload.php';
 
 try {
-    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__)); // Cambiar la ruta al directorio raíz
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__)); 
     $dotenv->load();
 } catch (Dotenv\Exception\InvalidPathException $e) {
     die("Error: No se pudo cargar el archivo .env. Verifica su existencia.");
