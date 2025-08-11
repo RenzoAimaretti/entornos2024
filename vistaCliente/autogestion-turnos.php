@@ -20,7 +20,6 @@ session_start();
   <!-- Sección de Autogestión de Turnos -->
   <section class="container text-center my-4">
     <h3>Autogestión de Turnos</h3>
-    <p>No tiene turnos solicitados.</p>
     <img src="https://pacientes.grupocentro.ar/pac/res/turnos.png" alt="Calendario" class="img-fluid my-3">
     <a href="solicitar-turno.php" class="btn btn-primary">Solicitar nuevo turno</a>
   </section>
