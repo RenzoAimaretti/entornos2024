@@ -36,7 +36,7 @@ session_start();
     <h3>Asesoramiento comercial</h3>
 
     <!-- Bloques clicables -->
-    <div class="row mt-4">
+    <div class="row mt-4 mb-4">
       <div class="col-md-6">
         <a href="https://wa.me/5493412754750" class="btn btn-success btn-block">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/640px-WhatsApp.svg.png"
@@ -53,13 +53,11 @@ session_start();
     </div>
   </div>
 
-  <!-- Pie de Página -->
-  <footer class="bg-light text-center text-lg-start mt-5">
-    <div class="container p-4">
-      <p>Teléfono de contacto: 115673346</p>
-      <p>Mail: sananton24@gmail.com</p>
+  <section class="bg-green text-white py-2 text-center">
+    <div class="container">
+      <p class="mb-0">Teléfono de contacto: 115673346 | Mail: sananton24@gmail.com</p>
     </div>
-  </footer>
+  </section>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
