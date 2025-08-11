@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 if (!isset($_SESSION['usuario_id'])) {
   header('Location: iniciar-sesion.php');
   exit();
@@ -22,33 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
   $hora_turno = $_POST['hora_turno'];
   $id_mascota = $_POST['id_mascota'];
   $id_serv = $_POST['id_serv'];
-  $id_horario = $_POST['id_horario']; // Nuevo: Obtenemos el ID del horario
+  $id_horario = $_POST['id_horario'];
+  $modalidad = $_POST['modalidad']; // Capturamos la modalidad
 
   $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
 
-  // Iniciar una transacción para asegurar que ambas operaciones se completen o ninguna
   $conn->begin_transaction();
   $turnoExitoso = false;
 
   try {
-    // 1. Insertar el nuevo turno en la tabla 'atenciones'
-    $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) 
-                      VALUES (?, ?, ?, ?, NULL)";
+    $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
+                  VALUES (?, ?, ?, ?, ?)";
     $stmtInsert = $conn->prepare($sqlInsert);
-    $stmtInsert->bind_param("iiis", $id_mascota, $id_serv, $id_pro, $fecha_datetime);
+    $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
     $stmtInsert->execute();
 
-    // 2. Actualizar el estado 'ocupado' en la tabla 'profesionales_horarios'
-    $sqlUpdate = "UPDATE profesionales_horarios SET ocupado = 1 WHERE id_pro = ? AND id_horario = ? AND fecha = ?";
+    $sqlUpdate = "UPDATE profesionales_horarios SET ocupado = 1 
+                  WHERE id_pro = ? AND id_horario = ? AND fecha = ?";
     $stmtUpdate = $conn->prepare($sqlUpdate);
     $stmtUpdate->bind_param("iis", $id_pro, $id_horario, $fecha_turno);
     $stmtUpdate->execute();
 
-    // Si ambas operaciones fueron exitosas, confirmar la transacción
     $conn->commit();
     $turnoExitoso = true;
   } catch (mysqli_sql_exception $e) {
-    // Si algo falla, revertir la transacción
     $conn->rollback();
     echo "<div class='alert alert-danger'>Error al registrar el turno: {$e->getMessage()}</div>";
   }
@@ -62,29 +60,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
 }
 
 // --- Consultas para cargar datos ---
-$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad 
-        FROM profesionales 
-        INNER JOIN usuarios ON profesionales.id = usuarios.id 
+$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad
+        FROM profesionales
+        INNER JOIN usuarios ON profesionales.id = usuarios.id
         INNER JOIN especialidad ON profesionales.id_esp = especialidad.id";
 $result = $conn->query($sql);
 $profesionales = $result->fetch_all(MYSQLI_ASSOC);
 
-// Consulta de horarios, ahora obteniendo 'id_horario'
 $horariosPorProfesional = [];
-$sqlHorarios = "SELECT 
-    ph.id_pro, 
-    ph.fecha, 
-    ph.id_horario,
-    h.hora 
-FROM profesionales_horarios ph
-INNER JOIN horarios_turnos h ON ph.id_horario = h.id
-WHERE ph.ocupado = 0"; // Solo mostramos los horarios que no están ocupados
+$sqlHorarios = "SELECT ph.id_pro, ph.fecha, ph.id_horario, h.hora
+                FROM profesionales_horarios ph
+                INNER JOIN horarios_turnos h ON ph.id_horario = h.id
+                WHERE ph.ocupado = 0";
 $resultHorarios = $conn->query($sqlHorarios);
 while ($row = $resultHorarios->fetch_assoc()) {
   $horariosPorProfesional[$row['id_pro']][] = [
     'fecha' => $row['fecha'],
     'hora' => $row['hora'],
-    'id_horario' => $row['id_horario'] // Nuevo: Guardamos el ID del horario
+    'id_horario' => $row['id_horario']
   ];
 }
 
@@ -151,15 +144,11 @@ $conn->close();
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="horariosModalLabel">Horarios disponibles de
-                  <?= htmlspecialchars($profesional['nombre']) ?>
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title">Horarios disponibles de <?= htmlspecialchars($profesional['nombre']) ?></h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
               </div>
               <div class="modal-body">
-                <?php if (isset($horariosPorProfesional[$profesional['id']]) && !empty($horariosPorProfesional[$profesional['id']])): ?>
+                <?php if (isset($horariosPorProfesional[$profesional['id']])): ?>
                   <ul class="list-group">
                     <?php foreach ($horariosPorProfesional[$profesional['id']] as $horario): ?>
                       <a href="#" class="selectable-hour" data-profesional-id="<?= $profesional['id'] ?>"
@@ -175,7 +164,7 @@ $conn->close();
                     <?php endforeach; ?>
                   </ul>
                 <?php else: ?>
-                  <div class="alert alert-warning">No hay horarios disponibles para este profesional.</div>
+                  <div class="alert alert-warning">No hay horarios disponibles.</div>
                 <?php endif; ?>
               </div>
               <div class="modal-footer">
@@ -188,15 +177,12 @@ $conn->close();
     </div>
   </div>
 
-  <div class="modal fade" id="confirmacionModal" tabindex="-1" role="dialog" aria-labelledby="confirmacionModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="confirmacionModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="confirmacionModalLabel">Confirmar Turno</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <h5 class="modal-title">Confirmar Turno</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
         </div>
         <div class="modal-body">
           <h5>Resumen del Turno</h5>
@@ -210,6 +196,7 @@ $conn->close();
             <input type="hidden" name="fecha_turno" id="form-fecha">
             <input type="hidden" name="hora_turno" id="form-hora">
             <input type="hidden" name="id_horario" id="form-horario-id">
+
             <div class="form-group">
               <label for="id_mascota">Selecciona tu mascota:</label>
               <select class="form-control" name="id_mascota" required>
@@ -218,17 +205,26 @@ $conn->close();
                 <?php endforeach; ?>
               </select>
             </div>
+
             <div class="form-group">
               <label for="id_serv">Selecciona el servicio:</label>
               <select class="form-control" name="id_serv" id="id_serv" required>
                 <option value="">Selecciona un servicio</option>
                 <?php foreach ($servicios as $s): ?>
-                  <option value="<?= $s['id'] ?>" data-precio="<?= $s['precio'] ?>">
-                    <?= $s['nombre'] ?>
-                  </option>
+                  <option value="<?= $s['id'] ?>" data-precio="<?= $s['precio'] ?>"><?= $s['nombre'] ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
+
+            <div class="form-group">
+              <label for="modalidad">Selecciona la modalidad de la consulta:</label>
+              <select class="form-control" name="modalidad" id="modalidad" required>
+                <option value="">Selecciona una modalidad</option>
+                <option value="Presencial">Presencial</option>
+                <option value="A domicilio">A domicilio</option>
+              </select>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-block">Confirmar Turno</button>
           </form>
         </div>
@@ -241,35 +237,23 @@ $conn->close();
 
   <script>
     $(document).ready(function () {
-      // Manejador para el clic en los horarios
       $('.selectable-hour').on('click', function (e) {
         e.preventDefault();
         $(this).closest('.modal').modal('hide');
 
-        const profesionalId = $(this).data('profesional-id');
-        const profesionalNombre = $(this).data('profesional-nombre');
-        const fecha = $(this).data('fecha');
-        const hora = $(this).data('hora');
-        const horarioId = $(this).data('horario-id'); // Nuevo: obtenemos el ID del horario
+        $('#summary-profesional').text($(this).data('profesional-nombre'));
+        $('#summary-fecha').text($(this).data('fecha'));
+        $('#summary-hora').text($(this).data('hora'));
 
-        $('#summary-profesional').text(profesionalNombre);
-        $('#summary-fecha').text(fecha);
-        $('#summary-hora').text(hora);
-
-        $('#form-profesional-id').val(profesionalId);
-        $('#form-fecha').val(fecha);
-        $('#form-hora').val(hora);
-        $('#form-horario-id').val(horarioId); // Nuevo: pasamos el ID del horario al formulario
+        $('#form-profesional-id').val($(this).data('profesional-id'));
+        $('#form-fecha').val($(this).data('fecha'));
+        $('#form-hora').val($(this).data('hora'));
+        $('#form-horario-id').val($(this).data('horario-id'));
       });
 
-      // Manejador para el cambio en el select de servicios
       $('#id_serv').on('change', function () {
         const precio = $(this).find(':selected').data('precio');
-        if (precio) {
-          $('#summary-precio').text(`$${precio}`);
-        } else {
-          $('#summary-precio').text('');
-        }
+        $('#summary-precio').text(precio ? `$${precio}` : '');
       });
     });
   </script>

@@ -18,7 +18,8 @@ if ($conn->connect_error) {
 $usuario_id = $_SESSION['usuario_id'];
 
 // Obtener los turnos del usuario
-$sql = "SELECT atenciones.fecha, servicios.nombre AS servicio, usuarios.nombre AS profesional
+$sql = "SELECT atenciones.fecha, servicios.nombre AS servicio, usuarios.nombre AS profesional, mascotas.nombre AS mascota
+
         FROM atenciones
         INNER JOIN servicios ON atenciones.id_serv = servicios.id
         INNER JOIN profesionales ON atenciones.id_pro = profesionales.id
@@ -66,6 +67,7 @@ $conn->close();
           <li class="list-group-item">
             <h5><?php echo $turno['servicio']; ?></h5>
             <p>Profesional: <?php echo $turno['profesional']; ?></p>
+            <p>Mascota: <?php echo $turno['mascota']; ?></p>
             <p>Fecha: <?php echo date('d-m-Y H:i', strtotime($turno['fecha'])); ?></p>
           </li>
         <?php endforeach; ?>
