@@ -87,22 +87,22 @@ $result = $conn->query($query);
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-          // echo "<ul class='list-group'>";
-          // while ($row = $result->fetch_assoc()) {
-          //   echo "<li class='list-group-item'>";
-          //   echo "<h5>" . $row['nombre'] . "</h5>";
-          //   if ($row['foto']) {
-          //     echo "<img src='" . $row['foto'] . "' alt='" . $row['nombre'] . "' class='img-fluid' style='max-width: 100px;'>";
-          //   }
-          //   echo "<p>Raza: " . $row['raza'] . "</p>";
-          //   echo "<p>Fecha de Nacimiento: " . $row['fecha_nac'] . "</p>";
-          //   echo "<form action='eliminar-mascota.php' method='POST' style='display:inline;' onsubmit='return confirmarEliminacion()'>";
-          //   echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
-          //   echo "<button type='submit' class='btn btn-danger btn-sm'>Eliminar</button>";
-          //   echo "</form>";
-          //   echo "</li>";
-          // }
-          // echo "</ul>";
+          echo "<ul class='list-group'>";
+          while ($row = $result->fetch_assoc()) {
+            echo "<li class='list-group-item'>";
+            echo "<h5>" . $row['nombre'] . "</h5>";
+            if ($row['foto']) {
+              echo "<img src='" . $row['foto'] . "' alt='" . $row['nombre'] . "' class='img-fluid' style='max-width: 100px;'>";
+            }
+            echo "<p>Raza: " . $row['raza'] . "</p>";
+            echo "<p>Fecha de Nacimiento: " . $row['fecha_nac'] . "</p>";
+            echo "<form action='eliminar-mascota.php' method='POST' style='display:inline;' onsubmit='return confirmarEliminacion()'>";
+            echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
+            echo "<button type='submit' class='btn btn-danger btn-sm'>Eliminar</button>";
+            echo "</form>";
+            echo "</li>";
+          }
+          echo "</ul>";
         } else {
           echo "<p>No tienes mascotas registradas.</p>";
         }
