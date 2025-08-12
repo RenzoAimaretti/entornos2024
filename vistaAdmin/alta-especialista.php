@@ -37,23 +37,23 @@
                 <form action="../shared/alta-especialista.php" method="POST">
                     <div class="form-group">
                         <label for="nombre">Nombre completo</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required >
+                        <input type="text" class="form-control" id="nombre" name="nombre" required placeholder='Nombre Apellido'>
                     </div>
                     <div class="form-group">
                         <label for="email">Email del especialista</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email" required placeholder='esp@gmail.com'>
                     </div>
                     <div class="form-group">
                         <label for="password">Contraseña</label>
-                        <input type="text" class="form-control" id="password" name="password" required>
+                        <input type="text" class="form-control" id="password" name="password" required placeholder='Esp123'>
                     </div>
                     <div class="form-group">
                         <label for="repassword">Repita la contraseña</label>
-                        <input type="text" class="form-control" id="repassword" name="repassword" required>
+                        <input type="text" class="form-control" id="repassword" name="repassword" required placeholder='Esp123'>
                     </div>
                     <div class="form-group">
                         <label for="tel">Teléfono de contacto</label>
-                        <input type="text" class="form-control" id="tel" name="tel" required>
+                        <input type="text" class="form-control" id="tel" name="tel" required placeholder='1234567890'>
                     </div>
                     <div class="form-group">
                         <label for="esp">Especialidad</label>
@@ -66,6 +66,43 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <!-- Dias de atencion -->
+                    <div class="form-group">
+                        <label>Días de atención y horarios</label>
+                        <div id="dias-container"></div>
+                        <button type="button" class="btn btn-info mt-2" id="add-dia-btn">Agregar día</button>
+                    </div>
+                    <script>
+                        document.getElementById('add-dia-btn').addEventListener('click', function() {
+                            const container = document.getElementById('dias-container');
+                            const index = container.children.length;
+                            const dias = ['Lun','Mar','Mie','Jue','Vie'];
+                            const div = document.createElement('div');
+                            div.className = 'form-row align-items-end mb-2';
+                            div.innerHTML = `
+                                <div class="col">
+                                    <select name="dias[${index}][dia]" class="form-control" required>
+                                        <option value="" disabled selected>Día</option>
+                                        ${dias.map(d => `<option value="${d}">${d}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <input type="time" name="dias[${index}][horaInicio]" class="form-control" required>
+                                </div>
+                                <div class="col">
+                                    <input type="time" name="dias[${index}][horaFin]" class="form-control" required>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-danger btn-sm remove-dia-btn">&times;</button>
+                                </div>
+                            `;
+                            container.appendChild(div);
+
+                            div.querySelector('.remove-dia-btn').onclick = function() {
+                                div.remove();
+                            };
+                        });
+                    </script>
                     <button type="submit" class="btn btn-primary">Registrar Especialista</button>
                 </form>
             </div>

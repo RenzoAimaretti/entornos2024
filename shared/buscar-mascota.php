@@ -12,7 +12,7 @@ $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $resultados = [];
 
 if (!empty($q)) {
-    $sql = "SELECT id, nombre FROM mascotas WHERE nombre LIKE CONCAT('%', ?, '%') LIMIT 10";
+    $sql = "SELECT id, nombre FROM mascotas WHERE nombre LIKE CONCAT('%', ?, '%') and fecha_mue IS NULL LIMIT 10";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $q);
     $stmt->execute();
