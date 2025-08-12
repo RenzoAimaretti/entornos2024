@@ -45,18 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Actualizar los días de atención
             if(!empty($dias) && is_array($dias)) {
                 // Insertar los nuevos horarios
+                
+                $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
+                    $deleteStmt = $conn->prepare($deleteQuery);
+                    $deleteStmt->bind_param("i", $_POST['id']);
+                    $deleteStmt->execute();
+                    $deleteStmt->close();
                 foreach ($dias as $dia) {
                     $diaSem = $dia['dia'];
                     $horaIni = $dia['horaInicio'];
                     $horaFin = $dia['horaFin'];
                     //Para facilitar el manejo, se eliminan todos los horarios previos y se insertan los nuevos
                     // Podria optimizar para no eliminar si no hay cambios
-                    $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
-                    $deleteStmt = $conn->prepare($deleteQuery);
-                    $deleteStmt->bind_param("i", $_POST['id']);
-                    $deleteStmt->execute();
-                    $deleteStmt->close();
-
                     $insertQuery = "INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES (?, ?, ?, ?)";
                     $insertStmt = $conn->prepare($insertQuery);
                     $insertStmt->bind_param("isss", $_POST['id'], $diaSem, $horaIni, $horaFin);
