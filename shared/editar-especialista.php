@@ -33,6 +33,7 @@ if(isset($_POST['id'])){
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $especialidad = $_POST['especialidad'];
     $telefono = $_POST['telefono'];
+    $dias = $_POST['dias'];
 
     // Validar los datos
     if (!empty($especialidad) && !empty($telefono)) {
@@ -41,6 +42,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("isi", $especialidad, $telefono, $_POST['id']);
 
         if ($stmt->execute()) {
+            // Actualizar los días de atención
+            if(!empty($dias) && is_array($dias)) {
+                // Insertar los nuevos horarios
+                foreach ($dias as $dia) {
+                    $diaSem = $dia['dia'];
+                    $horaIni = $dia['horaInicio'];
+                    $horaFin = $dia['horaFin'];
+                    //Para facilitar el manejo, se eliminan todos los horarios previos y se insertan los nuevos
+                    // Podria optimizar para no eliminar si no hay cambios
+                    $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
+                    $deleteStmt = $conn->prepare($deleteQuery);
+                    $deleteStmt->bind_param("i", $_POST['id']);
+                    $deleteStmt->execute();
+                    $deleteStmt->close();
+
+                    $insertQuery = "INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES (?, ?, ?, ?)";
+                    $insertStmt = $conn->prepare($insertQuery);
+                    $insertStmt->bind_param("isss", $_POST['id'], $diaSem, $horaIni, $horaFin);
+                    $insertStmt->execute();
+                    $insertStmt->close();
+                }
+            }else {
+                // Si no se proporcionan días, eliminar todos los horarios
+                $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
+                $deleteStmt = $conn->prepare($deleteQuery);
+                $deleteStmt->bind_param("i", $_POST['id']);
+                $deleteStmt->execute();
+                $deleteStmt->close();
+            }
             // Redirigir a la página anterior
             // Redirigir usando POST mediante un formulario autoenviado
             echo '<form id="redirigir" action="' . htmlspecialchars($_SERVER['HTTP_REFERER']) . '" method="post">';
@@ -51,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo "Error al actualizar el usuario: " . $stmt->error;
         }
+        
         $stmt->close();
     } else {
         echo "Por favor, complete todos los campos correctamente.";

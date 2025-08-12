@@ -20,16 +20,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     $password=$_POST['password'];
     $repassword=$_POST['repassword'];
     $dias = $_POST['dias'];
-
-
-    echo "<script>console.log('Datos recibidos del formulario:');</script>";
-    echo "<script>console.log('Nombre: " . addslashes($nombre) . "');</script>";
-    echo "<script>console.log('Email: " . addslashes($email) . "');</script>";
-    echo "<script>console.log('Teléfono: " . addslashes($telefono) . "');</script>";
-    echo "<script>console.log('Especialidad: " . addslashes($especialidad) . "');</script>";
-    echo "<script>console.log('Password: " . addslashes($password) . "');</script>";
-    echo "<script>console.log('Repassword: " . addslashes($repassword) . "');</script>";
-    echo "<script>console.log('Días: " . json_encode($dias) . "');</script>";
+    // Validar que las contraseñas coincidan
     if($password!=$repassword){
         echo "Las contraseñas no coinciden";
         echo $password;
