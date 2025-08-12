@@ -145,9 +145,12 @@ session_start();
     function verDetalles(id) {
         window.location.href = '../shared/detalle-atencionAP.php?id=' + id;
     }
+    //Busqueda de datos para autocompletar
 
     // Función genérica de autocomplete
     function buscar(tipo, texto) {
+        if (tipo === "especialista" || tipo==="servicio") return; // Ya manejado por la función específica
+
         if (texto.length < 2) {
             $("#" + tipo + "_sugerencias").hide();
             return;
@@ -172,16 +175,117 @@ session_start();
             }
         });
     }
+    
+    //busquedas especificas
+    function buscarEspecialista(texto, fecha, hora) {
+        if (texto.length < 2) {
+            $("#especialista_sugerencias").hide();
+            return;
+        }
 
+        $.getJSON("../shared/buscar-especialista.php", { 
+            q: texto, 
+            fecha: fecha, 
+            hora: hora 
+        }, function(data) {
+            let contenedor = $("#especialista_sugerencias");
+            contenedor.empty();
+
+            if (data.length > 0) {
+                data.forEach(function(item) {
+                    contenedor.append("<div data-id='" + item.id + "'>" + item.nombre + "</div>");
+                });
+                contenedor.show();
+
+                contenedor.find("div").on("click", function() {
+                    $("#especialista").val($(this).text());
+                    $("#especialista_id").val($(this).data("id"));
+                    contenedor.hide();
+                });
+            } else {
+                contenedor.append("<div class='text-danger'>No hay especialistas disponibles en este horario</div>");
+                contenedor.show();
+            }
+        });
+    }
+
+    function buscarServicioPorEspecialista(texto, especialistaId) {
+        if (texto.length < 2) {
+            $("#servicio_sugerencias").hide();
+            return;
+        }
+
+        $.getJSON("../shared/buscar-servicio.php", { 
+            q: texto, 
+            especialista_id: especialistaId 
+        }, function(data) {
+            let contenedor = $("#servicio_sugerencias");
+            contenedor.empty();
+
+            if (data.length > 0) {
+                data.forEach(function(item) {
+                    contenedor.append("<div data-id='" + item.id + "'>" + item.nombre + "</div>");
+                });
+                contenedor.show();
+
+                contenedor.find("div").on("click", function() {
+                    $("#servicio").val($(this).text());
+                    $("#servicio_id").val($(this).data("id"));
+                    contenedor.hide();
+                });
+            } else {
+                contenedor.append("<div class='text-danger'>No hay servicios disponibles para este especialista</div>");
+                contenedor.show();
+            }
+        });
+    }
+
+    //Limpieza de campos dependientes
+    $("#fecha, #hora").on("change", function() {
+        // Limpiar el campo especialista y sugerencias al cambiar la fecha u hora
+        $("#especialista").val('');
+        $("#especialista_id").val('');
+        $("#especialista_sugerencias").hide();
+        // Limpiar sugerencias de servicio
+        $("#servicio").val('');
+        $("#servicio_id").val('');
+        $("#servicio_sugerencias").hide();
+    });
+
+    $("#especialista").on("change", function() {
+        // Limpiar el campo servicio y sugerencias al cambiar el especialista
+        $("#servicio").val('');
+        $("#servicio_id").val('');
+        $("#servicio_sugerencias").hide();
+    });
+
+    // Eventos de input para autocompletar
     $("#mascota").on("input", function() {
         buscar("mascota", $(this).val());
     });
 
     $("#especialista").on("input", function() {
-        buscar("especialista", $(this).val());
+        // Obtener fecha y hora seleccionadas
+        const fecha = $("#fecha").val();
+        const hora = $("#hora").val();
+        
+        if (fecha && hora) {
+            buscarEspecialista($(this).val(), fecha, hora);
+        } else {
+            alert("Primero seleccione fecha y hora");
+            $(this).val('');
+        }
     });
     $("#servicio").on("input", function() {
-        buscar("servicio", $(this).val());
+        // Verificar que haya un especialista seleccionado
+        const especialistaId = $("#especialista_id").val();
+        
+        if (especialistaId) {
+            buscarServicioPorEspecialista($(this).val(), especialistaId);
+        } else {
+            alert("Primero seleccione un especialista");
+            $(this).val('');
+        }
     });
     </script>
 
