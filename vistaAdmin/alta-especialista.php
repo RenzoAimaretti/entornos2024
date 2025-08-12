@@ -87,10 +87,36 @@
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <input type="time" name="dias[${index}][horaInicio]" class="form-control" required>
+                                    <select name="dias[${index}][horaInicio]" class="form-control hora-inicio" required>
+                                        <option value="" disabled selected>Hora inicio</option>
+                                        <option value="08:00">08:00</option>
+                                        <option value="09:00">09:00</option>
+                                        <option value="10:00">10:00</option>
+                                        <option value="11:00">11:00</option>
+                                        <option value="12:00">12:00</option>
+                                        <option value="13:00">13:00</option>
+                                        <option value="14:00">14:00</option>
+                                        <option value="15:00">15:00</option>
+                                        <option value="16:00">16:00</option>
+                                        <option value="17:00">17:00</option>
+                                        <option value="18:00">18:00</option>
+                                    </select>
                                 </div>
                                 <div class="col">
-                                    <input type="time" name="dias[${index}][horaFin]" class="form-control" required>
+                                    <select name="dias[${index}][horaFin]" class="form-control hora-fin" required>
+                                        <option value="" disabled selected>Hora fin</option>
+                                        <option value="09:00">09:00</option>
+                                        <option value="10:00">10:00</option>
+                                        <option value="11:00">11:00</option>
+                                        <option value="12:00">12:00</option>
+                                        <option value="13:00">13:00</option>
+                                        <option value="14:00">14:00</option>
+                                        <option value="15:00">15:00</option>
+                                        <option value="16:00">16:00</option>
+                                        <option value="17:00">17:00</option>
+                                        <option value="18:00">18:00</option>
+                                        <option value="19:00">19:00</option>
+                                    </select>
                                 </div>
                                 <div class="col-auto">
                                     <button type="button" class="btn btn-danger btn-sm remove-dia-btn">&times;</button>
@@ -101,7 +127,23 @@
                             div.querySelector('.remove-dia-btn').onclick = function() {
                                 div.remove();
                             };
+
+                            // Validar hora fin > hora inicio
+                            const horaInicio = div.querySelector('.hora-inicio');
+                            const horaFin = div.querySelector('.hora-fin');
+
+                            function validarHoras() {
+                                if (horaInicio.value && horaFin.value && horaFin.value <= horaInicio.value) {
+                                    horaFin.setCustomValidity('La hora de fin debe ser mayor que la hora de inicio');
+                                } else {
+                                    horaFin.setCustomValidity('');
+                                }
+                            }
+
+                            horaInicio.addEventListener('change', validarHoras);
+                            horaFin.addEventListener('change', validarHoras);
                         });
+                    </script>
                     </script>
                     <button type="submit" class="btn btn-primary">Registrar Especialista</button>
                 </form>
