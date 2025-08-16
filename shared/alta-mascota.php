@@ -33,5 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     echo "Mascota registrada con éxito: $nombre_mascota";
+    $stmt->close();
+    $conn->close();
+
+    $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'mis-mascotas.php';
+    header('Location: ' . $referer);
+    exit();
 }
+
 ?>
