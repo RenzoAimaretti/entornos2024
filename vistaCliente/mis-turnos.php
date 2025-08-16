@@ -105,7 +105,7 @@ $conn->close();
     <?php else: ?>
       <p>No hay turnos pendientes.</p>
     <?php endif; ?>
-    <a href="solicitar-turno-profesional.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
+    <a href="solicitar-turno.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
   </div>
 
   <!-- Modal de confirmación -->
