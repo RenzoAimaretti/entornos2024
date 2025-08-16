@@ -39,6 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'mis-mascotas.php';
     header('Location: ' . $referer);
     exit();
-}   
+}
 
 ?>

@@ -5,26 +5,78 @@ if (!isset($_SESSION['usuario_id'])) {
   exit();
 }
 
-// Conexión a la base de datos (ajusta los parámetros según tu configuración)
-$conn = new mysqli('localhost', 'root', '', 'veterinaria');
+require __DIR__ . '/../vendor/autoload.php';
 
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
-  die("Conexión fallida: " . $conn->connect_error);
+  die("Error de conexión: " . $conn->connect_error);
 }
 
-// Obtener los profesionales y sus especialidades
-$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad 
-        FROM profesionales 
-        INNER JOIN usuarios ON profesionales.id = usuarios.id 
+$turnoExitoso = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
+  $id_pro = $_POST['profesional_id'];
+  $fecha_turno = $_POST['fecha_turno'];
+  $hora_turno = $_POST['hora_turno'];
+  $id_mascota = $_POST['id_mascota'];
+  $id_serv = $_POST['id_serv'];
+  $modalidad = $_POST['modalidad'];
+
+  $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
+
+  $conn->begin_transaction();
+
+  try {
+    $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
+                      VALUES (?, ?, ?, ?, ?)";
+    $stmtInsert = $conn->prepare($sqlInsert);
+    $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
+    $stmtInsert->execute();
+
+    $conn->commit();
+    $_SESSION['turno_exitoso'] = true;
+  } catch (mysqli_sql_exception $e) {
+    $conn->rollback();
+    echo "<div class='alert alert-danger'>Error al registrar el turno: {$e->getMessage()}</div>";
+  }
+
+  if (isset($stmtInsert))
+    $stmtInsert->close();
+}
+
+if (isset($_SESSION['turno_exitoso']) && $_SESSION['turno_exitoso']) {
+  $turnoExitoso = true;
+  unset($_SESSION['turno_exitoso']);
+}
+
+$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad, especialidad.id AS id_esp
+        FROM profesionales
+        INNER JOIN usuarios ON profesionales.id = usuarios.id
         INNER JOIN especialidad ON profesionales.id_esp = especialidad.id";
 $result = $conn->query($sql);
+$profesionales = $result->fetch_all(MYSQLI_ASSOC);
 
-$profesionales = [];
-if ($result->num_rows > 0) {
-  while ($row = $result->fetch_assoc()) {
-    $profesionales[] = $row;
-  }
+$horariosPorProfesional = [];
+$sqlHorarios = "SELECT idPro, diaSem, horaIni, horaFin FROM profesionales_horarios";
+$resultHorarios = $conn->query($sqlHorarios);
+while ($row = $resultHorarios->fetch_assoc()) {
+  $horariosPorProfesional[$row['idPro']][] = $row;
 }
+
+$sqlMascotas = "SELECT id, nombre FROM mascotas WHERE id_cliente = ?";
+$stmtMasc = $conn->prepare($sqlMascotas);
+$stmtMasc->bind_param("i", $_SESSION['usuario_id']);
+$stmtMasc->execute();
+$resMasc = $stmtMasc->get_result();
+$mascotas = $resMasc->fetch_all(MYSQLI_ASSOC);
+$stmtMasc->close();
+
+$sqlServicios = "SELECT id, nombre, precio, id_esp FROM servicios";
+$resServ = $conn->query($sqlServicios);
+$servicios = $resServ->fetch_all(MYSQLI_ASSOC);
 
 $conn->close();
 ?>
@@ -34,283 +86,309 @@ $conn->close();
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solicitar Turno</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link href="styles.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    .card-profesional {
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
-        <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
-          alt="Logo" class="logo">
-        <span>Veterinaria San Antón</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link active" href="index.php">Inicio</a>
-          </li>
-          <?php if (isset($_SESSION['usuario_nombre'])): ?>
-            <li class="nav-item dropdown d-flex align-items-center">
-              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
-                class="mr-2">
-              <a class="nav-link dropdown-toggle" href="#" id="usuarioDropdown" role="button" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-                <?php echo $_SESSION['usuario_nombre']; ?>
-              </a>
-              <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
-                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
-                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
-                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
-              </div>
-            </li>
-          <?php else: ?>
-            <li class="nav-item">
-              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="registrarse.php">Registrarse</a>
-            </li>
-          <?php endif; ?>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false">
-              Secciones
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
-              <a class="dropdown-item" href="nosotros.php">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.php">Contacto</a>
-              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
-              <?php endif; ?>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <?php require_once '../shared/navbar.php'; ?>
 
   <div class="container mt-5">
-    <h1>Solicitar Turno</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Seleccionar Profesional y Horario</h1>
+      <a href="solicitar-turno.php" class="btn btn-secondary">← Volver</a>
+    </div>
+
+    <div class="form-group mb-4">
+      <input type="text" id="filtroProfesionales" class="form-control"
+        placeholder="Buscar por nombre del profesional...">
+    </div>
+
     <div class="row">
-      <div class="col-md-6">
-        <h2>Seleccionar Profesional</h2>
-        <form>
-          <div class="form-group">
-            <label for="profesional">Profesional:</label>
-            <select class="form-control" id="profesional" name="profesional" required>
-              <?php foreach ($profesionales as $profesional): ?>
-                <option value="<?php echo $profesional['id']; ?>">
-                  <?php echo $profesional['nombre'] . ' - ' . $profesional['especialidad']; ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
+      <?php foreach ($profesionales as $profesional): ?>
+        <div class="col-md-6 col-lg-4">
+          <div class="card card-profesional">
+            <div class="card-body">
+              <h5 class="card-title"><?= htmlspecialchars($profesional['nombre']) ?></h5>
+              <p class="card-text">Especialidad: <?= htmlspecialchars($profesional['especialidad']) ?></p>
+              <hr>
+              <h6>Días y Horarios de atención:</h6>
+              <ul class="list-group list-group-flush mb-3">
+                <?php
+                $diasAtencion = $horariosPorProfesional[$profesional['id']] ?? [];
+                if (!empty($diasAtencion)): ?>
+                  <?php foreach ($diasAtencion as $horario): ?>
+                    <li class="list-group-item">
+                      <?= $horario['diaSem'] ?>: de <?= $horario['horaIni'] ?> a <?= $horario['horaFin'] ?>
+                    </li>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <li class="list-group-item text-muted">Sin horarios asignados.</li>
+                <?php endif; ?>
+              </ul>
+
+              <hr>
+              <div class="text-center">
+                <button type="button" class="btn btn-info btn-block mostrar-formulario-btn">Sacar Turno</button>
+              </div>
+
+              <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
+                data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
+                data-id-esp="<?= $profesional['id_esp'] ?>" style="display:none;">
+                <div class="form-group">
+                  <label for="fecha-<?= $profesional['id'] ?>">Fecha del turno:</label>
+                  <input type="date" class="form-control" id="fecha-<?= $profesional['id'] ?>" name="fecha_turno"
+                    min="<?= date('Y-m-d') ?>" required>
+                </div>
+                <div class="form-group">
+                  <label for="hora-<?= $profesional['id'] ?>">Hora del turno:</label>
+                  <select class="form-control" id="hora-<?= $profesional['id'] ?>" name="hora_turno" required disabled>
+                    <option value="" disabled selected>Seleccione hora</option>
+                  </select>
+                  <small id="horaError-<?= $profesional['id'] ?>" class="form-text text-danger"
+                    style="display:none;"></small>
+                </div>
+                <button type="button" class="btn btn-primary btn-block sacar-turno-btn" disabled>Confirmar Turno</button>
+                <button type="button" class="btn btn-secondary btn-block mt-2 cancelar-turno-btn">Cancelar</button>
+              </form>
+            </div>
           </div>
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calendarioModal">Seleccionar
-            Fecha</button>
-        </form>
-      </div>
+        </div>
+      <?php endforeach; ?>
     </div>
   </div>
 
-  <!-- Modal de Calendario -->
-  <div class="modal fade" id="calendarioModal" tabindex="-1" role="dialog" aria-labelledby="calendarioModalLabel"
+  <div class="modal fade" id="confirmacionModal" tabindex="-1" role="dialog" aria-labelledby="confirmacionModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="calendarioModalLabel">Seleccionar Fecha</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="calendarioContent">
-          <!-- El contenido del calendario se cargará aquí -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Horarios -->
-  <div class="modal fade" id="horariosDiaModal" tabindex="-1" role="dialog" aria-labelledby="horariosDiaModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="horariosDiaModalLabel">Seleccionar Horario</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="horariosDiaContent">
-          <!-- El contenido de los horarios se cargará aquí -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para confirmar turno -->
-  <div class="modal fade" id="confirmarTurnoModal" tabindex="-1" role="dialog"
-    aria-labelledby="confirmarTurnoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="confirmarTurnoModalLabel">Confirme el turno</h5>
+          <h5 class="modal-title" id="confirmacionModalLabel">Confirmar Turno</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <form id="confirmarTurnoForm">
+          <h5>Resumen del Turno</h5>
+          <p><strong>Profesional:</strong> <span id="summary-profesional"></span></p>
+          <p><strong>Fecha:</strong> <span id="summary-fecha"></span></p>
+          <p><strong>Hora:</strong> <span id="summary-hora"></span></p>
+          <p><strong>Precio:</strong> <span id="summary-precio"></span></p>
+
+          <form method="POST" id="confirmacionForm">
+            <input type="hidden" name="profesional_id" id="form-profesional-id">
+            <input type="hidden" name="fecha_turno" id="form-fecha">
+            <input type="hidden" name="hora_turno" id="form-hora">
+            <input type="hidden" name="id_serv" id="form-service-id">
+
             <div class="form-group">
-              <label for="profesional">Profesional</label>
-              <input type="text" class="form-control" id="profesional" readonly>
-            </div>
-            <div class="form-group">
-              <label for="fecha">Fecha</label>
-              <input type="text" class="form-control" id="fecha" readonly>
-            </div>
-            <div class="form-group">
-              <label for="hora">Hora</label>
-              <input type="text" class="form-control" id="hora" readonly>
-            </div>
-            <div class="form-group">
-              <label for="correo">Ingrese su correo electrónico</label>
-              <input type="email" class="form-control" id="correo" required>
-            </div>
-            <div class="form-group">
-              <label for="telefono">Ingrese su teléfono</label>
-              <input type="text" class="form-control" id="telefono" required>
-            </div>
-            <div class="form-group">
-              <label for="celular">Ingrese su celular (10 dígitos y sólo números)</label>
-              <input type="text" class="form-control" id="celular" required>
-            </div>
-            <div class="form-group">
-              <label for="icalendar">¿Recibir iCalendar por correo electrónico?</label>
-              <select class="form-control" id="icalendar">
-                <option value="si">Sí</option>
-                <option value="no">No</option>
+              <label for="id_mascota">Selecciona tu mascota:</label>
+              <select class="form-control" name="id_mascota" required>
+                <?php if (!empty($mascotas)): ?>
+                  <?php foreach ($mascotas as $m): ?>
+                    <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <option value="" disabled>No tienes mascotas registradas.</option>
+                <?php endif; ?>
               </select>
             </div>
-            <button type="submit" class="btn btn-primary">Confirmar</button>
+            <div class="form-group">
+              <label for="id_serv">Selecciona el servicio:</label>
+              <select class="form-control" name="id_serv" id="id_serv_modal" required>
+                <option value="">Selecciona un servicio</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modalidad:</label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="modalidad" id="tipoPresencial" value="Presencial"
+                  checked>
+                <label class="form-check-label" for="tipoPresencial">Presencial</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="modalidad" id="tipoDomicilio" value="A domicilio">
+                <label class="form-check-label" for="tipoDomicilio">A domicilio</label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Confirmar Turno</button>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <div class="modal fade" id="turnoExitosoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">¡Turno Registrado con Éxito!</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p>Tu turno ha sido agendado exitosamente.</p>
+        </div>
+        <div class="modal-footer">
+          <a href="mis-turnos.php" class="btn btn-success">Ver mis turnos</a>
+          <a href="solicitar-turno-profesional.php" class="btn btn-secondary">Sacar otro turno</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    var profesionalId;
-    var mesActual = new Date().getMonth() + 1; // Mes actual
-    var anioActual = new Date().getFullYear(); // Año actual
+    $(document).ready(function () {
+      const diasSemana = { 'Lun': 1, 'Mar': 2, 'Mie': 3, 'Jue': 4, 'Vie': 5, 'Sab': 6, 'Dom': 0 };
+      const horariosProfesionales = <?php echo json_encode($horariosPorProfesional); ?>;
+      const servicios = <?php echo json_encode($servicios); ?>;
+      const profesionales = <?php echo json_encode($profesionales); ?>;
 
-    // Cargar calendario en el modal
-    $('#calendarioModal').on('show.bs.modal', function (event) {
-      profesionalId = $('#profesional').val();
-      cargarCalendario(mesActual, anioActual);
-    });
+      const serviciosPorEspecialidad = {};
+      servicios.forEach(s => {
+        if (!serviciosPorEspecialidad[s.id_esp]) {
+          serviciosPorEspecialidad[s.id_esp] = [];
+        }
+        serviciosPorEspecialidad[s.id_esp].push(s);
+      });
 
-    // Cambiar mes
-    function cambiarMes(direccion) {
-      mesActual += direccion;
+      $('#filtroProfesionales').on('input', function () {
+        const searchTerm = $(this).val().toLowerCase();
+        $('.card-profesional').each(function () {
+          const nombrePro = $(this).find('.card-title').text().toLowerCase();
+          if (nombrePro.includes(searchTerm)) {
+            $(this).closest('.col-md-6').show();
+          } else {
+            $(this).closest('.col-md-6').hide();
+          }
+        });
+      });
 
-      if (mesActual < 1) {
-        mesActual = 12;
-        anioActual--;
-      } else if (mesActual > 12) {
-        mesActual = 1;
-        anioActual++;
+      $('.mostrar-formulario-btn').on('click', function () {
+        const cardBody = $(this).closest('.card-body');
+        const form = cardBody.find('.booking-form');
+        $(this).hide();
+        form.slideDown();
+      });
+
+      $('.cancelar-turno-btn').on('click', function () {
+        const cardBody = $(this).closest('.card-body');
+        const form = cardBody.find('.booking-form');
+        const mostrarBtn = cardBody.find('.mostrar-formulario-btn');
+
+        form.slideUp(function () {
+          mostrarBtn.show();
+          form.find('input[type="date"]').val('');
+          form.find('select[name="hora_turno"]').empty().prop('disabled', true).append('<option value="" disabled selected>Seleccione hora</option>');
+          form.find('.sacar-turno-btn').prop('disabled', true);
+          form.find('.form-text').hide();
+        });
+      });
+
+      $('.booking-form').on('change', 'input[type="date"]', function () {
+        const form = $(this).closest('.booking-form');
+        const proId = form.data('id-pro');
+        const fecha = $(this).val();
+        const horaSelect = form.find('select[name="hora_turno"]');
+        const sacarTurnoBtn = form.find('.sacar-turno-btn');
+        const errorSpan = form.find('.form-text');
+
+        horaSelect.prop('disabled', true).empty().append('<option value="" disabled selected>Seleccione hora</option>');
+        sacarTurnoBtn.prop('disabled', true);
+        errorSpan.hide().text('');
+
+        if (fecha) {
+          const fechaObj = new Date(fecha.replace(/-/g, '/'));
+          const diaSemanaNum = fechaObj.getDay();
+          const diaSemanaStr = Object.keys(diasSemana).find(key => diasSemana[key] === diaSemanaNum);
+
+          const horariosPro = horariosProfesionales[proId];
+          if (horariosPro) {
+            const horarioAtencion = horariosPro.find(h => h.diaSem === diaSemanaStr);
+            if (horarioAtencion) {
+              // AJAX call to get available slots
+              $.ajax({
+                url: 'verificar-turno-disponible.php',
+                method: 'POST',
+                dataType: 'json',
+                data: { id_pro: proId, fecha: fecha },
+                success: function (disponibles) {
+                  if (disponibles.length > 0) {
+                    disponibles.forEach(horaDisponible => {
+                      horaSelect.append(`<option value="${horaDisponible}">${horaDisponible.substring(0, 5)}</option>`);
+                    });
+                    horaSelect.prop('disabled', false);
+                  } else {
+                    errorSpan.text('No hay horarios disponibles para este día.').show();
+                  }
+                },
+                error: function () {
+                  errorSpan.text('Error al verificar los horarios disponibles.').show();
+                }
+              });
+            } else {
+              errorSpan.text('Este profesional no atiende el día seleccionado.').show();
+            }
+          } else {
+            errorSpan.text('Este profesional no tiene horarios asignados.').show();
+          }
+        }
+      });
+
+      $('.booking-form').on('change', 'select[name="hora_turno"]', function () {
+        const sacarTurnoBtn = $(this).closest('.booking-form').find('.sacar-turno-btn');
+        sacarTurnoBtn.prop('disabled', false);
+      });
+
+      $('.sacar-turno-btn').on('click', function () {
+        const form = $(this).closest('.booking-form');
+        const proId = form.data('id-pro');
+        const proNombre = form.data('pro-nombre');
+        const idEsp = form.data('id-esp');
+        const fecha = form.find('input[name="fecha_turno"]').val();
+        const hora = form.find('select[name="hora_turno"]').val();
+
+        $('#summary-profesional').text(proNombre);
+        $('#summary-fecha').text(fecha);
+        $('#summary-hora').text(hora);
+
+        $('#form-profesional-id').val(proId);
+        $('#form-fecha').val(fecha);
+        $('#form-hora').val(hora);
+
+        const serviciosFiltrados = serviciosPorEspecialidad[idEsp] || [];
+        const selectServicios = $('#id_serv_modal');
+        selectServicios.empty().append('<option value="">Selecciona un servicio</option>');
+
+        if (serviciosFiltrados.length > 0) {
+          serviciosFiltrados.forEach(s => {
+            selectServicios.append(`<option value="${s.id}" data-precio="${s.precio}">${s.nombre}</option>`);
+          });
+        }
+
+        $('#confirmacionModal').modal('show');
+      });
+
+      $('#id_serv_modal').on('change', function () {
+        const precio = $(this).find(':selected').data('precio');
+        $('#summary-precio').text(precio ? `$${precio}` : '');
+        $('#form-service-id').val($(this).val());
+      });
+
+      var turnoExitoso = <?php echo json_encode($turnoExitoso); ?>;
+      if (turnoExitoso) {
+        $('#turnoExitosoModal').modal('show');
       }
-
-      cargarCalendario(mesActual, anioActual);
-    }
-
-    // Cargar calendario
-    function cargarCalendario(mes, anio) {
-      $.ajax({
-        url: 'obtener-calendario.php',
-        method: 'GET',
-        data: { id: profesionalId, mes: mes, anio: anio },
-        success: function (response) {
-          $('#calendarioContent').html(response);
-        }
-      });
-    }
-
-    // Seleccionar día
-    function seleccionarDia(fecha) {
-      $('#calendarioModal').modal('hide');
-      $('#horariosDiaModal').modal('show');
-
-      $.ajax({
-        url: 'obtener-horarios-dia.php',
-        method: 'GET',
-        data: { id: profesionalId, fecha: fecha },
-        success: function (response) {
-          $('#horariosDiaContent').html(response);
-        }
-      });
-    }
-
-    // Seleccionar horario
-    function seleccionarHorario(hora) {
-      $('#horariosDiaModal').modal('hide');
-      $('#confirmarTurnoModal').modal('show');
-
-      // Obtener datos del profesional
-      var profesional = $('#profesional option:selected').text();
-
-      // Llenar los campos del modal de confirmación
-      $('#confirmarTurnoModal #profesional').val(profesional);
-      $('#confirmarTurnoModal #fecha').val(fechaSeleccionada);
-      $('#confirmarTurnoModal #hora').val(hora);
-    }
-
-    // Manejar la confirmación del turno
-    $('#confirmarTurnoForm').on('submit', function (event) {
-      event.preventDefault();
-
-      // Obtener los datos del formulario
-      var datos = {
-        profesional: $('#confirmarTurnoModal #profesional').val(),
-        fecha: $('#confirmarTurnoModal #fecha').val(),
-        hora: $('#confirmarTurnoModal #hora').val(),
-        correo: $('#confirmarTurnoModal #correo').val(),
-        telefono: $('#confirmarTurnoModal #telefono').val(),
-        celular: $('#confirmarTurnoModal #celular').val(),
-        icalendar: $('#confirmarTurnoModal #icalendar').val()
-      };
-
-      // Enviar los datos al servidor (puedes ajustar la URL y el método según tu configuración)
-      $.ajax({
-        url: 'confirmar-turno.php',
-        method: 'POST',
-        data: datos,
-        success: function (response) {
-          alert('Turno confirmado con éxito');
-          $('#confirmarTurnoModal').modal('hide');
-        },
-        error: function () {
-          alert('Error al confirmar el turno');
-        }
-      });
     });
   </script>
 </body>

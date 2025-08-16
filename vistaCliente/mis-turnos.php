@@ -5,24 +5,48 @@ if (!isset($_SESSION['usuario_id'])) {
   exit();
 }
 
-// Conexión a la base de datos (ajusta los parámetros según tu configuración)
-$conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
+require __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
-  die("Conexión fallida: " . $conn->connect_error);
+  die("Error de conexión: " . $conn->connect_error);
 }
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// Obtener los turnos del usuario
-$sql = "SELECT atenciones.fecha, servicios.nombre AS servicio, usuarios.nombre AS profesional
+// Lógica para determinar el filtro y el orden
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'upcoming';
+$sqlFilter = '';
+$sqlOrder = '';
+$activeUpcoming = '';
+$activeCompleted = '';
+
+$now = date('Y-m-d H:i:s');
+
+if ($filter === 'completed') {
+  $sqlFilter = "AND atenciones.fecha < '$now'";
+  $sqlOrder = "ORDER BY atenciones.fecha DESC";
+  $activeCompleted = 'active';
+} else { // 'upcoming' por defecto
+  $sqlFilter = "AND atenciones.fecha >= '$now'";
+  $sqlOrder = "ORDER BY atenciones.fecha ASC";
+  $activeUpcoming = 'active';
+}
+
+// Obtener los turnos del usuario con el filtro dinámico
+$sql = "SELECT atenciones.id, atenciones.fecha, servicios.nombre AS servicio, 
+               usuarios.nombre AS profesional, mascotas.nombre AS mascota
         FROM atenciones
         INNER JOIN servicios ON atenciones.id_serv = servicios.id
         INNER JOIN profesionales ON atenciones.id_pro = profesionales.id
         INNER JOIN usuarios ON profesionales.id = usuarios.id
         INNER JOIN mascotas ON atenciones.id_mascota = mascotas.id
-        WHERE mascotas.id_cliente = ?
-        ORDER BY atenciones.fecha DESC";
+        WHERE mascotas.id_cliente = ? $sqlFilter $sqlOrder";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $usuario_id);
 $stmt->execute();
@@ -38,7 +62,6 @@ if ($result->num_rows > 0) {
 $stmt->close();
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -51,86 +74,83 @@ $conn->close();
 </head>
 
 <body>
-  <!-- Navegación -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="index.php">
-        <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
-          alt="Logo" class="logo">
-        <span>Veterinaria San Antón</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link active" href="index.php">Inicio</a>
-          </li>
-          <?php if (isset($_SESSION['usuario_nombre'])): ?>
-            <li class="nav-item dropdown d-flex align-items-center">
-              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
-                class="mr-2">
-              <a class="nav-link dropdown-toggle" href="#" id="usuarioDropdown" role="button" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-                <?php echo $_SESSION['usuario_nombre']; ?>
-              </a>
-              <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
-                <a class="dropdown-item" href="mis-mascotas.php">Mis Mascotas</a>
-                <a class="dropdown-item" href="mis-turnos.php">Mis Turnos</a>
-                <a class="dropdown-item" href="logout.php">Cerrar sesión</a>
-              </div>
-            </li>
-          <?php else: ?>
-            <li class="nav-item">
-              <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="registrarse.php">Registrarse</a>
-            </li>
-          <?php endif; ?>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false">
-              Secciones
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="profesionales.php">Profesionales</a>
-              <a class="dropdown-item" href="nosotros.php">Nosotros</a>
-              <a class="dropdown-item" href="contactanos.php">Contacto</a>
-              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-especialistas.php">Especialistas</a>
-                <a class="dropdown-item" href="./vistaAdmin/gestionar-clientes.php">Gestionar clientes</a>
-              <?php endif; ?>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <?php require_once '../shared/navbar.php'; ?>
 
   <div class="container mt-5">
     <h1>Mis Turnos</h1>
+    <div class="btn-group mb-3" role="group" aria-label="Filtro de turnos">
+      <a href="mis-turnos.php?filter=upcoming" class="btn btn-outline-primary <?= $activeUpcoming ?>">Próximos
+        Turnos</a>
+      <a href="mis-turnos.php?filter=completed" class="btn btn-outline-primary <?= $activeCompleted ?>">Turnos
+        Completados</a>
+    </div>
+
     <?php if (count($turnos) > 0): ?>
       <ul class="list-group">
         <?php foreach ($turnos as $turno): ?>
           <li class="list-group-item">
-            <h5><?php echo $turno['servicio']; ?></h5>
-            <p>Profesional: <?php echo $turno['profesional']; ?></p>
+            <div class="d-flex justify-content-between">
+              <h5><?php echo htmlspecialchars($turno['servicio']); ?></h5>
+            </div>
+            <p>Profesional: <?php echo htmlspecialchars($turno['profesional']); ?></p>
+            <p>Mascota: <?php echo htmlspecialchars($turno['mascota']); ?></p>
             <p>Fecha: <?php echo date('d-m-Y H:i', strtotime($turno['fecha'])); ?></p>
+            <?php if ($filter === 'upcoming'): ?>
+              <button class="btn btn-danger btn-sm cancelar-turno" data-id="<?php echo $turno['id']; ?>">Cancelar
+                Turno</button>
+            <?php endif; ?>
           </li>
         <?php endforeach; ?>
       </ul>
     <?php else: ?>
       <p>No hay turnos pendientes.</p>
     <?php endif; ?>
-    <a href="solicitar-turno-profesional.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
+    <a href="solicitar-turno.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <!-- Modal de confirmación -->
+  <div class="modal fade" id="cancelacionModal" tabindex="-1" role="dialog" aria-labelledby="cancelacionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelacionModalLabel">Confirmar Cancelación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ¿Está seguro de que desea cancelar este turno?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Volver</button>
+          <button type="button" class="btn btn-danger" id="confirmar-cancelacion">Sí, Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      let turnoIdParaCancelar;
+
+      $('.cancelar-turno').on('click', function () {
+        turnoIdParaCancelar = $(this).data('id');
+        $('#cancelacionModal').modal('show');
+      });
+
+      $('#confirmar-cancelacion').on('click', function () {
+        const form = $('<form action="cancelar-turno.php" method="post" style="display:none;"></form>');
+        const input = $('<input type="hidden" name="id" value="' + turnoIdParaCancelar + '">');
+        form.append(input);
+        $('body').append(form);
+        form.submit();
+      });
+    });
+  </script>
 </body>
 
 </html>
