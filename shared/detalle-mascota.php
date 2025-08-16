@@ -11,11 +11,12 @@ $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
-if ($_SESSION['usuario_tipo'] !== 'admin') {
+// Verificar si el usuario está autenticado
+if ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo']!=='cliente') {
     die("Acceso denegado");
 }
 
-$query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue
+$query = "SELECT m.id, m.nombre AS mascota_nombre, m.id_cliente, m.raza, m.fecha_nac, m.fecha_mue
           FROM mascotas m 
           WHERE m.id = $idMascota";
 
@@ -28,8 +29,15 @@ if ($result->num_rows > 0) {
     $fecha_nac = $row['fecha_nac'];
     $fecha_mue = $row['fecha_mue'];
     $idMascota = $row['id'];
+    $idClienteMascota = $row['id_cliente'];
 }
 
+//Validar que la mascota pertenezca al cliente si el usuario es cliente
+if($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idClienteMascota){
+    die("Acceso denegado, la mascota no pertenece al cliente.");
+    $conn->close();
+
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,22 +53,25 @@ if ($result->num_rows > 0) {
 <body>
     <?php require_once 'navbar.php'; ?>
 
-    <div class="d-flex justify-content-center">
-        <div class="card text-center" style="width:50rem;">
-            <div class="card-header">
-                <h2>Detalles de <?php echo $mascota_nombre ?> </h2>
-            </div>
-            <div class="card-body">
-                <div>
-                    <p><strong>Nombre:</strong> <?php echo htmlspecialchars($mascota_nombre); ?></p>
-                    <p><strong>Raza:</strong> <?php echo htmlspecialchars($raza); ?></p>
-                    <p><strong>Fecha de Nacimiento:</strong>
-                        <?php echo htmlspecialchars($fecha_nac ? $fecha_nac : 'N/A'); ?></p>
-                    <p><strong>Fecha de Muerte:</strong>
-                        <?php echo htmlspecialchars($fecha_mue ? $fecha_mue : 'N/A'); ?></p>
-                    <button type="button" class="btn btn-warning" data-toggle="modal"
-                        data-target="#editarModal">Editar</button>
-                </div>
+<div class="d-flex justify-content-center">
+    <div class="card text-center" style="width:50rem;">
+        <div class="card-header">
+            <h2>Detalles de <?php echo $mascota_nombre?> </h2>
+        </div>
+    <div class="card-body">
+        <div>
+            <p><strong>Nombre:</strong> <?php echo htmlspecialchars($mascota_nombre); ?></p>
+            <p><strong>Raza:</strong> <?php echo htmlspecialchars($raza); ?></p>
+            <p><strong>Fecha de Nacimiento:</strong> <?php echo htmlspecialchars($fecha_nac ? $fecha_nac:'N/A'); ?></p>
+            <p><strong>Fecha de Muerte:</strong> <?php echo htmlspecialchars($fecha_mue ? $fecha_mue : 'N/A'); ?></p>
+            <button 
+            type="button" 
+            class="btn btn-warning" 
+            data-toggle="modal" 
+            data-target="#editarModal"
+            <?php if ($_SESSION['usuario_tipo'] === 'cliente') echo 'disabled'; ?>
+            >Editar</button>
+        </div>
 
                 <!-- Modal -->
                 <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel"
@@ -127,27 +138,28 @@ if ($result->num_rows > 0) {
                                 inner join servicios s on a.id_serv = s.id
                                 where a.id_mascota = $idMascota
                               ";
-                            $result = $conn->query($query);
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<tr>";
-                                    echo "<td>" . htmlspecialchars($row['fecha']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row['nombreServicio']) . "</td>";
-                                    echo "<td>" . htmlspecialchars($row['nombrePro']) . "</td>";
-                                    echo "<td><a class=\"btn btn-info\" href='detalle-atencion.php'>Ver detalles</a></td>";
-                                    echo "</tr>";
-                                }
-                            } else {
-                                echo "<tr><td class='text-center' colspan='4'>No hay registros</td></tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+                    $result = $conn->query($query);
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['fecha']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombreServicio']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombrePro']) . "</td>";
+                            echo "<td><a class=\"btn btn-info\" href='detalle-atencion.php'>Ver detalles</a></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td class='text-center' colspan='4'>No hay registros</td></tr>";
+                    }
+                    $conn->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

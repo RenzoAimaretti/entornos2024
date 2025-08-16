@@ -19,7 +19,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     $especialidad=$_POST['esp'];
     $password=$_POST['password'];
     $repassword=$_POST['repassword'];
-
+    $dias = $_POST['dias'];
+    // Validar que las contraseñas coincidan
     if($password!=$repassword){
         echo "Las contraseñas no coinciden";
         echo $password;
@@ -33,6 +34,15 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
             $resultProf=$conn->query($queryProf);
             if($resultProf){
                 echo "Especialista registrado con éxito";
+                // Registrar los días de atención
+                foreach ($dias as $dia) {
+                    $diaSem = $dia['dia'];
+                    $horaIni = $dia['horaInicio'];
+                    $horaFin = $dia['horaFin'];
+                    $queryDia = "INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES ('$id', '$diaSem', '$horaIni', '$horaFin')";
+                    $conn->query($queryDia);
+                }
+                // Guardar en la sesión
                 $_SESSION['usuario_id'] = $id;
                 $_SESSION['usuario_nombre'] = $nombre;
                 $_SESSION['usuario_tipo'] = 'especialista';

@@ -36,8 +36,8 @@ if (isset($_POST['idMascota'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre_mascota = $_POST['nombre'];
     $raza = isset($_POST['raza']) && !empty($_POST['raza']) ? $_POST['raza'] : null;
-    $fecha_nacimiento = isset($_POST['fecha_nacimiento']) && !empty($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : null;
-    $fecha_muerte = isset($_POST['fecha_muerte']) && !empty($_POST['fecha_muerte']) ? $_POST['fecha_muerte'] : null;
+    $fecha_nacimiento = isset($_POST['fecha_nac']) && !empty($_POST['fecha_nac']) ? $_POST['fecha_nac'] : null;
+    $fecha_muerte = isset($_POST['fecha_mue']) && !empty($_POST['fecha_mue']) ? $_POST['fecha_mue'] : null;
 
     // Validar los datos
     if (!empty($nombre_mascota)) {
