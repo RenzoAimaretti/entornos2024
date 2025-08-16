@@ -23,12 +23,10 @@ $fecha = $_POST['fecha'] ?? null;
 $horariosDisponibles = [];
 
 if ($id_pro && $fecha) {
-  // Definir la conversión de día de la semana de número a string
   $diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
   $diaSemanaNum = date('w', strtotime($fecha)); // 0 para Domingo, 6 para Sábado
   $diaSemanaStr = $diasSemana[$diaSemanaNum];
 
-  // Consulta para obtener los horarios de atención y excluir los ya ocupados
   $sql = "SELECT DISTINCT ph.horaIni, ph.horaFin
             FROM profesionales_horarios ph
             WHERE ph.idPro = ? AND ph.diaSem = ?";
@@ -44,7 +42,6 @@ if ($id_pro && $fecha) {
     $hora_inicio = $horarioAtencion['horaIni'];
     $hora_fin = $horarioAtencion['horaFin'];
 
-    // Obtener todos los turnos ocupados para ese día
     $sqlOcupados = "SELECT TIME(fecha) AS hora_ocupada FROM atenciones WHERE id_pro = ? AND DATE(fecha) = ?";
     $stmtOcupados = $conn->prepare($sqlOcupados);
     $stmtOcupados->bind_param("is", $id_pro, $fecha);
@@ -53,7 +50,6 @@ if ($id_pro && $fecha) {
     $horariosOcupados = array_column($resultOcupados->fetch_all(MYSQLI_ASSOC), 'hora_ocupada');
     $stmtOcupados->close();
 
-    // Generar y filtrar los horarios de 15 minutos
     $horaActual = strtotime($hora_inicio);
     $horaFinTimestamp = strtotime($hora_fin);
 

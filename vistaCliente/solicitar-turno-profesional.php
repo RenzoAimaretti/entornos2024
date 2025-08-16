@@ -95,14 +95,6 @@ $conn->close();
     .card-profesional {
       margin-bottom: 20px;
     }
-
-    .list-group-item.selectable {
-      cursor: pointer;
-    }
-
-    .list-group-item.selectable:hover {
-      background-color: #f8f9fa;
-    }
   </style>
 </head>
 
@@ -110,7 +102,10 @@ $conn->close();
   <?php require_once '../shared/navbar.php'; ?>
 
   <div class="container mt-5">
-    <h1>Seleccionar Profesional y Horario</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Seleccionar Profesional y Horario</h1>
+      <a href="solicitar-turno.php" class="btn btn-secondary">← Volver</a>
+    </div>
 
     <div class="form-group mb-4">
       <input type="text" id="filtroProfesionales" class="form-control"
@@ -155,7 +150,9 @@ $conn->close();
                 </div>
                 <div class="form-group">
                   <label for="hora-<?= $profesional['id'] ?>">Hora del turno:</label>
-                  <input type="time" class="form-control" id="hora-<?= $profesional['id'] ?>" name="hora_turno" required>
+                  <select class="form-control" id="hora-<?= $profesional['id'] ?>" name="hora_turno" required disabled>
+                    <option value="" disabled selected>Seleccione hora</option>
+                  </select>
                   <small id="horaError-<?= $profesional['id'] ?>" class="form-text text-danger"
                     style="display:none;"></small>
                 </div>
@@ -195,9 +192,13 @@ $conn->close();
             <div class="form-group">
               <label for="id_mascota">Selecciona tu mascota:</label>
               <select class="form-control" name="id_mascota" required>
-                <?php foreach ($mascotas as $m): ?>
-                  <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
-                <?php endforeach; ?>
+                <?php if (!empty($mascotas)): ?>
+                  <?php foreach ($mascotas as $m): ?>
+                    <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <option value="" disabled>No tienes mascotas registradas.</option>
+                <?php endif; ?>
               </select>
             </div>
             <div class="form-group">
@@ -248,7 +249,7 @@ $conn->close();
 
   <script>
     $(document).ready(function () {
-      const diasSemana = { 'Dom': 0, 'Lun': 1, 'Mar': 2, 'Mie': 3, 'Jue': 4, 'Vie': 5, 'Sab': 6 };
+      const diasSemana = { 'Lun': 1, 'Mar': 2, 'Mie': 3, 'Jue': 4, 'Vie': 5, 'Sab': 6, 'Dom': 0 };
       const horariosProfesionales = <?php echo json_encode($horariosPorProfesional); ?>;
       const servicios = <?php echo json_encode($servicios); ?>;
       const profesionales = <?php echo json_encode($profesionales); ?>;
@@ -287,68 +288,66 @@ $conn->close();
 
         form.slideUp(function () {
           mostrarBtn.show();
-          form.find('input[type="date"], input[type="time"]').val('');
+          form.find('input[type="date"]').val('');
+          form.find('select[name="hora_turno"]').empty().prop('disabled', true).append('<option value="" disabled selected>Seleccione hora</option>');
           form.find('.sacar-turno-btn').prop('disabled', true);
           form.find('.form-text').hide();
         });
       });
 
-      $('.booking-form').on('change', 'input[type="date"], input[type="time"]', function () {
+      $('.booking-form').on('change', 'input[type="date"]', function () {
         const form = $(this).closest('.booking-form');
         const proId = form.data('id-pro');
-        const fecha = form.find('input[name="fecha_turno"]').val();
-        const hora = form.find('input[name="hora_turno"]').val();
+        const fecha = $(this).val();
+        const horaSelect = form.find('select[name="hora_turno"]');
         const sacarTurnoBtn = form.find('.sacar-turno-btn');
         const errorSpan = form.find('.form-text');
 
+        horaSelect.prop('disabled', true).empty().append('<option value="" disabled selected>Seleccione hora</option>');
         sacarTurnoBtn.prop('disabled', true);
         errorSpan.hide().text('');
 
-        if (fecha && hora) {
-          const fechaObj = new Date(fecha.replace(/-/g, '/') + ' ' + hora);
+        if (fecha) {
+          const fechaObj = new Date(fecha.replace(/-/g, '/'));
           const diaSemanaNum = fechaObj.getDay();
           const diaSemanaStr = Object.keys(diasSemana).find(key => diasSemana[key] === diaSemanaNum);
 
           const horariosPro = horariosProfesionales[proId];
           if (horariosPro) {
-            let esDiaValido = false;
-            let esHoraValida = false;
-
-            horariosPro.forEach(horario => {
-              if (horario.diaSem === diaSemanaStr) {
-                esDiaValido = true;
-                if (hora >= horario.horaIni && hora < horario.horaFin) {
-                  esHoraValida = true;
-                }
-              }
-            });
-
-            if (!esDiaValido) {
-              errorSpan.text('Este profesional no atiende el día seleccionado.').show();
-            } else if (!esHoraValida) {
-              errorSpan.text('La hora seleccionada no está dentro del horario de atención.').show();
-            } else {
+            const horarioAtencion = horariosPro.find(h => h.diaSem === diaSemanaStr);
+            if (horarioAtencion) {
+              // AJAX call to get available slots
               $.ajax({
                 url: 'verificar-turno-disponible.php',
                 method: 'POST',
                 dataType: 'json',
-                data: { id_pro: proId, fecha: fecha, hora: hora },
-                success: function (response) {
-                  if (response.disponible) {
-                    sacarTurnoBtn.prop('disabled', false);
+                data: { id_pro: proId, fecha: fecha },
+                success: function (disponibles) {
+                  if (disponibles.length > 0) {
+                    disponibles.forEach(horaDisponible => {
+                      horaSelect.append(`<option value="${horaDisponible}">${horaDisponible.substring(0, 5)}</option>`);
+                    });
+                    horaSelect.prop('disabled', false);
                   } else {
-                    errorSpan.text('El turno ya está reservado.').show();
+                    errorSpan.text('No hay horarios disponibles para este día.').show();
                   }
                 },
                 error: function () {
-                  errorSpan.text('Error al verificar la disponibilidad del turno.').show();
+                  errorSpan.text('Error al verificar los horarios disponibles.').show();
                 }
               });
+            } else {
+              errorSpan.text('Este profesional no atiende el día seleccionado.').show();
             }
           } else {
             errorSpan.text('Este profesional no tiene horarios asignados.').show();
           }
         }
+      });
+
+      $('.booking-form').on('change', 'select[name="hora_turno"]', function () {
+        const sacarTurnoBtn = $(this).closest('.booking-form').find('.sacar-turno-btn');
+        sacarTurnoBtn.prop('disabled', false);
       });
 
       $('.sacar-turno-btn').on('click', function () {
@@ -357,7 +356,7 @@ $conn->close();
         const proNombre = form.data('pro-nombre');
         const idEsp = form.data('id-esp');
         const fecha = form.find('input[name="fecha_turno"]').val();
-        const hora = form.find('input[name="hora_turno"]').val();
+        const hora = form.find('select[name="hora_turno"]').val();
 
         $('#summary-profesional').text(proNombre);
         $('#summary-fecha').text(fecha);
