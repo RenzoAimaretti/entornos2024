@@ -19,6 +19,7 @@ if ($conn->connect_error) {
 $sql = "SELECT a.id, 
                DATE(a.fecha) AS fecha, 
                TIME(a.fecha) AS hora, 
+               m.id AS id_mascota, 
                m.nombre AS paciente, 
                s.nombre AS servicio, 
                a.detalle
@@ -59,7 +60,11 @@ $result = $stmt->get_result();
                 <tr>
                     <td><?php echo htmlspecialchars($row['fecha']); ?></td>
                     <td><?php echo htmlspecialchars($row['hora']); ?></td>
-                    <td><?php echo htmlspecialchars($row['paciente']); ?></td>
+                    <td>
+                        <a href="../shared/detalle-mascota.php?idMascota=<?php echo urlencode($row['id_mascota']); ?>">
+                            <?php echo htmlspecialchars($row['paciente']); ?>
+                        </a>
+                    </td>
                     <td><?php echo htmlspecialchars($row['servicio']); ?></td>
                     <td><?php echo htmlspecialchars($row['detalle']); ?></td>
                 </tr>

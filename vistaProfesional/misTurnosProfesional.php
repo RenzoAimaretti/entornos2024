@@ -1,5 +1,55 @@
 <?php
 session_start();
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
+    header('Location: ../index.php');
+    exit();
+}
+$profesionalId = $_SESSION['usuario_id'];
+$nombreProfesional = $_SESSION['usuario_nombre'] ?? '';
+
+
+require_once '../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+// Mascotas atendidas por el profesional
+$mascotas = [];
+if ($profesionalId) {
+    $stmt = $conn->prepare("SELECT DISTINCT m.id, m.nombre
+                              FROM mascotas m
+                              INNER JOIN atenciones a ON a.id_mascota = m.id
+                              WHERE a.id_pro = ?");
+    $stmt->bind_param('i', $profesionalId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $mascotas[] = $row;
+    }
+    $stmt->close();
+}
+
+// Servicios del profesional
+$servicios = [];
+if ($profesionalId) {
+    $stmt = $conn->prepare("SELECT s.id, s.nombre
+                              FROM servicios s
+                              INNER JOIN especialidad esp ON esp.id = s.id_esp
+                              INNER JOIN profesionales p on p.id_esp = esp.id
+                              WHERE p.id = ?");
+    $stmt->bind_param('i', $profesionalId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $servicios[] = $row;
+    }
+    $stmt->close();
+}
+
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -17,25 +67,6 @@ session_start();
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
     <link href="../styles.css" rel="stylesheet" />
-
-    <style>
-        .autocomplete-list {
-            border: 1px solid #ccc;
-            background: #fff;
-            position: absolute;
-            z-index: 999;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .autocomplete-list div {
-            padding: 5px;
-            cursor: pointer;
-        }
-        .autocomplete-list div:hover {
-            background: #eee;
-        }
-    </style>
 </head>
 <body>
     <?php require_once '../shared/navbar.php'; ?>
@@ -57,88 +88,41 @@ session_start();
                                 <label for="fecha">Fecha</label>
                                 <input type="date" class="form-control" id="fecha" name="fecha" required />
                             </div>
+
                             <div class="form-group">
                                 <label for="hora">Hora</label>
                                 <input type="time" class="form-control" id="hora" name="hora" required />
                             </div>
 
-                            <!-- Campo Mascota con Autocomplete -->
-                            <div class="form-group position-relative">
-                                <label for="mascota">Mascota</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="mascota"
-                                    name="mascota"
-                                    autocomplete="off"
-                                    required
-                                />
-                                <input type="hidden" id="mascota_id" name="mascota_id" />
-                                <div
-                                    id="mascota_sugerencias"
-                                    class="autocomplete-list"
-                                    style="display:none;"
-                                ></div>
+                            <!-- Selección de Mascota -->
+                            <div class="form-group">
+                                <label for="mascota_id">Mascota</label>
+                                <select class="form-control" id="mascota_id" name="mascota_id" required>
+                                    <option value="">-- Seleccione una mascota --</option>
+                                    <?php foreach ($mascotas as $m): ?>
+                                        <option value="<?= htmlspecialchars($m['id']) ?>"><?= htmlspecialchars($m['nombre']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
 
-                            <!-- Campo especialista -->
-                            <?php
-                            $tipoUsuario = $_SESSION['usuario_tipo'] ?? '';
-                            $nombreEspecialista = '';
-                            $idEspecialista = '';
+                            <!-- Selección de Especialista -->
+                            <div class="form-group">
+                                <label>Especialista</label>
+                                <input type="text" class="form-control" value="<?= htmlspecialchars($nombreProfesional) ?>" disabled />
+                                <input type="hidden" id="especialista_id" name="especialista_id" value="<?= htmlspecialchars($profesionalId) ?>" />
+                            </div>
 
-                            if ($tipoUsuario === 'especialista') {
-                                $nombreEspecialista = $_SESSION['usuario_nombre'] ?? '';
-                                $idEspecialista = $_SESSION['usuario_id'] ?? '';
-                                // Mostrar nombre fijo, ocultar input editable
-                                ?>
-                                <div class="form-group">
-                                    <label>Especialista</label>
-                                    <input type="text" class="form-control" value="<?= htmlspecialchars($nombreEspecialista) ?>" disabled />
-                                    <input type="hidden" id="especialista_id" name="especialista_id" value="<?= htmlspecialchars($idEspecialista) ?>" />
-                                </div>
-                                <?php
-                            } else {
-                                // Para admin u otros usuarios, campo editable con autocomplete
-                                ?>
-                                <div class="form-group position-relative">
-                                    <label for="especialista">Especialista</label>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="especialista"
-                                        name="especialista"
-                                        autocomplete="off"
-                                        required
-                                    />
-                                    <input type="hidden" id="especialista_id" name="especialista_id" />
-                                    <div
-                                        id="especialista_sugerencias"
-                                        class="autocomplete-list"
-                                        style="display:none;"
-                                    ></div>
-                                </div>
-                                <?php
-                            }
-                            ?>
+                            
 
-                            <!-- Campo Servicio con Autocomplete -->
-                            <div class="form-group position-relative">
-                                <label for="servicio">Servicio</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="servicio"
-                                    name="servicio"
-                                    autocomplete="off"
-                                    required
-                                />
-                                <input type="hidden" id="servicio_id" name="servicio_id" />
-                                <div
-                                    id="servicio_sugerencias"
-                                    class="autocomplete-list"
-                                    style="display:none;"
-                                ></div>
+                            <!-- Selección de Servicio -->
+                            <div class="form-group">
+                                <label for="servicio_id">Servicio</label>
+                                <select class="form-control" id="servicio_id" name="servicio_id" required>
+                                    <option value="">-- Seleccione un servicio --</option>
+                                    <?php foreach ($servicios as $s): ?>
+                                        <option value="<?= htmlspecialchars($s['id']) ?>"><?= htmlspecialchars($s['nombre']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Registrar Atención</button>
@@ -156,59 +140,13 @@ session_start();
                 initialView: "dayGridMonth",
                 events: "../shared/atenciones.php",
                 eventClick: function (info) {
-                    let confirmacion = confirm(
-                        `Ver detalles de atención para: "${info.event.title}"?`
-                    );
+                    let confirmacion = confirm(`Ver detalles de atención para: "${info.event.title}"?`);
                     if (confirmacion) {
-                        verDetalles(info.event.id);
+                        window.location.href = "editarAtencionProfesional.php?id=" + info.event.id;
                     }
                 },
             });
             calendar.render();
-        });
-
-        function verDetalles(id) {
-            window.location.href = "editarAtencionProfesional.php?id=" + id;
-            //window.location.href = "../shared/detalle-atencionAP.php?id=" + id;
-        }
-
-        // Función genérica de autocomplete
-        function buscar(tipo, texto) {
-            if (texto.length < 2) {
-                $("#" + tipo + "_sugerencias").hide();
-                return;
-            }
-
-            $.getJSON("../shared/buscar-" + tipo + ".php", { q: texto }, function (data) {
-                let contenedor = $("#" + tipo + "_sugerencias");
-                contenedor.empty();
-                if (data.length > 0) {
-                    data.forEach(function (item) {
-                        contenedor.append("<div data-id='" + item.id + "'>" + item.nombre + "</div>");
-                    });
-                    contenedor.show();
-
-                    contenedor.find("div").on("click", function () {
-                        $("#" + tipo).val($(this).text());
-                        $("#" + tipo + "_id").val($(this).data("id"));
-                        contenedor.hide();
-                    });
-                } else {
-                    contenedor.hide();
-                }
-            });
-        }
-
-        $("#mascota").on("input", function () {
-            buscar("mascota", $(this).val());
-        });
-
-        $("#especialista").on("input", function () {
-            buscar("especialista", $(this).val());
-        });
-
-        $("#servicio").on("input", function () {
-            buscar("servicio", $(this).val());
         });
     </script>
 
