@@ -12,11 +12,12 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 // Verificar si el usuario está autenticado
-if ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo']!=='cliente') {
+if ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo']!=='cliente' && $_SESSION['usuario_tipo']!=='especialista') {
     die("Acceso denegado");
 }
 
-$query = "SELECT m.id, m.nombre AS mascota_nombre, m.id_cliente, m.raza, m.fecha_nac, m.fecha_mue
+
+$query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue
           FROM mascotas m 
           WHERE m.id = $idMascota";
 
