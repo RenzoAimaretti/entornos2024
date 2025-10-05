@@ -7,14 +7,22 @@ $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Recibir datos del formulario
+    if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] === 'especialista') {
+        //temporal hasta arreglar el tema del id del especialista en el formulario
+        $id_pro = $_SESSION['usuario_id'] ;
+    }else{
+        $id_pro = $_POST['especialista_id'] ?? null; 
+
+}
     $fecha = $_POST['fecha'] ?? '';
     $hora = $_POST['hora'] ?? '';
     $id_mascota = $_POST['mascota_id'] ?? '';
     $detalle = $_POST['detalle'] ?? 'Atención pendiente de actualizacion por el Especialista';
     $id_serv = $_POST['servicio_id'] ?? null; 
-    $id_pro = $_POST['especialista_id'] ?? null; 
 
     echo "<script>console.log(" . json_encode([
         'fecha' => $fecha,
