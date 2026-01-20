@@ -413,6 +413,7 @@ $conn->close();
       }
     });
   </script>
+  <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>

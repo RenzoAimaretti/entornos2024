@@ -65,3 +65,39 @@ footer p {
   border-radius: 50%;
   margin-right: 5px;
 }
+/* Estilos específicos para el Footer y Mapa del Sitio */
+.footer-custom {
+  background-color: #343a40;
+  /* Gris oscuro elegante */
+  color: #ffffff;
+  padding: 40px 0 20px 0;
+}
+
+.footer-custom h5 {
+  color: #a8d08d;
+  /* Tu color verde para los títulos */
+  border-bottom: 2px solid #a8d08d;
+  display: inline-block;
+  padding-bottom: 5px;
+  margin-bottom: 20px;
+}
+
+.footer-custom a {
+  color: #e0e0e0;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-custom a:hover {
+  color: #a8d08d;
+  /* Cambia a verde al pasar el mouse */
+  padding-left: 5px;
+}
+
+.footer-custom .copyright {
+  background-color: #2b2f33;
+  /* Un tono más oscuro para la base */
+  margin-top: 30px;
+  padding: 15px 0;
+  font-size: 0.85rem;
+}

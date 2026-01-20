@@ -34,10 +34,10 @@ session_start()
     <div class="row">
       <div class="col">
         <div class="header-images">
+          <img src="https://www.lasalut.es/wp-content/uploads/2024/01/esterilizacion-perro-gato.jpg"
+            alt="Grupo de Mascotas" class="img-fluid header-img">
           <img
-            src="https://cdn.goconqr.com/uploads/media/image/23700948/desktop_bcca9a25-c871-4ad6-bb7c-2cec7bffdcd8.jpg"
-            alt="Mascota 1" class="img-fluid header-img">
-          <img src="https://www.shutterstock.com/image-photo/vet-doctor-cute-domestic-dog-260nw-1955838685.jpg"
+            src="https://www.purina.com.ar/sites/default/files/2022-10/purina-consulta-veterinaria-para-mascotas-lo-que-debes-saber.jpg"
             alt="Mascota 2" class="img-fluid header-img">
           <img
             src="https://media.istockphoto.com/id/1353103116/es/foto/veterinario-examinando-lindo-perro-pug-y-gato-en-la-cl%C3%ADnica-primer-plano-d%C3%ADa-de-vacunaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=y8RP8tBmuAApVU6Ga6OkizZoAnuHHjimBgtSRoAJBEI="
@@ -91,7 +91,7 @@ session_start()
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+  <?php require_once 'shared/footer.php'; ?>
 </body>
 
 </html>

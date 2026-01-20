@@ -1,22 +1,24 @@
 <?php
-    session_start();
-    require '../vendor/autoload.php';
-    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));$dotenv->load();
-        // Crear conexión
-    $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-    
-    $query = "select id, nombre from especialidad";
-    $result = $conn->query($query);
-    $especialidades = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $especialidades[] = $row;
-        }
+session_start();
+require '../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+// Crear conexión
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+
+$query = "select id, nombre from especialidad";
+$result = $conn->query($query);
+$especialidades = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $especialidades[] = $row;
     }
-    
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,9 +26,10 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../styles.css" rel="stylesheet">
 </head>
+
 <body>
-<?php require_once '../shared/navbar.php'; ?> 
-<!-- Título -->
+    <?php require_once '../shared/navbar.php'; ?>
+    <!-- Título -->
     <div class="container my-4">
         <h2 class="text-center text-white py-2" style="background-color: #a8d08d;">Alta de Especialistas</h2>
     </div>
@@ -37,7 +40,7 @@
                 <form action="../shared/alta-especialista.php" method="POST">
                     <div class="form-group">
                         <label for="nombre">Nombre completo</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required >
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
                     </div>
                     <div class="form-group">
                         <label for="email">Email del especialista</label>
@@ -72,8 +75,10 @@
         </div>
     </div>
 
-<!-- Bootstrap Scripts -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Bootstrap Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require_once '../shared/footer.php'; ?>
 </body>
+
 </html>
