@@ -16,14 +16,6 @@ session_start()
   <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
 
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Buscar Profesionales</li>
-    </ol>
-  </nav>
-
   <!-- Formulario de Búsqueda de Profesionales -->
   <div class="container">
     <div class="row justify-content-center">

@@ -16,17 +16,6 @@ session_start()
   <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
 
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item"><a href="iniciar-sesion.php">Iniciar sesión</a></li>
-      <li class="breadcrumb-item"><a href="registrarse.php">Registrarse</a></li>
-      <li class="breadcrumb-item"><a href="servicios.php">Servicios</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Nosotros</li>
-    </ol>
-  </nav>
-
   <!-- Contenido Principal -->
   <div class="container mt-5 mb-4">
     <h1>Nosotros</h1>

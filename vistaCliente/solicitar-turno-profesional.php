@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
 
     $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
 
-    // --- NUEVA VALIDACIÓN: Verificar si la mascota ya tiene turno en ese horario ---
+    //Verificar si la mascota ya tiene turno en ese horario
     $sqlCheck = "SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $stmtCheck->bind_param("is", $id_mascota, $fecha_datetime);
@@ -36,10 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     $resultCheck = $stmtCheck->get_result();
 
     if ($resultCheck->num_rows > 0) {
-        // La mascota ya tiene un turno, no procedemos con el insert
         $errorMascotaOcupada = true;
     } else {
-        // No hay superposición, procedemos con la transacción
         $conn->begin_transaction();
         try {
             $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
@@ -50,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
 
             $conn->commit();
             $_SESSION['turno_exitoso'] = true;
-            // Redirigir para evitar reenvío de formulario al recargar
             header("Location: " . $_SERVER['PHP_SELF']);
             exit();
         } catch (mysqli_sql_exception $e) {
@@ -66,7 +63,6 @@ if (isset($_SESSION['turno_exitoso']) && $_SESSION['turno_exitoso']) {
     unset($_SESSION['turno_exitoso']);
 }
 
-// Consultas para cargar la página
 $sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad, especialidad.id AS id_esp
         FROM profesionales
         INNER JOIN usuarios ON profesionales.id = usuarios.id
