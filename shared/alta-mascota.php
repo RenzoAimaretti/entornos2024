@@ -23,12 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_nacimiento = !empty($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : null;
     $fecha_muerte = !empty($_POST['fecha_muerte']) ? $_POST['fecha_muerte'] : null;
 
-    // --- LÓGICA DE SUBIDA DE FOTO ---
+
     $ruta_foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
         $carpeta_destino = '../uploads/';
 
-        // Crear carpeta si no existe
         if (!file_exists($carpeta_destino)) {
             mkdir($carpeta_destino, 0777, true);
         }
@@ -43,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // --- VALIDACIÓN DE FECHA ---
+
     if ($fecha_nacimiento) {
         $hoy = date('Y-m-d');
         if ($fecha_nacimiento > $hoy) {
@@ -54,8 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // --- INSERT EN BD ---
-    // Asegúrate de que la columna 'foto' existe en tu tabla 'mascotas'
+
     $sql = "INSERT INTO mascotas (nombre, id_cliente, raza, fecha_nac, fecha_mue, foto) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sissss", $nombre_mascota, $id_cliente, $raza, $fecha_nacimiento, $fecha_muerte, $ruta_foto);

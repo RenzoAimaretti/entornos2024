@@ -46,7 +46,8 @@ $result = $conn->query($query);
         }
         ?>
         <h2 class="text-center text-white py-2" style="background-color: #a8d08d; width: 100%;">Detalles de
-            <?php echo htmlspecialchars($nombre); ?></h2>
+            <?php echo htmlspecialchars($nombre); ?>
+        </h2>
     </div>
     <div class="d-flex justify-content-center">
         <div class="card text-center" style="width:50rem;">

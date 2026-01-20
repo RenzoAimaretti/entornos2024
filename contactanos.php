@@ -35,7 +35,7 @@ session_start();
     <p>Te ayudamos a seleccionar el plan adecuado para tu mascota</p>
     <h3>Asesoramiento comercial</h3>
 
-    <!-- Bloques clicables -->
+
     <div class="row mt-4 mb-4">
       <div class="col-md-6">
         <a href="https://wa.me/5493412754750" class="btn btn-success btn-block">

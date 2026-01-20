@@ -10,7 +10,7 @@ if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
 }
 
-$error = ""; // Variable para mensajes de error
+$error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : null;

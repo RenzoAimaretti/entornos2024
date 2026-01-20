@@ -47,11 +47,15 @@ session_start()
   <?php
   if (isset($_GET['search'])) {
     $search = $_GET['search'];
-    // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-    $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
 
+    require 'vendor/autoload.php';
+
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+
+    $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
     if ($conn->connect_error) {
-      die("Conexión fallida: " . $conn->connect_error);
+      die("Error de conexión: " . $conn->connect_error);
     }
 
     // Consulta para buscar profesionales por nombre o especialidad

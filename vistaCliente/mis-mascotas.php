@@ -1,6 +1,6 @@
 <?php
 session_start();
-// Establecemos la zona horaria para que la validación sea exacta
+
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 $id = $_SESSION['usuario_id'] ?? 0;
@@ -89,10 +89,8 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
             echo "<li class='list-group-item'>";
             echo "<h5>" . htmlspecialchars($row['nombre']) . "</h5>";
 
-            // Mostramos la foto si existe
+            // Muestra la foto si existe
             if (!empty($row['foto'])) {
-              // La ruta se guarda como '../uploads/nombre.jpg', 
-              // desde vistaCliente/ funciona perfecto así.
               echo "<img src='" . htmlspecialchars($row['foto']) . "' alt='" . htmlspecialchars($row['nombre']) . "' class='img-fluid mb-2' style='max-width: 150px; border-radius: 8px; display: block;'>";
             } else {
               echo "<div class='text-muted small mb-2'>Sin foto registrada</div>";

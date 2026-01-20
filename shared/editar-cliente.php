@@ -13,12 +13,12 @@ if ($conn->connect_error) {
 
 // Verificar si se recibieron los datos necesarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'] ;
-    $direccion = $_POST['direccion']?? '';
-    $telefono = $_POST['telefono']?? '';
-    
+    $id = $_POST['id'];
+    $direccion = $_POST['direccion'] ?? '';
+    $telefono = $_POST['telefono'] ?? '';
 
-    // Consulta preparada para eliminar la atención
+
+
     $query = "UPDATE clientes SET direccion = ?, telefono = ? WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("ssi", $direccion, $telefono, $id);
