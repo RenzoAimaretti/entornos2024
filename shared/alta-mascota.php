@@ -6,7 +6,7 @@ require '../vendor/autoload.php';
 
 try {
     $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__)); 
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
     $dotenv->load();
 } catch (Dotenv\Exception\InvalidPathException $e) {
     die("Error: No se pudo cargar el archivo .env");

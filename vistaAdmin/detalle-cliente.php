@@ -156,7 +156,7 @@ $resultMascotas = $conn->query($queryMascotas);
                                     echo "<td>" . htmlspecialchars($mascota['raza'] ?? '-') . "</td>";
                                     echo "<td>" . htmlspecialchars($mascota['fecha_nac'] ?? '-') . "</td>";
                                     echo "<td>" . htmlspecialchars($mascota['fecha_mue'] ?? '-') . "</td>";
-                                    echo "<td> <a class='btn btn-warning' href='../shared/detalle-mascota.php?idMascota=" . htmlspecialchars($mascota['id']) . "'>Ver Detalles</a> </td>";
+                                    echo "<td> <a class='btn btn-warning' href='../shared/detalle-mascota.php?idMascota=" . $mascota['id'] . "&idCliente=" . $id . "'>Ver Detalles</a> </td>";
                                     echo "</tr>";
                                 }
                             } else {
