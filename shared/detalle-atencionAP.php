@@ -53,6 +53,7 @@ if (!$atencion) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle Atención</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
 </head>
 
@@ -93,15 +94,18 @@ if (!$atencion) {
                     <hr>
 
                     <div class="d-flex flex-wrap justify-content-center" style="gap: 10px;">
+                        <a href="../vistaAdmin/gestionar-atenciones.php" class="btn btn-outline-dark">
+                            <i class="fas fa-calendar-alt"></i> Ir al Calendario
+                        </a>
 
                         <a href="../shared/detalle-mascota.php?idMascota=<?php echo $atencion['idMascota']; ?>"
                             class="btn btn-outline-primary">
-                            <i class="fas fa-paw"></i> Volver a Mascota
+                            <i class="fas fa-paw"></i> Ir a Mascota
                         </a>
 
                         <a href="../vistaAdmin/detalle-especialista.php?id=<?php echo $atencion['idPro']; ?>"
                             class="btn btn-outline-success">
-                            <i class="fas fa-user-md"></i> Volver a Especialista
+                            <i class="fas fa-user-md"></i> Ir a Especialista
                         </a>
 
                         <button type="button" class="btn btn-warning" data-toggle="modal"
@@ -113,13 +117,34 @@ if (!$atencion) {
                             <button class="btn btn-danger disabled"
                                     title="No se puede eliminar una atención pasada">Eliminar</button>
                     <?php else: ?>
-                            <form action="../shared/eliminar-atencion.php" method="POST" style="display:inline;"
-                                onsubmit="return confirm('¿Seguro que deseas eliminar esta atención?');">
-                                <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
-                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                                </form>
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalEliminar">
+                                Eliminar
+                                </button>
                         <?php endif; ?>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-trash-alt text-danger fa-3x mb-3"></i>
+                    <p class="lead">¿Estás seguro de que deseas eliminar esta atención?</p>
+                    <p class="text-muted small">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <form action="../shared/eliminar-atencion.php" method="POST" style="display:inline;">
+                        <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
+                        <button type="submit" class="btn btn-danger">Confirmar Borrado</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -132,9 +157,7 @@ if (!$atencion) {
                 <form action="../shared/editar-atencion.php" method="POST">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editarAtencionModalLabel">Editar Detalles de Atención</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">

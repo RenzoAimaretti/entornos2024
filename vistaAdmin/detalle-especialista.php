@@ -218,19 +218,58 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
         const container = document.getElementById('dias-container');
-        document.getElementById('add-dia-btn').addEventListener('click', () => {
+
+        // 1. Cargamos los horarios actuales desde la base de datos a un array de JS
+        const horariosActuales = <?php
+        $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
+        $datos = [];
+        while ($r = $hResJS->fetch_assoc()) {
+            $datos[] = $r;
+        }
+        echo json_encode($datos);
+        ?>;
+
+        // Función para crear una fila de horario
+        function agregarFilaHorario(dia = 'Lun', inicio = '08:00', fin = '12:00') {
             const index = container.children.length;
             const div = document.createElement('div');
-            div.className = 'form-row mb-2 align-items-center';
+            div.className = 'form-row mb-2 align-items-center row-horario';
             div.innerHTML = `
-                <div class="col-4"><select name="dias[${index}][dia]" class="form-control form-control-sm">${dias.map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>
-                <div class="col-3"><input type="time" name="dias[${index}][horaInicio]" class="form-control form-control-sm" value="08:00"></div>
-                <div class="col-3"><input type="time" name="dias[${index}][horaFin]" class="form-control form-control-sm" value="12:00"></div>
-                <div class="col-2"><button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">&times;</button></div>`;
+                <div class="col-4">
+                    <select name="dias[${index}][dia]" class="form-control form-control-sm">
+                        ${diasSemana.map(d => `<option value="${d}" ${d === dia ? 'selected' : ''}>${d}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-3">
+                    <input type="time" name="dias[${index}][horaInicio]" class="form-control form-control-sm" value="${inicio}">
+                </div>
+                <div class="col-3">
+                    <input type="time" name="dias[${index}][horaFin]" class="form-control form-control-sm" value="${fin}">
+                </div>
+                <div class="col-2">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">&times;</button>
+                </div>
+            `;
             container.appendChild(div);
+        }
+
+        // 2. Precargar filas al iniciar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            if (horariosActuales.length > 0) {
+                horariosActuales.forEach(h => {
+                    // Quitamos los segundos (:00) si vienen de la base de datos para el input type="time"
+                    agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5));
+                });
+            }
+        });
+
+        // 3. Botón para agregar nuevos vacíos
+        document.getElementById('add-dia-btn').addEventListener('click', () => {
+            agregarFilaHorario();
         });
     </script>
     <?php $conn->close();

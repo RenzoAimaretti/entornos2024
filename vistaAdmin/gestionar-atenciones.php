@@ -57,8 +57,30 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
 <body>
     <?php require_once '../shared/navbar.php'; ?>
 
+    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="modalDetallesLabel">Detalles del Turno</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <p id="textoDetalle" class="lead"></p>
+                    <p class="text-muted small">¿Desea ver la ficha completa de esta atención?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <a id="btnVerMas" href="#" class="btn btn-primary">Ver Ficha Completa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container-fluid mt-4 px-lg-5">
         <h2 class="text-center mb-4">Panel de Gestión de Atenciones</h2>
+
         <div class="container-fluid px-lg-5">
             <?php if (isset($_GET['error'])): ?>
                 <?php if ($_GET['error'] == 'mascota_ocupada'): ?>
@@ -72,6 +94,7 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
                 <div class="alert alert-success">Atención registrada con éxito.</div>
             <?php endif; ?>
         </div>
+
         <div class="row">
             <div class="col-lg-8 mb-4">
                 <div id="calendario"></div>
@@ -80,13 +103,11 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
             <div class="col-lg-4">
                 <div class="contenedor-registro">
                     <h4 class="mb-4 text-primary border-bottom pb-2">Registrar Nueva Atención</h4>
-
                     <form action="../shared/alta-atencion.php" method="POST">
                         <div class="form-group">
                             <label>Fecha</label>
                             <input type="date" class="form-control" name="fecha" id="fecha_input" required>
                         </div>
-
                         <div class="form-group">
                             <label>Hora</label>
                             <select class="form-control" name="hora" required>
@@ -101,40 +122,39 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
                                 ?>
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label>Mascota</label>
                             <select class="form-control" name="mascota_id" required>
                                 <option value="">Seleccione mascota...</option>
-                                <?php while ($m = $resMascotas->fetch_assoc()): ?>
+                                <?php $resMascotas->data_seek(0);
+                                while ($m = $resMascotas->fetch_assoc()): ?>
                                     <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['nombre']); ?>
                                     </option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label>Especialista</label>
                             <select class="form-control" name="especialista_id" required>
                                 <option value="">Seleccione médico...</option>
-                                <?php while ($e = $resEspecialistas->fetch_assoc()): ?>
+                                <?php $resEspecialistas->data_seek(0);
+                                while ($e = $resEspecialistas->fetch_assoc()): ?>
                                     <option value="<?php echo $e['id']; ?>"><?php echo htmlspecialchars($e['nombre']); ?>
                                     </option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label>Servicio</label>
                             <select class="form-control" name="servicio_id" required>
                                 <option value="">Seleccione servicio...</option>
-                                <?php while ($s = $resServicios->fetch_assoc()): ?>
+                                <?php $resServicios->data_seek(0);
+                                while ($s = $resServicios->fetch_assoc()): ?>
                                     <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['nombre']); ?>
                                     </option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
-
                         <button type="submit" class="btn btn-primary btn-block">Registrar Atención</button>
                     </form>
                 </div>
@@ -145,10 +165,8 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // 1. DESAPARECER ALERTAS AUTOMÁTICAMENTE
-            // Busca todas las alertas y las oculta después de 5 segundos
             setTimeout(function () {
                 $('.alert').fadeOut('slow', function () {
-                    // Una vez que se desvanecen, limpiamos la URL para que no queden los parámetros ?res=ok o ?error=...
                     const url = new URL(window.location);
                     url.searchParams.delete('res');
                     url.searchParams.delete('error');
@@ -172,14 +190,20 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
 
                 dateClick: function (info) {
                     document.getElementById('fecha_input').value = info.dateStr;
-                    // Opcional: Al hacer clic en el calendario, ocultar alertas manualmente si aún existen
                     $('.alert').fadeOut();
                 },
 
+                // AQUÍ CAMBIAMOS EL COMPORTAMIENTO DEL CLICK
                 eventClick: function (info) {
-                    if (confirm(`¿Ver detalles de: "${info.event.title}"?`)) {
-                        window.location.href = '../shared/detalle-atencionAP.php?id=' + info.event.id;
-                    }
+                    // Evitamos el confirm de localhost y preparamos el modal
+                    var idAtencion = info.event.id;
+                    var titulo = info.event.title;
+
+                    document.getElementById('textoDetalle').innerText = titulo;
+                    document.getElementById('btnVerMas').href = '../shared/detalle-atencionAP.php?id=' + idAtencion;
+
+                    // Abrimos el modal de Bootstrap
+                    $('#modalDetalles').modal('show');
                 }
             });
             calendar.render();

@@ -11,10 +11,9 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Verificar si se recibieron los datos necesarios
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'];
-
+// Verificar si se recibió el ID por POST (enviado desde el modal)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+    $id = intval($_POST['id']);
 
     // Consulta preparada para eliminar la atención
     $query = "DELETE FROM atenciones WHERE id = ?";
@@ -22,13 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
-        header("Location: gestionar-atenciones.php");
+        // Redirigir a la vista de gestión con aviso de éxito
+        header("Location: ../vistaAdmin/gestionar-atenciones.php?res=eliminado");
         exit();
     } else {
         echo "Error al eliminar la atención: " . $stmt->error;
     }
 
     $stmt->close();
+} else {
+    // Si se accede directamente o sin ID, volver al calendario
+    header("Location: ../vistaAdmin/gestionar-atenciones.php");
+    exit();
 }
 
 $conn->close();

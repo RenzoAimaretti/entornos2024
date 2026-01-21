@@ -31,60 +31,41 @@ if (isset($_POST['id'])) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_pro = intval($_POST['id']);
     $especialidad = $_POST['especialidad'];
     $telefono = $_POST['telefono'];
-    $dias = $_POST['dias'];
+    $dias = isset($_POST['dias']) ? $_POST['dias'] : []; // Si no hay días, enviamos array vacío
 
-    // Validar los datos
     if (!empty($especialidad) && !empty($telefono)) {
+        // A. Actualizamos datos básicos del profesional
         $sql = "UPDATE profesionales SET id_esp = ?, telefono = ? WHERE id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("isi", $especialidad, $telefono, $_POST['id']);
+        $stmt->bind_param("isi", $especialidad, $telefono, $id_pro);
+        $stmt->execute();
 
-        if ($stmt->execute()) {
-            // Actualizar los días de atención
-            if(!empty($dias) && is_array($dias)) {
-                // Insertar los nuevos horarios
-                
-                $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
-                    $deleteStmt = $conn->prepare($deleteQuery);
-                    $deleteStmt->bind_param("i", $_POST['id']);
-                    $deleteStmt->execute();
-                    $deleteStmt->close();
-                foreach ($dias as $dia) {
-                    $diaSem = $dia['dia'];
-                    $horaIni = $dia['horaInicio'];
-                    $horaFin = $dia['horaFin'];
-                    //Para facilitar el manejo, se eliminan todos los horarios previos y se insertan los nuevos
-                    // Podria optimizar para no eliminar si no hay cambios
-                    $insertQuery = "INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES (?, ?, ?, ?)";
-                    $insertStmt = $conn->prepare($insertQuery);
-                    $insertStmt->bind_param("isss", $_POST['id'], $diaSem, $horaIni, $horaFin);
-                    $insertStmt->execute();
-                    $insertStmt->close();
-                }
-            }else {
-                // Si no se proporcionan días, eliminar todos los horarios
-                $deleteQuery = "DELETE FROM profesionales_horarios WHERE idPro = ?";
-                $deleteStmt = $conn->prepare($deleteQuery);
-                $deleteStmt->bind_param("i", $_POST['id']);
-                $deleteStmt->execute();
-                $deleteStmt->close();
+        // B. Limpiamos TODOS los horarios viejos para este profesional
+        $conn->query("DELETE FROM profesionales_horarios WHERE idPro = $id_pro");
+
+        // C. Insertamos los que vienen del formulario (nuevos y editados)
+        if (!empty($dias)) {
+            $insertStmt = $conn->prepare("INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES (?, ?, ?, ?)");
+            foreach ($dias as $dia) {
+                $diaSem = $dia['dia'];
+                $horaIni = $dia['horaInicio'];
+                $horaFin = $dia['horaFin'];
+
+                $insertStmt->bind_param("isss", $id_pro, $diaSem, $horaIni, $horaFin);
+                $insertStmt->execute();
             }
-            // Redirigir a la página anterior
-            // Redirigir usando POST mediante un formulario autoenviado
-            echo '<form id="redirigir" action="' . htmlspecialchars($_SERVER['HTTP_REFERER']) . '" method="post">';
-            echo '<input type="hidden" name="id" value="' . htmlspecialchars($_POST['id']) . '">';
-            echo '</form>';
-            echo '<script>document.getElementById("redirigir").submit();</script>';
-            exit();
-        } else {
-            echo "Error al actualizar el usuario: " . $stmt->error;
+            $insertStmt->close();
         }
-        
-        $stmt->close();
-    } else {
-        echo "Por favor, complete todos los campos correctamente.";
+
+        // Redirección POST (como ya tenías)
+        echo '<form id="redirigir" action="' . htmlspecialchars($_SERVER['HTTP_REFERER']) . '" method="post">';
+        echo '<input type="hidden" name="id" value="' . $id_pro . '">';
+        echo '</form>';
+        echo '<script>document.getElementById("redirigir").submit();</script>';
+        exit();
     }
 }
 $conn->close();

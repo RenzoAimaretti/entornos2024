@@ -1,34 +1,32 @@
 <?php
 session_start();
-
 require '../vendor/autoload.php';
 
-
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-// Verifica permisos: solo admin o profesional pueden entrar
+// 1. Verifica permisos: solo admin o especialista pueden ver los eventos
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
-    die("Acceso denegado");
+    header('Content-Type: application/json');
+    echo json_encode([]); // Devolver array vacío si no hay permiso
+    exit;
 }
-
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+    die("Error de conexión");
 }
 
-// Construir query base
+// 2. Construir query base
+// Usamos CONCAT para que en el calendario se vea "Nombre Mascota - Nombre Servicio"
 $query = "SELECT a.id, 
-                 m.nombre AS title, 
-                 fecha AS start
+                 CONCAT(m.nombre, ' - ', s.nombre) AS title, 
+                 a.fecha AS start
           FROM atenciones a
           INNER JOIN mascotas m ON a.id_mascota = m.id
-          INNER JOIN servicios s ON a.id_serv = s.id
-          INNER JOIN profesionales p ON a.id_pro = p.id
-          INNER JOIN usuarios u ON p.id = u.id";
-// Si es profesional, filtrar por su ID
+          INNER JOIN servicios s ON a.id_serv = s.id";
+
+// 3. Si el usuario es especialista, filtramos para que solo vea SUS turnos
 if ($_SESSION['usuario_tipo'] === 'especialista') {
     $idProfesional = intval($_SESSION['usuario_id']);
     $query .= " WHERE a.id_pro = $idProfesional";
@@ -43,6 +41,8 @@ if ($result && $result->num_rows > 0) {
     }
 }
 
+// 4. IMPORTANTE: Definir el header como JSON para que FullCalendar lo entienda
 header('Content-Type: application/json');
 echo json_encode($eventos);
+$conn->close();
 ?>
