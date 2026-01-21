@@ -23,12 +23,11 @@ $fecha = $_POST['fecha'] ?? null;
 $horariosDisponibles = [];
 
 if ($id_pro && $fecha) {
-  // Definir la conversión de día de la semana de número a string
   $diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
   $diaSemanaNum = date('w', strtotime($fecha)); // 0 para Domingo, 6 para Sábado
   $diaSemanaStr = $diasSemana[$diaSemanaNum];
 
-  // Consulta para obtener los horarios de atención y excluir los ya ocupados
+
   $sql = "SELECT DISTINCT ph.horaIni, ph.horaFin
             FROM profesionales_horarios ph
             WHERE ph.idPro = ? AND ph.diaSem = ?";

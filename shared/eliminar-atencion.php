@@ -13,13 +13,13 @@ if ($conn->connect_error) {
 
 // Verificar si se recibieron los datos necesarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'] ;
-    
+    $id = $_POST['id'];
+
 
     // Consulta preparada para eliminar la atención
     $query = "DELETE FROM atenciones WHERE id = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i",$id);
+    $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
         header("Location: gestionar-atenciones.php");

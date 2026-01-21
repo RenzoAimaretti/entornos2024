@@ -7,7 +7,8 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
 
 // Conexión a la base de datos
 require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));$dotenv->load();
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
 // Crear conexión
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
@@ -35,7 +36,7 @@ $result = $conn->query($query);
 </head>
 
 <body>
-    <?php require_once '../shared/navbar.php'; ?> 
+    <?php require_once '../shared/navbar.php'; ?>
 
     <!-- Título -->
     <div class="container my-4">
@@ -65,8 +66,8 @@ $result = $conn->query($query);
                                 <td><?php echo htmlspecialchars($row['telefono']); ?></td>
                                 <td>
                                     <form action="detalle-especialista.php" method="post" style="display:inline;">
-                                      <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
-                                      <button type="submit" class="btn btn-info btn-sm">Ver</button>
+                                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
+                                        <button type="submit" class="btn btn-info btn-sm">Ver</button>
                                     </form>
                                 </td>
                             </tr>
@@ -87,8 +88,7 @@ $result = $conn->query($query);
     <!-- Bootstrap Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>
-
-

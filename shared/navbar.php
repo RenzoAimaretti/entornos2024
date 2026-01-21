@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="../index.php">
       <img src="https://doctoravanevet.com/wp-content/uploads/2020/04/Servicios-vectores-consulta-integral.png"
@@ -22,7 +22,6 @@
               aria-haspopup="true" aria-expanded="false">
               <?php echo $_SESSION['usuario_nombre']; ?>
             </a>
-            <!-- hay que meter todos estos en una carpeta y meter validaciones de tipo de usuario -->
             <div class="dropdown-menu" aria-labelledby="usuarioDropdown">
               <?php if ($_SESSION['usuario_tipo'] === 'cliente'): ?>
                 <a class="dropdown-item" href="../vistaCliente/mis-turnos.php">Mis Turnos</a>
@@ -33,10 +32,10 @@
           </li>
         <?php else: ?>
           <li class="nav-item">
-            <a class="nav-link" href="iniciar-sesion.php">Iniciar sesión</a>
+            <a class="nav-link" href="../iniciar-sesion.php">Iniciar sesión</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="registrarse.php">Registrarse</a>
+            <a class="nav-link" href="../registrarse.php">Registrarse</a>
           </li>
         <?php endif; ?>
         <li class="nav-item dropdown">
@@ -50,11 +49,10 @@
             <a class="dropdown-item" href="../contactanos.php">Contacto</a>
             <?php
             if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
-              <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profecionales</a>
+              <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profesionales</a>
               <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
               <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
               <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
-
             <?php endif; ?>
           </div>
         </li>
@@ -62,3 +60,39 @@
     </div>
   </div>
 </nav>
+
+<div class="bg-light border-bottom mb-4">
+  <div class="container py-2">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 p-0" style="background: transparent;">
+        <?php
+        $pagina_actual = basename($_SERVER['PHP_SELF']);
+
+        // El inicio siempre está presente
+        echo '<li class="breadcrumb-item"><a href="../index.php">Inicio</a></li>';
+
+        // Si no estamos en el index, agregamos la página actual
+        if ($pagina_actual !== 'index.php') {
+          // Mapeo de nombres para que queden lindos (ej: mis-turnos.php -> Mis Turnos)
+          $nombres_paginas = [
+            'mis-turnos.php' => 'Mis Turnos',
+            'mis-mascotas.php' => 'Mis Mascotas',
+            'profesionales.php' => 'Profesionales',
+            'nosotros.php' => 'Nosotros',
+            'contactanos.php' => 'Contacto',
+            'iniciar-sesion.php' => 'Iniciar Sesión',
+            'registrarse.php' => 'Registrarse',
+            'gestionar-atenciones.php' => 'Gestionar Atenciones',
+            'detalle-mascota.php' => 'Detalle de Mascota',
+            'detalle-atencionAP.php' => 'Detalle de Atención'
+          ];
+
+          $label = $nombres_paginas[$pagina_actual] ?? ucfirst(str_replace(['-', '.php'], [' ', ''], $pagina_actual));
+
+          echo '<li class="breadcrumb-item active" aria-current="page">' . htmlspecialchars($label) . '</li>';
+        }
+        ?>
+      </ol>
+    </nav>
+  </div>
+</div>

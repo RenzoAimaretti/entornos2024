@@ -1,4 +1,4 @@
-/* General Styles */
+
 body {
   font-family: 'Arial', sans-serif;
 }
@@ -10,7 +10,6 @@ body {
 
 .logo {
   width: 40px;
-  /* Ajusta el tamaño aquí */
   height: auto;
   margin-right: 10px;
 }
@@ -23,7 +22,6 @@ body {
 
 .header-img {
   max-width: 30%;
-  /* Ajusta el tamaño de las imágenes */
   height: auto;
 }
 
@@ -35,7 +33,7 @@ body {
 
 .bg-green {
   background-color: #a8d08d;
-  /* Ajusta el color verde aquí */
+
 }
 
 footer {
@@ -64,4 +62,37 @@ footer p {
   height: 30px;
   border-radius: 50%;
   margin-right: 5px;
+}
+
+/* Estilos específicos para el Footer y Mapa del Sitio */
+.footer-custom {
+  background-color: #343a40;
+  color: #ffffff;
+  padding: 40px 0 20px 0;
+}
+
+.footer-custom h5 {
+  color: #a8d08d;
+  border-bottom: 2px solid #a8d08d;
+  display: inline-block;
+  padding-bottom: 5px;
+  margin-bottom: 20px;
+}
+
+.footer-custom a {
+  color: #e0e0e0;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-custom a:hover {
+  color: #a8d08d;
+  padding-left: 5px;
+}
+
+.footer-custom .copyright {
+  background-color: #2b2f33;
+  margin-top: 30px;
+  padding: 15px 0;
+  font-size: 0.85rem;
 }

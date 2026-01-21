@@ -128,6 +128,7 @@ $conn->close();
       <p>Mail: sananton24@gmail.com</p>
     </div>
   </footer>
+  <?php require_once 'shared/footer.php'; ?>
 </body>
 
 </html>

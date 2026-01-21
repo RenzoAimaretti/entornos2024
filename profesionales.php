@@ -16,14 +16,6 @@ session_start()
   <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
 
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Buscar Profesionales</li>
-    </ol>
-  </nav>
-
   <!-- Formulario de Búsqueda de Profesionales -->
   <div class="container">
     <div class="row justify-content-center">
@@ -47,11 +39,15 @@ session_start()
   <?php
   if (isset($_GET['search'])) {
     $search = $_GET['search'];
-    // Conexión a la base de datos (ajusta los parámetros según tu configuración)
-    $conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria');
 
+    require 'vendor/autoload.php';
+
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+
+    $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
     if ($conn->connect_error) {
-      die("Conexión fallida: " . $conn->connect_error);
+      die("Error de conexión: " . $conn->connect_error);
     }
 
     // Consulta para buscar profesionales por nombre o especialidad
@@ -91,6 +87,7 @@ session_start()
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <?php require_once 'shared/footer.php'; ?>
 </body>
 
 </html>

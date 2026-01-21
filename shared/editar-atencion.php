@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Todos los campos son obligatorios.");
     }
 
-    // Consulta preparada para actualizar la atención
+
     $query = "UPDATE atenciones SET fecha = ?, detalle = ? WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("ssi", $fecha, $detalle, $id);

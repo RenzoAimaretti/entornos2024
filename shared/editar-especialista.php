@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-if(isset($_POST['id'])){
+if (isset($_POST['id'])) {
     $sql = "SELECT * FROM usuarios WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $_POST['id']);
@@ -29,7 +29,7 @@ if(isset($_POST['id'])){
 
 }
 
-// Procesar el formulario de edición
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $especialidad = $_POST['especialidad'];
     $telefono = $_POST['telefono'];

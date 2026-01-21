@@ -102,7 +102,6 @@ if ($service_id_selected) {
   $stmtMasc->close();
 
 } else {
-  // Vista inicial: lista de todos los servicios
   $sqlServicios = "SELECT id, nombre, precio FROM servicios";
   $resultServ = $conn->query($sqlServicios);
   $servicios = $resultServ->fetch_all(MYSQLI_ASSOC);
@@ -117,6 +116,7 @@ $conn->close();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veterinaria San Antón - Solicitar Turno</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../styles.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -348,7 +348,6 @@ $conn->close();
           if (horariosPro) {
             const horarioAtencion = horariosPro.find(h => h.diaSem === diaSemanaStr);
             if (horarioAtencion) {
-              // AJAX call to get available slots
               $.ajax({
                 url: 'verificar-turno-disponible-servicio.php',
                 method: 'POST',
@@ -413,6 +412,7 @@ $conn->close();
       }
     });
   </script>
+  <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>

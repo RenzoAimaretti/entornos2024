@@ -17,25 +17,13 @@ session_start();
   <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
 
-  <!-- Barra de Navegación Secundaria -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-      <li class="breadcrumb-item"><a href="iniciar-sesion.php">Iniciar sesión</a></li>
-      <li class="breadcrumb-item"><a href="registrarse.php">Registrarse</a></li>
-      <li class="breadcrumb-item"><a href="servicios.php">Servicios</a></li>
-      <li class="breadcrumb-item"><a href="nosotros.php">Nosotros</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Contacto</li>
-    </ol>
-  </nav>
-
   <!-- Contenido Principal -->
   <div class="container mt-5">
     <h1>Contactanos y te asesoramos</h1>
     <p>Te ayudamos a seleccionar el plan adecuado para tu mascota</p>
     <h3>Asesoramiento comercial</h3>
 
-    <!-- Bloques clicables -->
+
     <div class="row mt-4 mb-4">
       <div class="col-md-6">
         <a href="https://wa.me/5493412754750" class="btn btn-success btn-block">
@@ -62,6 +50,7 @@ session_start();
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <?php require_once 'shared/footer.php'; ?>
 </body>
 
 </html>

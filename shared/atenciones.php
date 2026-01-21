@@ -3,12 +3,14 @@ session_start();
 
 require '../vendor/autoload.php';
 
+
+if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
 // Verifica permisos: solo admin o profesional pueden entrar
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
     die("Acceso denegado");
 }
 
-// Cargar variables de entorno
+
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 

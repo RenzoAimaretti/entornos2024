@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
   $stmt->bind_param('i', $turno_id);
 
   if ($stmt->execute()) {
-    // Redirigir de vuelta a mis-turnos.php
+
     header('Location: ../vistaCliente/mis-turnos.php');
     exit();
   } else {
