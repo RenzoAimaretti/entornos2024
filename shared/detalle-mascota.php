@@ -179,7 +179,43 @@ $hoy = date('Y-m-d');
                         </table>
                     </div>
                 </div>
-
+                <div class="card shadow mb-4 border-danger">
+                    <div class="card-body">
+                        <h4 class="text-danger"><i class="fas fa-bed"></i> Historial de Hospitalizaciones</h4>
+                        <table class="table table-sm mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Ingreso</th>
+                                    <th>Egreso Real</th>
+                                    <th>Derivado por</th>
+                                    <th>Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $qHosp = "SELECT h.*, u.nombre as profesional 
+                          FROM hospitalizaciones h
+                          INNER JOIN usuarios u ON h.id_pro_deriva = u.id
+                          WHERE h.id_mascota = $idMascota ORDER BY h.fecha_ingreso DESC";
+                                $resH = $conn->query($qHosp);
+                                if ($resH && $resH->num_rows > 0) {
+                                    while ($h = $resH->fetch_assoc()) {
+                                        $egreso = ($h['estado'] == 'Activa') ? '<span class="badge badge-warning">Aún internado</span>' : date('d/m/Y', strtotime($h['fecha_egreso_real']));
+                                        echo "<tr>
+                                <td>" . date('d/m/Y', strtotime($h['fecha_ingreso'])) . "</td>
+                                <td>$egreso</td>
+                                <td>{$h['profesional']}</td>
+                                <td>" . htmlspecialchars($h['motivo']) . "</td>
+                              </tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='4' class='text-center text-muted'>No registra internaciones</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 <div class="card shadow mb-4">
                     <div class="card-body">
                         <h3><i class="fas fa-file-medical"></i> Historia Clínica (Consultas y Cirugías)</h3>

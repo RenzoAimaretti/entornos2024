@@ -14,6 +14,7 @@
         <li class="nav-item">
           <a class="nav-link active" href="../index.php">Inicio</a>
         </li>
+
         <?php if (isset($_SESSION['usuario_nombre'])): ?>
           <li class="nav-item dropdown d-flex align-items-center">
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Usuario" width="40" height="40"
@@ -38,6 +39,7 @@
             <a class="nav-link" href="../registrarse.php">Registrarse</a>
           </li>
         <?php endif; ?>
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
             aria-haspopup="true" aria-expanded="false">
@@ -47,12 +49,23 @@
             <a class="dropdown-item" href="../profesionales.php">Profesionales</a>
             <a class="dropdown-item" href="../nosotros.php">Nosotros</a>
             <a class="dropdown-item" href="../contactanos.php">Contacto</a>
-            <?php
-            if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
-              <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profesionales</a>
-              <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
-              <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
-              <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
+
+            <?php if (isset($_SESSION['usuario_tipo'])): ?>
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">Gestión Interna</h6>
+
+              <?php if ($_SESSION['usuario_tipo'] === 'especialista'): ?>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-hospitalizacion.php">Gestionar Hospitalización</a>
+              <?php endif; ?>
+
+              <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-hospitalizacion.php">Gestionar Hospitalización</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-atenciones.php">Gestionar Atenciones</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-especialistas.php">Gestionar Profesionales</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
+                <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
+              <?php endif; ?>
+
             <?php endif; ?>
           </div>
         </li>
@@ -67,13 +80,9 @@
       <ol class="breadcrumb mb-0 p-0" style="background: transparent;">
         <?php
         $pagina_actual = basename($_SERVER['PHP_SELF']);
-
-        // El inicio siempre está presente
         echo '<li class="breadcrumb-item"><a href="../index.php">Inicio</a></li>';
 
-        // Si no estamos en el index, agregamos la página actual
         if ($pagina_actual !== 'index.php') {
-          // Mapeo de nombres para que queden lindos (ej: mis-turnos.php -> Mis Turnos)
           $nombres_paginas = [
             'mis-turnos.php' => 'Mis Turnos',
             'mis-mascotas.php' => 'Mis Mascotas',
@@ -84,11 +93,10 @@
             'registrarse.php' => 'Registrarse',
             'gestionar-atenciones.php' => 'Gestionar Atenciones',
             'detalle-mascota.php' => 'Detalle de Mascota',
-            'detalle-atencionAP.php' => 'Detalle de Atención'
+            'detalle-atencionAP.php' => 'Detalle de Atención',
+            'gestionar-hospitalizacion.php' => 'Gestión de Hospitalización'
           ];
-
           $label = $nombres_paginas[$pagina_actual] ?? ucfirst(str_replace(['-', '.php'], [' ', ''], $pagina_actual));
-
           echo '<li class="breadcrumb-item active" aria-current="page">' . htmlspecialchars($label) . '</li>';
         }
         ?>
