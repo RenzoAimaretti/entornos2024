@@ -3,64 +3,32 @@ session_start();
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Recibir y limpiar datos
-    if ($_SESSION['usuario_tipo'] === 'especialista') {
-        $id_pro = $_SESSION['usuario_id'];
-    } else {
-        $id_pro = isset($_POST['especialista_id']) ? intval($_POST['especialista_id']) : null;
-    }
-
-    $fecha = $_POST['fecha'] ?? '';
-    $hora = $_POST['hora'] ?? '';
-    $id_mascota = isset($_POST['mascota_id']) ? intval($_POST['mascota_id']) : 0;
-    $id_serv = isset($_POST['servicio_id']) ? intval($_POST['servicio_id']) : null;
-    $detalle = $_POST['detalle'] ?? 'Atención pendiente de actualización por el Especialista';
-
-    // Formatear fecha para la base de datos
+    $id_pro = intval($_POST['especialista_id']);
+    $fecha = $_POST['fecha'];
+    $hora = $_POST['hora'];
+    $id_mascota = intval($_POST['mascota_id']);
+    $id_serv = intval($_POST['servicio_id']);
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 
-    // --- INICIO DE VALIDACIONES ---
+    // Validación de seguridad (Especialista ocupado)
+    $check = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
+    $check->bind_param("is", $id_pro, $fecha_hora);
+    $check->execute();
 
-    // A. Validar disponibilidad de la MASCOTA
-    $checkMascota = $conn->prepare("SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?");
-    $checkMascota->bind_param("is", $id_mascota, $fecha_hora);
-    $checkMascota->execute();
-    if ($checkMascota->get_result()->num_rows > 0) {
-        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "error=mascota_ocupada");
+    if ($check->get_result()->num_rows > 0) {
+        header("Location: ../vistaAdmin/gestionar-atenciones.php?error=especialista_ocupado");
         exit;
     }
 
-    // B. Validar disponibilidad del ESPECIALISTA
-    $checkPro = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
-    $checkPro->bind_param("is", $id_pro, $fecha_hora);
-    $checkPro->execute();
-    if ($checkPro->get_result()->num_rows > 0) {
-        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "error=especialista_ocupado");
-        exit;
-    }
-
-    // --- FIN DE VALIDACIONES ---
-
-    // 2. Insertar en la base de datos si las validaciones pasaron
-    $stmt = $conn->prepare("
-        INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_hora, $detalle);
+    $stmt = $conn->prepare("INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, 'Atención programada')");
+    $stmt->bind_param("iiis", $id_mascota, $id_serv, $id_pro, $fecha_hora);
 
     if ($stmt->execute()) {
-        // Redirigir con mensaje de éxito
-        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "res=ok");
-        exit;
+        header("Location: ../vistaAdmin/gestionar-atenciones.php?res=ok");
     } else {
-        echo "Error al registrar: " . $conn->error;
+        echo "Error: " . $conn->error;
     }
 }
-?>

@@ -50,7 +50,7 @@
             <a class="dropdown-item" href="../nosotros.php">Nosotros</a>
             <a class="dropdown-item" href="../contactanos.php">Contacto</a>
 
-            <?php if (isset($_SESSION['usuario_tipo'])): ?>
+            <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] !== 'cliente'): ?>
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Gestión Interna</h6>
 
@@ -65,8 +65,8 @@
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-clientes.php">Gestionar Clientes</a>
                 <a class="dropdown-item" href="../vistaAdmin/gestionar-mascotas.php">Gestionar Mascotas</a>
               <?php endif; ?>
-
             <?php endif; ?>
+
           </div>
         </li>
       </ul>

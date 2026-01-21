@@ -102,12 +102,92 @@ if ($modo === 'especialista' && $profesionalId) {
                 <?php endforeach; ?>
             </select>
         <?php else: ?>
-            <input type="text" class="form-control" id="servicio" name="servicio" placeholder="Buscar servicio..."
-                autocomplete="off" required>
-            <input type="hidden" id="servicio_id" name="servicio_id">
-            <div id="servicio_sugerencias" class="autocomplete-list" style="display:none;"></div>
+            <select class="form-control" id="servicio" name="servicio_id" required>
+                <option value="">Seleccione un servicio</option>
+            </select>
         <?php endif; ?>
     </div>
 
     <button type="submit" class="btn btn-primary btn-block">Registrar Atención</button>
 </form>
+
+<script>
+    $(document).ready(function () {
+        // Función genérica de autocomplete
+        function buscar(tipo, texto, callback) {
+            $.get('../shared/buscar-' + tipo + '.php', { q: texto }, function (data) {
+                callback(data);
+            }).fail(function () {
+                alert('Error de conexión al buscar ' + tipo);
+            });
+        }
+
+        // Autocomplete para mascota
+        $('#mascota').on('input', function () {
+            const query = $(this).val();
+            if (query.length > 1) {
+                buscar('mascota', query, function (data) {
+                    mostrarSugerencias('mascota', data);
+                });
+            } else {
+                $('#mascota_sugerencias').hide();
+            }
+        });
+
+        // Autocomplete para especialista
+        $('#especialista').on('input', function () {
+            const fecha = $('#fecha').val();
+            const hora = $('#hora').val();
+            if (fecha && hora) {
+                $.get('../shared/buscar-especialista.php', { q: $(this).val(), fecha: fecha, hora: hora }, function (data) {
+                    mostrarSugerencias('especialista', data);
+                }).fail(function () {
+                    alert('Error de conexión al buscar especialista');
+                });
+            } else {
+                alert('Primero seleccione fecha y hora');
+                $(this).val('');
+            }
+        });
+
+        // Autocomplete para servicio - REMOVED since it's now select
+
+        // Función para mostrar sugerencias
+        function mostrarSugerencias(tipo, data) {
+            const sugerenciasDiv = $('#' + tipo + '_sugerencias');
+            sugerenciasDiv.empty();
+            if (data.length > 0) {
+                data.forEach(function (item) {
+                    const div = $('<div></div>').text(item.nombre).click(function () {
+                        $('#' + tipo).val(item.nombre);
+                        $('#' + tipo + '_id').val(item.id);
+                        if (tipo === 'especialista') {
+                            // Load services for this specialist
+                            $.get('../shared/buscar-servicio.php', { especialista_id: item.id }, function (data) {
+                                $('#servicio').empty();
+                                $('#servicio').append('<option value="">Seleccione un servicio</option>');
+                                data.forEach(function (serv) {
+                                    $('#servicio').append('<option value="' + serv.id + '">' + serv.nombre + '</option>');
+                                });
+                            }).fail(function () {
+                                alert('Error al cargar servicios');
+                            });
+                        }
+                        sugerenciasDiv.hide();
+                    });
+                    sugerenciasDiv.append(div);
+                });
+                sugerenciasDiv.show();
+            } else {
+                sugerenciasDiv.hide();
+            }
+        }
+
+        // Ocultar sugerencias al hacer clic fuera
+        $(document).click(function (e) {
+            if (!$(e.target).closest('.position-relative').length) {
+                $('.autocomplete-list').hide();
+            }
+        });
+    });
+</script>
