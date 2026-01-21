@@ -18,6 +18,25 @@ session_start();
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <link href="../styles.css" rel="stylesheet">
+
+    <style>
+    .autocomplete-list {
+        border: 1px solid #ccc;
+        background: #fff;
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .autocomplete-list div {
+        padding: 5px;
+        cursor: pointer;
+    }
+    .autocomplete-list div:hover {
+        background: #eee;
+    }
+    </style>
 </head>
 
 <body>
@@ -48,6 +67,8 @@ session_start();
             window.location.href = '../shared/detalle-atencionAP.php?id=' + id;
         }
     </script>
+    <?php $modo = 'default';
+include '../shared/form-turno.php';?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <?php require_once '../shared/footer.php'; ?>

@@ -26,6 +26,13 @@ if ($conn->connect_error) {
 
 
 $query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue, m.id_cliente
+// Verificar si el usuario está autenticado
+if ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo']!=='cliente' && $_SESSION['usuario_tipo']!=='especialista') {
+    die("Acceso denegado");
+}
+
+
+$query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue
           FROM mascotas m 
           WHERE m.id = $idMascota";
 
@@ -46,8 +53,15 @@ if ($result && $result->num_rows > 0) {
 // VALIDACIÓN DE SEGURIDAD PARA CLIENTES: solo pueden ver sus propias mascotas
 if ($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idPropietario) {
     die("Acceso denegado: esta mascota no le pertenece.");
+    $idClienteMascota = $row['id_cliente'];
 }
 
+//Validar que la mascota pertenezca al cliente si el usuario es cliente
+if($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idClienteMascota){
+    die("Acceso denegado, la mascota no pertenece al cliente.");
+    $conn->close();
+
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -86,6 +100,25 @@ if ($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idPro
                         </button>
                     <?php endif; ?>
                 </div>
+<div class="d-flex justify-content-center">
+    <div class="card text-center" style="width:50rem;">
+        <div class="card-header">
+            <h2>Detalles de <?php echo $mascota_nombre?> </h2>
+        </div>
+    <div class="card-body">
+        <div>
+            <p><strong>Nombre:</strong> <?php echo htmlspecialchars($mascota_nombre); ?></p>
+            <p><strong>Raza:</strong> <?php echo htmlspecialchars($raza); ?></p>
+            <p><strong>Fecha de Nacimiento:</strong> <?php echo htmlspecialchars($fecha_nac ? $fecha_nac:'N/A'); ?></p>
+            <p><strong>Fecha de Muerte:</strong> <?php echo htmlspecialchars($fecha_mue ? $fecha_mue : 'N/A'); ?></p>
+            <button 
+            type="button" 
+            class="btn btn-warning" 
+            data-toggle="modal" 
+            data-target="#editarModal"
+            <?php if ($_SESSION['usuario_tipo'] === 'cliente') echo 'disabled'; ?>
+            >Editar</button>
+        </div>
 
                 <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel"
                     aria-hidden="true">
@@ -189,6 +222,33 @@ if ($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idPro
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+                            $query = "SELECT a.fecha, s.nombre as nombreServicio, u.nombre as nombrePro from atenciones a
+                                inner join usuarios u on a.id_pro = u.id
+                                inner join servicios s on a.id_serv = s.id
+                                where a.id_mascota = $idMascota
+                              ";
+                    $result = $conn->query($query);
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['fecha']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombreServicio']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['nombrePro']) . "</td>";
+                            echo "<td><a class=\"btn btn-info\" href='detalle-atencion.php'>Ver detalles</a></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td class='text-center' colspan='4'>No hay registros</td></tr>";
+                    }
+                    $conn->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

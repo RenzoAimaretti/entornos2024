@@ -1,6 +1,10 @@
 <?php
-session_start()
-  ?>
+session_start();
+if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especialista') {
+    header("Location: vistaProfesional/dashboardProfesional.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -25,7 +29,7 @@ session_start()
 
   <!-- Encabezado -->
   <?php if (isset($_SESSION['usuario_nombre'])): ?>
-    <h2 class="text-center my-4" style="background-color: #a8d08d; width=100%">Vista de tipo:
+    <h2 class="text-center my-4" style="background-color: #a8d08d; width:100%">Vista de tipo:
       <?php echo $_SESSION['usuario_tipo']; ?>
     </h2>
   <?php endif; ?>

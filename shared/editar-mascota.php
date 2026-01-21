@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_nacimiento = isset($_POST['fecha_nac']) && !empty($_POST['fecha_nac']) ? $_POST['fecha_nac'] : null;
 
 
+    $fecha_nacimiento = isset($_POST['fecha_nac']) && !empty($_POST['fecha_nac']) ? $_POST['fecha_nac'] : null;
     $fecha_muerte = isset($_POST['fecha_mue']) && !empty($_POST['fecha_mue']) ? $_POST['fecha_mue'] : null;
 
     // Validar los datos
