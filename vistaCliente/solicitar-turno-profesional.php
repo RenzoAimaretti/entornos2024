@@ -5,6 +5,10 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
+// Importar clases de PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
@@ -28,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
 
     $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
 
-    //Verificar si la mascota ya tiene turno en ese horario
+    // Verificar si la mascota ya tiene turno
     $sqlCheck = "SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $stmtCheck->bind_param("is", $id_mascota, $fecha_datetime);
@@ -40,19 +44,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     } else {
         $conn->begin_transaction();
         try {
-            $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
-                          VALUES (?, ?, ?, ?, ?)";
+            // INSERTAR TURNO
+            $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, ?)";
             $stmtInsert = $conn->prepare($sqlInsert);
             $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
             $stmtInsert->execute();
+
+            // OBTENER DATOS PARA EL MAIL (Email del cliente, nombre mascota, nombre profesional, nombre servicio)
+            $sqlInfo = "SELECT u_cli.email as mail_cliente, u_cli.nombre as nombre_cliente, 
+                               m.nombre as nombre_mascota, u_pro.nombre as nombre_pro, s.nombre as nombre_serv
+                        FROM usuarios u_cli
+                        INNER JOIN mascotas m ON m.id_cliente = u_cli.id
+                        INNER JOIN usuarios u_pro ON u_pro.id = ?
+                        INNER JOIN servicios s ON s.id = ?
+                        WHERE m.id = ? AND u_cli.id = ?";
+            $stmtInfo = $conn->prepare($sqlInfo);
+            $stmtInfo->bind_param("iiii", $id_pro, $id_serv, $id_mascota, $_SESSION['usuario_id']);
+            $stmtInfo->execute();
+            $infoMail = $stmtInfo->get_result()->fetch_assoc();
+
+            // --- ENVÍO DE EMAIL CON PHPMAILER ---
+            $mail = new PHPMailer(true);
+
+            // Configuración del servidor (Usando Gmail como ejemplo, ajusta según tu .env)
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = $_ENV['MAIL_USERNAME'];
+            $mail->Password = $_ENV['MAIL_PASSWORD']; // La contraseña de 16 letras
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // O PHPMailer::ENCRYPTION_SMTPS
+            $mail->Port = 587; // O 465 si usas SMTPS
+            $mail->CharSet = 'UTF-8';
+
+            // Destinatarios
+            $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
+            $mail->addAddress($infoMail['mail_cliente'], $infoMail['nombre_cliente']);
+
+            // Contenido del mail
+            $mail->isHTML(true);
+            $mail->Subject = 'Confirmación de Turno - San Antón';
+            $mail->Body = "
+                <h3>¡Hola {$infoMail['nombre_cliente']}!</h3>
+                <p>Tu turno ha sido confirmado con éxito. Aquí están los detalles:</p>
+                <ul>
+                    <li><strong>Mascota:</strong> {$infoMail['nombre_mascota']}</li>
+                    <li><strong>Servicio:</strong> {$infoMail['nombre_serv']}</li>
+                    <li><strong>Profesional:</strong> {$infoMail['nombre_pro']}</li>
+                    <li><strong>Fecha y Hora:</strong> " . date('d/m/Y H:i', strtotime($fecha_datetime)) . "</li>
+                    <li><strong>Modalidad:</strong> $modalidad</li>
+                </ul>
+                <p>Gracias por confiar en San Antón.</p>
+            ";
+
+            $mail->send();
+            // -------------------------------------
 
             $conn->commit();
             $_SESSION['turno_exitoso'] = true;
             header("Location: " . $_SERVER['PHP_SELF']);
             exit();
+
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo "<div class='alert alert-danger'>El turno se agendó pero no se pudo enviar el mail: {$mail->ErrorInfo}</div>";
         } catch (mysqli_sql_exception $e) {
             $conn->rollback();
-            echo "<div class='alert alert-danger'>Error al registrar el turno: {$e->getMessage()}</div>";
+            echo "<div class='alert alert-danger'>Error en la base de datos: {$e->getMessage()}</div>";
         }
     }
     $stmtCheck->close();

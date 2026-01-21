@@ -1,5 +1,8 @@
 <?php
 session_start();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 require '../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
@@ -11,29 +14,70 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Verificar si se recibió el ID por POST (enviado desde el modal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = intval($_POST['id']);
 
-    // Consulta preparada para eliminar la atención
+    // 1. Obtener información del turno ANTES de eliminarlo
+    $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre, a.fecha
+                FROM atenciones a
+                INNER JOIN mascotas m ON a.id_mascota = m.id
+                INNER JOIN usuarios u ON m.id_cliente = u.id
+                INNER JOIN servicios s ON a.id_serv = s.id
+                WHERE a.id = ?";
+    $stmtInfo = $conn->prepare($sqlInfo);
+    $stmtInfo->bind_param("i", $id);
+    $stmtInfo->execute();
+    $datos = $stmtInfo->get_result()->fetch_assoc();
+    $stmtInfo->close();
+
+    // 2. Eliminar la atención
     $query = "DELETE FROM atenciones WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
-        // Redirigir a la vista de gestión con aviso de éxito
+        // 3. Enviar Mail de Cancelación
+        if ($datos) {
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = $_ENV['MAIL_USERNAME'];
+                $mail->Password = $_ENV['MAIL_PASSWORD'];
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+                $mail->CharSet = 'UTF-8';
+
+                $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
+                $mail->addAddress($datos['email'], $datos['cliente_nombre']);
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Cancelación de Turno - San Antón';
+                $mail->Body = "
+                    <h3>Hola {$datos['cliente_nombre']},</h3>
+                    <p>Te informamos que el siguiente turno ha sido <strong>cancelado</strong>:</p>
+                    <ul>
+                        <li><strong>Mascota:</strong> {$datos['mascota_nombre']}</li>
+                        <li><strong>Servicio:</strong> {$datos['servicio_nombre']}</li>
+                        <li><strong>Fecha:</strong> " . date('d/m/Y H:i', strtotime($datos['fecha'])) . "</li>
+                    </ul>
+                    <p>Si tienes dudas, por favor contáctanos.</p>
+                    <p>Saludos,<br>San Antón.</p>";
+
+                $mail->send();
+            } catch (Exception $e) {
+                // Error de mail omitido
+            }
+        }
         header("Location: ../vistaAdmin/gestionar-atenciones.php?res=eliminado");
         exit();
     } else {
-        echo "Error al eliminar la atención: " . $stmt->error;
+        echo "Error al eliminar: " . $stmt->error;
     }
-
     $stmt->close();
 } else {
-    // Si se accede directamente o sin ID, volver al calendario
     header("Location: ../vistaAdmin/gestionar-atenciones.php");
     exit();
 }
-
 $conn->close();
-?>
