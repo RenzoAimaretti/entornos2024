@@ -31,13 +31,13 @@ if ($filter === 'completed') {
   $sqlFilter = "AND atenciones.fecha < '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha DESC";
   $activeCompleted = 'active';
-} else { // 'upcoming' por defecto
+} else {
   $sqlFilter = "AND atenciones.fecha >= '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha ASC";
   $activeUpcoming = 'active';
 }
 
-// Obtener los turnos del usuario con el filtro dinámico
+// Obteniene los turnos del usuario con el filtro dinámico
 $sql = "SELECT atenciones.id, atenciones.fecha, servicios.nombre AS servicio, 
                usuarios.nombre AS profesional, mascotas.nombre AS mascota
         FROM atenciones
@@ -78,6 +78,14 @@ $conn->close();
 
   <div class="container mt-5">
     <h1>Mis Turnos</h1>
+
+    <?php if (isset($_SESSION['cancelacion_status']) && $_SESSION['cancelacion_status'] === 'ok'): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>¡Éxito!</strong> El turno fue cancelado y se envió un correo de confirmación.
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+      <?php unset($_SESSION['cancelacion_status']); ?>
+    <?php endif; ?>
     <div class="btn-group mb-3" role="group" aria-label="Filtro de turnos">
       <a href="mis-turnos.php?filter=upcoming" class="btn btn-outline-primary <?= $activeUpcoming ?>">Próximos
         Turnos</a>
@@ -108,7 +116,7 @@ $conn->close();
     <a href="solicitar-turno.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
   </div>
 
-  <!-- Modal de confirmación -->
+
   <div class="modal fade" id="cancelacionModal" tabindex="-1" role="dialog" aria-labelledby="cancelacionModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">

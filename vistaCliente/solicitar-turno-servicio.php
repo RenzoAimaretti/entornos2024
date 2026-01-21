@@ -5,6 +5,10 @@ if (!isset($_SESSION['usuario_id'])) {
   exit();
 }
 
+// 1. IMPORTAR CLASES DE PHPMAILER
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
@@ -30,17 +34,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
   $conn->begin_transaction();
 
   try {
+    // Insertar en la base de datos
     $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
                       VALUES (?, ?, ?, ?, ?)";
     $stmtInsert = $conn->prepare($sqlInsert);
     $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
     $stmtInsert->execute();
 
+    // --- INICIO LÓGICA DE ENVÍO DE MAIL ---
+
+    // Obtener datos descriptivos para el cuerpo del correo
+    $sqlInfo = "SELECT u_cli.email as mail_cliente, u_cli.nombre as nombre_cliente, 
+                           m.nombre as nombre_mascota, u_pro.nombre as nombre_pro, s.nombre as nombre_serv
+                    FROM usuarios u_cli
+                    INNER JOIN mascotas m ON m.id_cliente = u_cli.id
+                    INNER JOIN usuarios u_pro ON u_pro.id = ?
+                    INNER JOIN servicios s ON s.id = ?
+                    WHERE m.id = ? AND u_cli.id = ?";
+    $stmtInfo = $conn->prepare($sqlInfo);
+    $userId = $_SESSION['usuario_id'];
+    $stmtInfo->bind_param("iiii", $id_pro, $id_serv, $id_mascota, $userId);
+    $stmtInfo->execute();
+    $infoMail = $stmtInfo->get_result()->fetch_assoc();
+
+    if ($infoMail) {
+      $mail = new PHPMailer(true);
+
+      // Configuración del servidor
+      $mail->isSMTP();
+      $mail->Host = 'smtp.gmail.com';
+      $mail->SMTPAuth = true;
+      $mail->Username = $_ENV['MAIL_USERNAME'];
+      $mail->Password = $_ENV['MAIL_PASSWORD'];
+      $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+      $mail->Port = 587;
+      $mail->CharSet = 'UTF-8';
+
+      // Destinatarios
+      $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
+      $mail->addAddress($infoMail['mail_cliente'], $infoMail['nombre_cliente']);
+
+      // Contenido
+      $mail->isHTML(true);
+      $mail->Subject = 'Confirmación de Turno - San Antón';
+      $mail->Body = "
+                <div style='font-family: Arial, sans-serif;'>
+                    <h2>¡Turno Confirmado!</h2>
+                    <p>Hola <strong>{$infoMail['nombre_cliente']}</strong>,</p>
+                    <p>Se ha registrado un nuevo turno para tu mascota:</p>
+                    <ul>
+                        <li><strong>Mascota:</strong> {$infoMail['nombre_mascota']}</li>
+                        <li><strong>Servicio:</strong> {$infoMail['nombre_serv']}</li>
+                        <li><strong>Profesional:</strong> {$infoMail['nombre_pro']}</li>
+                        <li><strong>Fecha y Hora:</strong> " . date('d/m/Y H:i', strtotime($fecha_datetime)) . "</li>
+                        <li><strong>Modalidad:</strong> $modalidad</li>
+                    </ul>
+                    <p>¡Te esperamos!</p>
+                    <hr>
+                    <p style='font-size: 0.8em; color: gray;'>Este es un mensaje automático, por favor no respondas a este correo.</p>
+                </div>
+            ";
+
+      $mail->send();
+    }
+    // --- FIN LÓGICA DE ENVÍO DE MAIL ---
+
     $conn->commit();
     $_SESSION['turno_exitoso'] = true;
+
+    // Redirigir para evitar reenvío de formulario al refrescar
+    header("Location: solicitar-turno-servicio.php?service_id=" . $id_serv);
+    exit();
+
+  } catch (Exception $e) {
+    $conn->rollback();
+    echo "<div class='alert alert-danger'>Error al procesar el turno o enviar el mail: {$mail->ErrorInfo}</div>";
   } catch (mysqli_sql_exception $e) {
     $conn->rollback();
-    echo "<div class='alert alert-danger'>Error al registrar el turno: {$e->getMessage()}</div>";
+    echo "<div class='alert alert-danger'>Error de base de datos: {$e->getMessage()}</div>";
   }
 
   if (isset($stmtInsert))
