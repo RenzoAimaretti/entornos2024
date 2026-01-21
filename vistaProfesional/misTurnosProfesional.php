@@ -13,6 +13,7 @@ $nombreProfesional = $_SESSION['usuario_nombre'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,6 +29,7 @@ $nombreProfesional = $_SESSION['usuario_nombre'] ?? '';
 
     <link href="../styles.css" rel="stylesheet" />
 </head>
+
 <body>
     <?php require_once '../shared/navbar.php'; ?>
 
@@ -35,4 +37,5 @@ $nombreProfesional = $_SESSION['usuario_nombre'] ?? '';
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
