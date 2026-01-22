@@ -23,6 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Validación: Mascota no tenga turno en ese horario
+    $check_mascota = $conn->prepare("SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?");
+    $check_mascota->bind_param("is", $id_mascota, $fecha_hora);
+    $check_mascota->execute();
+
+    if ($check_mascota->get_result()->num_rows > 0) {
+        header("Location: ../vistaAdmin/gestionar-atenciones.php?error=mascota_ocupada");
+        exit;
+    }
+
     $stmt = $conn->prepare("INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, 'Atención programada')");
     $stmt->bind_param("iiis", $id_mascota, $id_serv, $id_pro, $fecha_hora);
 

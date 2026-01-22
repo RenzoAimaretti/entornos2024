@@ -1,6 +1,5 @@
 <?php
-// Limpiar cualquier salida previa accidental
-ob_start();
+ob_start(); // Limpieza de seguridad
 header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 ini_set('display_errors', 0);
@@ -24,7 +23,6 @@ if (!$fecha_raw) {
   exit;
 }
 
-// Obtener día en inglés para mapeo
 $dia_ingles = date('l', strtotime($fecha_raw));
 $mapeo = [
   'Monday' => 'Lun',
@@ -37,14 +35,12 @@ $mapeo = [
 ];
 $dia_busqueda = $mapeo[$dia_ingles];
 
-// Consulta con DISTINCT para evitar duplicados
-$sql = "SELECT DISTINCT u.id, u.nombre, s.id AS id_serv, s.nombre AS nombre_serv
+// SQL para obtener médicos sin duplicados
+$sql = "SELECT u.id, u.nombre
         FROM usuarios u
         INNER JOIN profesionales_horarios ph ON u.id = ph.idPro
-        INNER JOIN profesionales p ON u.id = p.id
-        INNER JOIN especialidad e ON p.id_esp = e.id
-        INNER JOIN servicios s ON s.id_esp = e.id
         WHERE ph.diaSem = ? AND u.tipo = 'especialista'
+        GROUP BY u.id, u.nombre
         ORDER BY u.nombre ASC";
 
 $stmt = $conn->prepare($sql);
@@ -57,7 +53,6 @@ while ($row = $res->fetch_assoc()) {
   $medicos[] = $row;
 }
 
-// Limpiar buffer y enviar JSON puro
 ob_end_clean();
 echo json_encode($medicos);
 exit;
