@@ -23,7 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("sii", $detalle, $id, $profesionalId);
     $stmt->execute();
     $stmt->close();
-    $mensaje = "Atención actualizada correctamente.";
+
+    // Redirigir al dashboard con un mensaje de éxito
+    header("Location: dashboardProfesional.php?success=atencion_actualizada");
+    exit();
 }
 
 function get_param($key) {
@@ -40,7 +43,6 @@ $id = get_param('id');
 if (!$id) {
     die("ID de atención no proporcionado.");
 }
-
 
 $sql = "SELECT a.*, m.nombre AS mascota, s.nombre AS servicio
         FROM atenciones a
@@ -71,9 +73,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
 <?php //require_once '../shared/navbar.php'; ?>
 <div class="container my-4">
     <h2>Editar Atención</h2>
-    <?php if (isset($mensaje)): ?>
-        <div class="alert alert-success"><?php echo $mensaje; ?></div>
-    <?php endif; ?>
     <form method="post">
         <input type="hidden" name="id" value="<?php echo htmlspecialchars($atencion['id']); ?>">
         <div class="form-group">

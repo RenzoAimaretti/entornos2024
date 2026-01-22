@@ -1,24 +1,47 @@
 <?php
 session_start();
 
-// 1. Conexión a la base de datos para cargar los selectores
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: ../index.php');
+    exit();
+}
+
+$usuarioId = $_SESSION['usuario_id'];
+$usuarioTipo = $_SESSION['usuario_tipo']; // 'admin' o 'especialista'
+$usuarioNombre = $_SESSION['usuario_nombre'];
+
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 2. Obtener Mascotas
-$resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
 
-// 3. Obtener Especialistas (Asegúrate de usar el nombre correcto de la columna: 'tipo')
-$resEspecialistas = $conn->query("SELECT id, nombre FROM usuarios WHERE tipo = 'especialista' ORDER BY nombre ASC");
+if ($usuarioTipo === 'admin') {
+   
+    $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
+    $resEspecialistas = $conn->query("SELECT id, nombre FROM usuarios WHERE tipo = 'especialista' ORDER BY nombre ASC");
+} elseif ($usuarioTipo === 'especialista') {
+   
+    $resMascotas = $conn->query("
+        SELECT DISTINCT m.id, m.nombre 
+        FROM mascotas m
+        INNER JOIN atenciones a ON m.id = a.id_mascota
+        WHERE a.id_pro = $usuarioId
+        ORDER BY m.nombre ASC
+    ");
+    if (!$resMascotas) {
+        die("Error en la consulta de mascotas: " . $conn->error);
+    }
+}
 
-// 4. Obtener Servicios
 $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre ASC");
+if (!$resServicios) {
+    die("Error en la consulta de servicios: " . $conn->error);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -57,43 +80,8 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
 <body>
     <?php require_once '../shared/navbar.php'; ?>
 
-    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-labelledby="modalDetallesLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="modalDetallesLabel">Detalles del Turno</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body text-center">
-                    <p id="textoDetalle" class="lead"></p>
-                    <p class="text-muted small">¿Desea ver la ficha completa de esta atención?</p>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    <a id="btnVerMas" href="#" class="btn btn-primary">Ver Ficha Completa</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="container-fluid mt-4 px-lg-5">
         <h2 class="text-center mb-4">Panel de Gestión de Atenciones</h2>
-
-        <div class="container-fluid px-lg-5">
-            <?php if (isset($_GET['error'])): ?>
-                <?php if ($_GET['error'] == 'mascota_ocupada'): ?>
-                    <div class="alert alert-danger">La mascota ya tiene una atención programada para ese día y hora.</div>
-                <?php elseif ($_GET['error'] == 'especialista_ocupado'): ?>
-                    <div class="alert alert-warning">El especialista ya tiene otro turno asignado en ese horario.</div>
-                <?php endif; ?>
-            <?php endif; ?>
-
-            <?php if (isset($_GET['res']) && $_GET['res'] == 'ok'): ?>
-                <div class="alert alert-success">Atención registrada con éxito.</div>
-            <?php endif; ?>
-        </div>
 
         <div class="row">
             <div class="col-lg-8 mb-4">
@@ -133,17 +121,25 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Especialista</label>
-                            <select class="form-control" name="especialista_id" required>
-                                <option value="">Seleccione médico...</option>
-                                <?php $resEspecialistas->data_seek(0);
-                                while ($e = $resEspecialistas->fetch_assoc()): ?>
-                                    <option value="<?php echo $e['id']; ?>"><?php echo htmlspecialchars($e['nombre']); ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
+                        <?php if ($usuarioTipo === 'especialista'): ?>
+                            <div class="form-group">
+                                <label>Especialista</label>
+                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($usuarioNombre); ?>" disabled>
+                                <input type="hidden" name="especialista_id" value="<?php echo $usuarioId; ?>">
+                            </div>
+                        <?php elseif ($usuarioTipo === 'admin'): ?>
+                            <div class="form-group">
+                                <label>Especialista</label>
+                                <select class="form-control" name="especialista_id" required>
+                                    <option value="">Seleccione médico...</option>
+                                    <?php $resEspecialistas->data_seek(0);
+                                    while ($e = $resEspecialistas->fetch_assoc()): ?>
+                                        <option value="<?php echo $e['id']; ?>"><?php echo htmlspecialchars($e['nombre']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                         <div class="form-group">
                             <label>Servicio</label>
                             <select class="form-control" name="servicio_id" required>
@@ -162,19 +158,92 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
         </div>
     </div>
 
+    
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="alertModalLabel">Advertencia</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'especialista_ocupado'): ?>
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>El especialista seleccionado ya tiene una atención programada en el horario indicado.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                
+                $('#errorModal').modal('show');
+
+               
+                const url = new URL(window.location.href);
+                url.searchParams.delete('error');
+                window.history.replaceState({}, document.title, url.toString());
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'mascota_ocupada'): ?>
+        <div class="modal fade" id="errorMascotaModal" tabindex="-1" role="dialog" aria-labelledby="errorMascotaModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorMascotaModalLabel">Error</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>La mascota seleccionada ya tiene una atención programada en el horario indicado.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                
+                $('#errorMascotaModal').modal('show');
+
+                
+                const url = new URL(window.location.href);
+                url.searchParams.delete('error');
+                window.history.replaceState({}, document.title, url.toString());
+            });
+        </script>
+    <?php endif; ?>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. DESAPARECER ALERTAS AUTOMÁTICAMENTE
-            setTimeout(function () {
-                $('.alert').fadeOut('slow', function () {
-                    const url = new URL(window.location);
-                    url.searchParams.delete('res');
-                    url.searchParams.delete('error');
-                    window.history.replaceState({}, document.title, url);
-                });
-            }, 5000);
-
-            // 2. CONFIGURACIÓN DEL CALENDARIO
             var calendarEl = document.getElementById('calendario');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'es',
@@ -187,22 +256,16 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
                 },
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 events: '../shared/atenciones.php',
-
                 dateClick: function (info) {
                     document.getElementById('fecha_input').value = info.dateStr;
-                    $('.alert').fadeOut();
                 },
-
-                // AQUÍ CAMBIAMOS EL COMPORTAMIENTO DEL CLICK
                 eventClick: function (info) {
-                    // Evitamos el confirm de localhost y preparamos el modal
                     var idAtencion = info.event.id;
                     var titulo = info.event.title;
 
                     document.getElementById('textoDetalle').innerText = titulo;
                     document.getElementById('btnVerMas').href = '../shared/detalle-atencionAP.php?id=' + idAtencion;
 
-                    // Abrimos el modal de Bootstrap
                     $('#modalDetalles').modal('show');
                 }
             });
@@ -211,10 +274,39 @@ $resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre A
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <?php
-    $conn->close();
-    require_once '../shared/footer.php';
-    ?>
+    <script>
+        $(document).ready(function () {
+            
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            $('#fecha_input').attr('min', today);
+
+            
+            $('form').on('submit', function (e) {
+                const fechaSeleccionada = $('#fecha_input').val();
+                const horaSeleccionada = $('select[name="hora"]').val();
+
+                if (!fechaSeleccionada || !horaSeleccionada) {
+                    $('#alertModalBody').text('Por favor, selecciona una fecha y hora válidas.');
+                    $('#alertModal').modal('show');
+                    e.preventDefault();
+                    return;
+                }
+
+                const fechaHoraSeleccionada = new Date(`${fechaSeleccionada}T${horaSeleccionada}:00`);
+                const fechaHoraActual = new Date();
+
+                if (fechaHoraSeleccionada <= fechaHoraActual) {
+                    $('#alertModalBody').text('No puedes registrar un turno en una fecha u horario anterior al actual.');
+                    $('#alertModal').modal('show');
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
+<?php
+$conn->close();
+?>

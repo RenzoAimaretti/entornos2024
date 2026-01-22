@@ -10,7 +10,7 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Recibir y limpiar datos
+   
     if ($_SESSION['usuario_tipo'] === 'especialista') {
         $id_pro = $_SESSION['usuario_id'];
     } else {
@@ -21,14 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hora = $_POST['hora'] ?? '';
     $id_mascota = isset($_POST['mascota_id']) ? intval($_POST['mascota_id']) : 0;
     $id_serv = isset($_POST['servicio_id']) ? intval($_POST['servicio_id']) : null;
-    $detalle = $_POST['detalle'] ?? 'Atención pendiente de actualización por el Especialista';
+    $detalle = $_POST['detalle'] ?? '';
 
-    // Formatear fecha para la base de datos
+   
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 
-    // --- INICIO DE VALIDACIONES ---
+    
 
-    // A. Validar disponibilidad de la MASCOTA
+    
     $checkMascota = $conn->prepare("SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?");
     $checkMascota->bind_param("is", $id_mascota, $fecha_hora);
     $checkMascota->execute();
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // B. Validar disponibilidad del ESPECIALISTA
+    
     $checkPro = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
     $checkPro->bind_param("is", $id_pro, $fecha_hora);
     $checkPro->execute();
@@ -46,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // --- FIN DE VALIDACIONES ---
+   
 
-    // 2. Insertar en la base de datos si las validaciones pasaron
+    
     $stmt = $conn->prepare("
         INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
         VALUES (?, ?, ?, ?, ?)
@@ -56,11 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_hora, $detalle);
 
     if ($stmt->execute()) {
-        // Redirigir con mensaje de éxito
+        
         header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "res=ok");
         exit;
     } else {
         echo "Error al registrar: " . $conn->error;
     }
 }
-?>
+
+
+
+
