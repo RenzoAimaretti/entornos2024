@@ -7,6 +7,7 @@ ini_set('display_errors', 0);
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
+
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
@@ -44,9 +45,27 @@ while ($h = $res->fetch_assoc()) {
     if (!in_array($hora, $response['disponibles'])) {
       $response['disponibles'][] = $hora;
     }
-    $inicio = strtotime('+30 minutes', $inicio);
+    $inicio = strtotime('+15 minutes', $inicio);
   }
 }
+
+// Obtener horas ocupadas para esa fecha y especialista
+$sql_ocupadas = "SELECT TIME(fecha) AS hora FROM atenciones WHERE id_pro = ? AND DATE(fecha) = ?";
+$stmt_ocupadas = $conn->prepare($sql_ocupadas);
+$stmt_ocupadas->bind_param("is", $id_pro, $fecha_raw);
+$stmt_ocupadas->execute();
+$res_ocupadas = $stmt_ocupadas->get_result();
+
+$horas_ocupadas = [];
+while ($row = $res_ocupadas->fetch_assoc()) {
+  $horas_ocupadas[] = substr($row['hora'], 0, 5); // Convertir "HH:MM:SS" a "HH:MM"
+}
+
+// Filtrar horas disponibles excluyendo las ocupadas
+$response['disponibles'] = array_filter($response['disponibles'], function ($hora) use ($horas_ocupadas) {
+  return !in_array($hora, $horas_ocupadas);
+});
+
 sort($response['disponibles']);
 
 ob_end_clean();
