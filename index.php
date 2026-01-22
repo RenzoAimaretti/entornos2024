@@ -1,8 +1,8 @@
 <?php
 session_start();
 if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especialista') {
-    header("Location: vistaProfesional/dashboardProfesional.php");
-    exit();
+  header("Location: vistaProfesional/dashboardProfesional.php");
+  exit();
 }
 ?>
 <!DOCTYPE html>
@@ -47,17 +47,24 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
             src="https://media.istockphoto.com/id/1353103116/es/foto/veterinario-examinando-lindo-perro-pug-y-gato-en-la-cl%C3%ADnica-primer-plano-d%C3%ADa-de-vacunaci%C3%B3n.jpg?s=612x612&w=0&k=20&c=y8RP8tBmuAApVU6Ga6OkizZoAnuHHjimBgtSRoAJBEI="
             alt="Mascota 3" class="img-fluid header-img">
         </div>
-        <p class="lead">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
       </div>
     </div>
   </header>
 
   <!-- Sección de Autogestión de Turnos -->
   <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'cliente'): ?>
-    <section class="container text-center my-4">
-      <h3>Autogestión de Turnos</h3>
-      <p>Solicita y administra tus turnos de forma rápida y sencilla.</p>
-      <a href="vistaCliente/autogestion-turnos.php" class="btn btn-primary">Acceder</a>
+    <section class="container my-4">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-body text-center">
+              <h3 class="card-title">Autogestión de Turnos</h3>
+              <p class="card-text">Solicita y administra tus turnos de forma rápida y sencilla.</p>
+              <a href="vistaCliente/autogestion-turnos.php" class="btn btn-primary">Acceder</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   <?php endif; ?>
 
@@ -72,7 +79,9 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
   <section class="container my-4">
     <div class="row">
       <div class="col-md-8">
-        <p>Desde su apertura en 1986 la veterinaria San Antón se dedicó a brindar servicios y productos de primerísima
+        <p style="font-size: 1.4em; text-align: justify;">Desde su apertura en 1986 la veterinaria San Antón se dedicó a
+          brindar servicios y
+          productos de primerísima
           calidad para vos y tus mascotas, para ello contamos con los mejores profesionales y con equipamiento médico de
           última generación.</p>
       </div>
@@ -80,7 +89,7 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
         <p>Encontranos en:</p>
         <img
           src="https://st2.depositphotos.com/4242631/6430/v/450/depositphotos_64302369-stock-illustration-map-icon-with-pin-pointer.jpg"
-          alt="Mapa" class="img-fluid">
+          alt="Mapa" class="img-fluid" style="width: 60%;">
       </div>
     </div>
   </section>

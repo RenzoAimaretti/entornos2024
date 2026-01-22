@@ -214,6 +214,7 @@ $resHistorial = $conn->query($queryHistorial);
       $('#modalConfirmarAlta').modal('show');
     }
   </script>
+  <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>
