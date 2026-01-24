@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'vendor/autoload.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -21,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($password !== $confirm_password) {
     $error = "Las contraseñas no coinciden.";
   } elseif (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
-    // MODIFICACIÓN: Se agregó la validación de longitud (min 8)
     $error = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.";
   } else {
     // Verificar si el correo ya está registrado
@@ -72,10 +72,30 @@ $conn->close();
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="styles.css" rel="stylesheet">
   <style>
-    /* Estilo para que el botón del ojo se integre bien */
+    /* Estilos para los inputs con iconos integrados */
     .input-group-text {
-      cursor: pointer;
       background-color: #fff;
+      border-right: 0;
+    }
+
+    .input-with-icon {
+      border-left: 0;
+    }
+
+    .input-group-append .input-group-text {
+      border-left: 0;
+      border-right: 1px solid #ced4da;
+      cursor: pointer;
+    }
+
+    /* Estilo del icono a la izquierda */
+    .icon-prepend {
+      color: #00897b;
+      /* Color de la marca */
+      width: 40px;
+      justify-content: center;
+      border: 1px solid #ced4da;
+      border-right: 0;
     }
   </style>
 </head>
@@ -83,60 +103,97 @@ $conn->close();
 <body>
   <?php require_once 'shared/navbar.php'; ?>
 
-  <div class="container mt-5">
+  <div class="container my-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <div class="card bg-light mb-3">
-          <div class="card-header text-center">Registrarse</div>
-          <div class="card-body">
+        <div class="card shadow-lg border-0 rounded-lg">
+
+          <div class="card-header bg-green text-center p-4">
+            <h3 class="font-weight-bold text-white mb-0">Crear Cuenta</h3>
+            <small class="text-white-50">Únete a nuestra comunidad</small>
+          </div>
+
+          <div class="card-body p-4 p-md-5">
 
             <?php if (!empty($error)): ?>
-              <div class="alert alert-danger">
-                <?php echo $error; ?>
+              <div class="alert alert-danger text-center shadow-sm">
+                <i class="fas fa-exclamation-triangle mr-2"></i> <?php echo $error; ?>
               </div>
             <?php endif; ?>
 
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-              <div class="form-group">
-                <label for="username">Nombre de usuario</label>
-                <input type="text" class="form-control" id="username" name="username" required
-                  value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
-              </div>
-              <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" class="form-control" id="email" name="email" required
-                  value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+
+              <div class="form-group mb-3">
+                <label for="username" class="font-weight-bold text-muted">Nombre de usuario</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text icon-prepend"><i class="fas fa-user"></i></span>
+                  </div>
+                  <input type="text" class="form-control input-with-icon" id="username" name="username" required
+                    placeholder="Tu nombre completo"
+                    value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+                </div>
               </div>
 
-              <div class="form-group">
-                <label for="password">Contraseña</label>
+              <div class="form-group mb-3">
+                <label for="email" class="font-weight-bold text-muted">Correo electrónico</label>
                 <div class="input-group">
-                  <input type="password" class="form-control" id="password" name="password" required>
+                  <div class="input-group-prepend">
+                    <span class="input-group-text icon-prepend"><i class="fas fa-envelope"></i></span>
+                  </div>
+                  <input type="email" class="form-control input-with-icon" id="email" name="email" required
+                    placeholder="ejemplo@email.com"
+                    value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="password" class="font-weight-bold text-muted">Contraseña</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text icon-prepend"><i class="fas fa-lock"></i></span>
+                  </div>
+                  <input type="password" class="form-control input-with-icon border-right-0" id="password"
+                    name="password" required placeholder="••••••••">
                   <div class="input-group-append">
                     <span class="input-group-text toggle-password" data-target="password">
-                      <i class="fas fa-eye"></i>
+                      <i class="fas fa-eye text-muted"></i>
                     </span>
                   </div>
                 </div>
-                <small class="text-muted">Mínimo 8 caracteres, al menos una mayúscula y un número.</small>
+                <small class="form-text text-muted mt-2">
+                  <i class="fas fa-info-circle mr-1"></i> Mínimo 8 caracteres, una mayúscula y un número.
+                </small>
               </div>
 
-              <div class="form-group">
-                <label for="confirm_password">Repita la Contraseña</label>
+              <div class="form-group mb-4">
+                <label for="confirm_password" class="font-weight-bold text-muted">Repetir Contraseña</label>
                 <div class="input-group">
-                  <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                  <div class="input-group-prepend">
+                    <span class="input-group-text icon-prepend"><i class="fas fa-lock"></i></span>
+                  </div>
+                  <input type="password" class="form-control input-with-icon border-right-0" id="confirm_password"
+                    name="confirm_password" required placeholder="••••••••">
                   <div class="input-group-append">
                     <span class="input-group-text toggle-password" data-target="confirm_password">
-                      <i class="fas fa-eye"></i>
+                      <i class="fas fa-eye text-muted"></i>
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div class="d-flex justify-content-between mt-4">
-                <button type="submit" class="btn btn-primary">Confirmar</button>
-                <a href="iniciar-sesion.php" class="btn btn-secondary">Ya tengo una cuenta</a>
+              <div class="form-group mt-4">
+                <button type="submit" class="btn btn-block font-weight-bold text-white py-2 shadow-sm"
+                  style="background-color: #00897b; font-size: 1.1rem; border-radius: 50px;">
+                  REGISTRARSE
+                </button>
               </div>
+
+              <div class="text-center mt-3">
+                <p class="mb-0 text-muted">¿Ya tienes una cuenta?</p>
+                <a href="iniciar-sesion.php" class="font-weight-bold" style="color: #00897b;">Iniciar Sesión</a>
+              </div>
+
             </form>
           </div>
         </div>
@@ -153,12 +210,10 @@ $conn->close();
     // Script para alternar la visibilidad de la contraseña
     document.querySelectorAll('.toggle-password').forEach(item => {
       item.addEventListener('click', function () {
-        // Obtener el ID del input asociado
         const targetId = this.getAttribute('data-target');
         const input = document.getElementById(targetId);
         const icon = this.querySelector('i');
 
-        // Alternar tipo de input y clase del icono
         if (input.type === 'password') {
           input.type = 'text';
           icon.classList.remove('fa-eye');

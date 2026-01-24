@@ -22,19 +22,21 @@ $usuario_id = $_SESSION['usuario_id'];
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'upcoming';
 $sqlFilter = '';
 $sqlOrder = '';
-$activeUpcoming = '';
-$activeCompleted = '';
+
+// Variables para clases de botones (Estilo visual)
+$btnUpcomingClass = 'btn-outline-teal';
+$btnCompletedClass = 'btn-outline-secondary';
 
 $now = date('Y-m-d H:i:s');
 
 if ($filter === 'completed') {
   $sqlFilter = "AND atenciones.fecha < '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha DESC";
-  $activeCompleted = 'active';
+  $btnCompletedClass = 'btn-secondary text-white'; // Activo
 } else {
   $sqlFilter = "AND atenciones.fecha >= '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha ASC";
-  $activeUpcoming = 'active';
+  $btnUpcomingClass = 'btn-teal text-white'; // Activo
 }
 
 // Obteniene los turnos del usuario con el filtro dinámico
@@ -68,71 +70,192 @@ $conn->close();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mis Turnos</title>
+  <title>Mis Turnos - Veterinaria San Antón</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="../styles.css" rel="stylesheet">
+  <style>
+    /* Estilos personalizados para esta página */
+    .btn-teal {
+      background-color: #00897b;
+      border-color: #00897b;
+      color: white;
+    }
+
+    .btn-teal:hover {
+      background-color: #00695c;
+      color: white;
+    }
+
+    .btn-outline-teal {
+      color: #00897b;
+      border-color: #00897b;
+      background-color: white;
+    }
+
+    .btn-outline-teal:hover {
+      background-color: #00897b;
+      color: white;
+    }
+
+    /* Borde lateral de colores según estado */
+    .card-upcoming {
+      border-left: 5px solid #00897b;
+    }
+
+    .card-completed {
+      border-left: 5px solid #6c757d;
+      background-color: #f8f9fa;
+    }
+
+    .card-title {
+      color: #00897b;
+      font-weight: bold;
+    }
+
+    .info-row {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .info-row i {
+      width: 25px;
+      text-align: center;
+      color: #00897b;
+      margin-right: 5px;
+    }
+  </style>
 </head>
 
 <body>
   <?php require_once '../shared/navbar.php'; ?>
 
-  <div class="container mt-5">
-    <h1>Mis Turnos</h1>
+  <div class="container mt-5 mb-5">
+
+    <div class="bg-green p-4 rounded text-white text-center shadow-sm mb-4">
+      <h1 class="mb-0 font-weight-bold">Mis Turnos</h1>
+      <p class="mb-0 mt-1" style="opacity: 0.9;">Gestiona tus próximas visitas a la veterinaria</p>
+    </div>
 
     <?php if (isset($_SESSION['cancelacion_status']) && $_SESSION['cancelacion_status'] === 'ok'): ?>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>¡Éxito!</strong> El turno fue cancelado y se envió un correo de confirmación.
+      <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle mr-2"></i> <strong>¡Éxito!</strong> El turno fue cancelado y se envió un correo de
+        confirmación.
         <button type="button" class="close" data-dismiss="alert">&times;</button>
       </div>
       <?php unset($_SESSION['cancelacion_status']); ?>
     <?php endif; ?>
-    <div class="btn-group mb-3" role="group" aria-label="Filtro de turnos">
-      <a href="mis-turnos.php?filter=upcoming" class="btn btn-outline-primary <?= $activeUpcoming ?>">Próximos
-        Turnos</a>
-      <a href="mis-turnos.php?filter=completed" class="btn btn-outline-primary <?= $activeCompleted ?>">Turnos
-        Completados</a>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+
+      <div class="btn-group mb-3 mb-md-0 shadow-sm" role="group">
+        <a href="mis-turnos.php?filter=upcoming" class="btn <?php echo $btnUpcomingClass; ?>">
+          <i class="fas fa-calendar-alt mr-2"></i> Próximos
+        </a>
+        <a href="mis-turnos.php?filter=completed" class="btn <?php echo $btnCompletedClass; ?>">
+          <i class="fas fa-history mr-2"></i> Historial
+        </a>
+      </div>
+
+      <a href="solicitar-turno.php" class="btn btn-teal shadow-sm rounded-pill px-4 font-weight-bold">
+        <i class="fas fa-plus-circle mr-2"></i> Solicitar Nuevo Turno
+      </a>
     </div>
 
     <?php if (count($turnos) > 0): ?>
-      <ul class="list-group">
+      <div class="row">
         <?php foreach ($turnos as $turno): ?>
-          <li class="list-group-item">
-            <div class="d-flex justify-content-between">
-              <h5><?php echo htmlspecialchars($turno['servicio']); ?></h5>
-            </div>
-            <p>Profesional: <?php echo htmlspecialchars($turno['profesional']); ?></p>
-            <p>Mascota: <?php echo htmlspecialchars($turno['mascota']); ?></p>
-            <p>Fecha: <?php echo date('d-m-Y H:i', strtotime($turno['fecha'])); ?></p>
-            <?php if ($filter === 'upcoming'): ?>
-              <button class="btn btn-danger btn-sm cancelar-turno" data-id="<?php echo $turno['id']; ?>">Cancelar
-                Turno</button>
-            <?php endif; ?>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    <?php else: ?>
-      <p>No hay turnos pendientes.</p>
-    <?php endif; ?>
-    <a href="solicitar-turno.php" class="btn btn-primary mt-3">Solicitar Nuevo Turno</a>
-  </div>
+          <?php
+          $cardClass = ($filter === 'upcoming') ? 'card-upcoming' : 'card-completed';
+          $fechaFormateada = date('d/m/Y', strtotime($turno['fecha']));
+          $horaFormateada = date('H:i', strtotime($turno['fecha']));
+          ?>
 
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100 <?php echo $cardClass; ?>">
+              <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <h5 class="card-title mb-0">
+                    <?php echo htmlspecialchars($turno['servicio']); ?>
+                  </h5>
+                  <?php if ($filter === 'upcoming'): ?>
+                    <span class="badge badge-success px-2 py-1">Activo</span>
+                  <?php else: ?>
+                    <span class="badge badge-secondary px-2 py-1">Finalizado</span>
+                  <?php endif; ?>
+                </div>
+
+                <hr>
+
+                <div class="info-row">
+                  <i class="fas fa-calendar-day"></i>
+                  <strong>Fecha:</strong> <?php echo $fechaFormateada; ?>
+                </div>
+                <div class="info-row">
+                  <i class="fas fa-clock"></i>
+                  <strong>Hora:</strong> <?php echo $horaFormateada; ?> hs
+                </div>
+                <div class="info-row">
+                  <i class="fas fa-paw"></i>
+                  <strong>Mascota:</strong> <?php echo htmlspecialchars($turno['mascota']); ?>
+                </div>
+                <div class="info-row">
+                  <i class="fas fa-user-md"></i>
+                  <strong>Prof:</strong> <?php echo htmlspecialchars($turno['profesional']); ?>
+                </div>
+
+                <?php if ($filter === 'upcoming'): ?>
+                  <div class="mt-4 text-right">
+                    <button class="btn btn-outline-danger btn-sm cancelar-turno rounded-pill"
+                      data-id="<?php echo $turno['id']; ?>">
+                      <i class="fas fa-times mr-1"></i> Cancelar
+                    </button>
+                  </div>
+                <?php endif; ?>
+
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+    <?php else: ?>
+      <div class="text-center py-5">
+        <div class="mb-3">
+          <i class="fas fa-calendar-times fa-4x text-muted" style="opacity: 0.3;"></i>
+        </div>
+        <h4 class="text-muted">No hay turnos <?php echo ($filter === 'upcoming') ? 'pendientes' : 'en el historial'; ?>.
+        </h4>
+        <?php if ($filter === 'upcoming'): ?>
+          <p class="text-muted">¿Necesitas una consulta? ¡Agenda una ahora!</p>
+          <a href="solicitar-turno.php" class="btn btn-teal mt-2">Agendar Turno</a>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
+  </div>
 
   <div class="modal fade" id="cancelacionModal" tabindex="-1" role="dialog" aria-labelledby="cancelacionModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="cancelacionModalLabel">Confirmar Cancelación</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="cancelacionModalLabel">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Confirmar Cancelación
+          </h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          ¿Está seguro de que desea cancelar este turno?
+        <div class="modal-body text-center p-4">
+          <p class="lead mb-0">¿Estás seguro de que deseas cancelar este turno?</p>
+          <small class="text-muted">Esta acción no se puede deshacer.</small>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Volver</button>
-          <button type="button" class="btn btn-danger" id="confirmar-cancelacion">Sí, Cancelar</button>
+        <div class="modal-footer justify-content-center bg-light">
+          <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No, Volver</button>
+          <button type="button" class="btn btn-danger px-4" id="confirmar-cancelacion">Sí, Cancelar</button>
         </div>
       </div>
     </div>

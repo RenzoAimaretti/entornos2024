@@ -1,6 +1,14 @@
-
 body {
   font-family: 'Arial', sans-serif;
+
+  /* IMAGEN DE FONDO */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+    url('https://media.istockphoto.com/id/1540590564/es/vector/mascotas-gato-y-perro-animal-sin-costuras-fondo-de-tema.jpg?s=612x612&w=0&k=20&c=AANoX4gg8XDUbd5-v-PTzES04ybIopdkBEVftaMZCa8=');
+
+  background-repeat: repeat;
+  background-size: auto;
+  background-color: #e3f2fd;
 }
 
 .navbar-brand {
@@ -14,15 +22,56 @@ body {
   margin-right: 10px;
 }
 
+/* --- NUEVO: Estilo para la franja oscura del encabezado --- */
+/* Afecta al <header> que contiene las imágenes en index.php */
+header.container {
+  background-color: #00897b;
+  /* Mismo color Teal Oscuro */
+  width: 100%;
+  /* Ocupar todo el ancho disponible */
+  max-width: 100%;
+  /* Asegura que no se limite al container de Bootstrap */
+  padding: 20px 0;
+  /* Espacio arriba y abajo */
+  margin-top: 0 !important;
+  /* Quitar margen superior para pegarlo al menú o título */
+  margin-bottom: 20px;
+  /* Separación con el contenido de abajo */
+}
+
 .header-images {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 20px;
+  /* Aumenté un poco el espacio entre fotos */
+  flex-wrap: wrap;
+  /* Para que se acomoden en móviles */
 }
 
+/* --- NUEVO: Estilo para las fotos con marco clarito --- */
 .header-img {
-  max-width: 30%;
-  height: auto;
+  max-width: 300px;
+  /* Tamaño máximo controlado */
+  height: 200px;
+  /* Altura fija para que se vean uniformes */
+  object-fit: cover;
+  /* Recorta la imagen sin deformarla para llenar el cuadro */
+
+  /* El marco clarito */
+  border: 5px solid #e0f2f1;
+  /* Un tono muy claro del verde azulado */
+
+  /* Opcional: Bordes redondeados y sombra suave */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+  transition: transform 0.3s ease;
+  /* Efecto suave al pasar el mouse */
+}
+
+/* Efecto opcional: las fotos crecen un poco al pasar el mouse */
+.header-img:hover {
+  transform: scale(1.05);
 }
 
 .lead {
@@ -32,8 +81,8 @@ body {
 }
 
 .bg-green {
-  background-color: #a8d08d;
-
+  background-color: #00897b;
+  color: #ffffff;
 }
 
 footer {
@@ -72,8 +121,8 @@ footer p {
 }
 
 .footer-custom h5 {
-  color: #a8d08d;
-  border-bottom: 2px solid #a8d08d;
+  color: #00897b;
+  border-bottom: 2px solid #00897b;
   display: inline-block;
   padding-bottom: 5px;
   margin-bottom: 20px;
@@ -86,7 +135,7 @@ footer p {
 }
 
 .footer-custom a:hover {
-  color: #a8d08d;
+  color: #00897b;
   padding-left: 5px;
 }
 
@@ -95,4 +144,9 @@ footer p {
   margin-top: 30px;
   padding: 15px 0;
   font-size: 0.85rem;
+}
+
+.input-group-text {
+  cursor: pointer;
+  background-color: #fff;
 }

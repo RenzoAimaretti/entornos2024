@@ -30,9 +30,10 @@
       </div>
     </div>
   </div>
+
   <div class="copyright text-center">
     <div class="container">
-      <p class="mb-0">&copy; 2026 Veterinaria San Antón - Todos los derechos reservados.</p>
+      <p class="mb-0 text-center">&copy; 2026 Veterinaria San Antón - Todos los derechos reservados.</p>
     </div>
   </div>
 </footer>

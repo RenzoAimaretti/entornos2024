@@ -24,17 +24,9 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
     </script>
   <?php endif; ?>
 
-  <!-- Navegación -->
   <?php require_once 'shared/navbar.php'; ?>
 
-  <!-- Encabezado -->
-  <?php if (isset($_SESSION['usuario_nombre'])): ?>
-    <h2 class="text-center my-4" style="background-color: #a8d08d; width:100%">Vista de tipo:
-      <?php echo $_SESSION['usuario_tipo']; ?>
-    </h2>
-  <?php endif; ?>
-
-  <header class="container text-center my-4">
+  <header class="container-fluid text-center p-4 mb-4" style="background-color: #00897b;">
     <div class="row">
       <div class="col">
         <div class="header-images">
@@ -51,16 +43,18 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
     </div>
   </header>
 
-  <!-- Sección de Autogestión de Turnos -->
   <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'cliente'): ?>
     <section class="container my-4">
       <div class="row justify-content-center">
         <div class="col-md-6">
-          <div class="card shadow-sm">
-            <div class="card-body text-center">
-              <h3 class="card-title">Autogestión de Turnos</h3>
-              <p class="card-text">Solicita y administra tus turnos de forma rápida y sencilla.</p>
-              <a href="vistaCliente/autogestion-turnos.php" class="btn btn-primary">Acceder</a>
+          <div class="card shadow-sm border-0 bg-green text-center">
+            <div class="card-body">
+              <h3 class="card-title text-white">Autogestión de Turnos</h3>
+              <p class="card-text text-white">Solicita y administra tus turnos de forma rápida y sencilla.</p>
+              <a href="vistaCliente/autogestion-turnos.php" class="btn btn-light font-weight-bold"
+                style="color: #00897b;">
+                Acceder
+              </a>
             </div>
           </div>
         </div>
@@ -68,28 +62,22 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
     </section>
   <?php endif; ?>
 
-  <!-- Franja Verde -->
-  <section class="bg-green text-white py-2 text-center">
+  <section class="bg-green py-3 text-center my-4">
     <div class="container">
-      <p class="mb-0">Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota</p>
+      <p class="mb-0" style="font-size: 1.1em; font-weight: bold;">
+        Somos la mejor veterinaria de tu ciudad, conoce nuestros servicios y trae a tu mascota
+      </p>
     </div>
   </section>
 
-  <!-- Sección de Bienvenida -->
   <section class="container my-4">
-    <div class="row">
+    <div class="row justify-content-center">
       <div class="col-md-8">
-        <p style="font-size: 1.4em; text-align: justify;">Desde su apertura en 1986 la veterinaria San Antón se dedicó a
-          brindar servicios y
-          productos de primerísima
-          calidad para vos y tus mascotas, para ello contamos con los mejores profesionales y con equipamiento médico de
-          última generación.</p>
-      </div>
-      <div class="col-md-4">
-        <p>Encontranos en:</p>
-        <img
-          src="https://st2.depositphotos.com/4242631/6430/v/450/depositphotos_64302369-stock-illustration-map-icon-with-pin-pointer.jpg"
-          alt="Mapa" class="img-fluid" style="width: 60%;">
+        <p style="font-size: 1.4em; text-align: center;">
+          Desde su apertura en 1986 la veterinaria San Antón se dedicó a brindar servicios y
+          productos de primerísima calidad para vos y tus mascotas, para ello contamos con los
+          mejores profesionales y con equipamiento médico de última generación.
+        </p>
       </div>
     </div>
   </section>

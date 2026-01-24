@@ -10,61 +10,110 @@ session_start();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veterinaria San Antón - Solicitar Turno</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="../styles.css" rel="stylesheet">
   <style>
-    .card img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
+    /* Reutilizamos los estilos de tarjetas interactivas */
+    .action-card {
+      border: none;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      background-color: #fff;
+      cursor: pointer;
+    }
+
+    .action-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 137, 123, 0.2) !important;
+      text-decoration: none;
+      color: #00897b;
+    }
+
+    .action-card:hover .icon-large {
+      transform: scale(1.1);
+    }
+
+    .icon-large {
+      font-size: 4rem;
+      color: #00897b;
+      transition: transform 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 1.4rem;
+    }
+
+    /* Estilo sutil para el botón volver */
+    .btn-back {
+      border-radius: 50px;
+      padding-left: 30px;
+      padding-right: 30px;
     }
   </style>
 </head>
 
 <body>
-  <!-- Navegación -->
   <?php require_once '../shared/navbar.php'; ?>
 
-  <!-- Sección de Solicitar Turno -->
-  <section class="container text-center my-4">
-    <h3>Solicitar turno</h3>
-    <div class="row justify-content-center">
-      <div class="col-md-4 d-flex justify-content-center">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-profesional.php" class="btn btn-light btn-block">
-              <img src="https://images.emojiterra.com/google/android-oreo/512px/1f468-1f4bc.png" alt="Profesional"
-                class="img-fluid mb-2">
-              <p>Profesional</p>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 d-flex justify-content-center">
-        <div class="card mb-3">
-          <div class="card-body">
-            <a href="solicitar-turno-servicio.php" class="btn btn-light btn-block">
-              <img
-                src="https://w7.pngwing.com/pngs/142/988/png-transparent-computer-icons-medical-chart-smiley-emoticon-mask.png"
-                alt="Servicio" class="img-fluid mb-2">
-              <p>Servicio</p>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <a href="autogestion-turnos.php" class="btn btn-secondary mt-3">Volver</a>
-  </section>
+  <div class="container mt-5 mb-5">
 
-  <!-- Franja Verde -->
-  <section class="bg-green text-white py-2 text-center">
-    <div class="container">
-      <p class="mb-0">Teléfono de contacto: 115673346 | Mail: sananton24@gmail.com</p>
+    <div class="bg-green p-4 rounded text-white text-center shadow-sm mb-5">
+      <h1 class="mb-0 font-weight-bold">Solicitar Turno</h1>
+      <p class="mb-0 mt-2" style="font-size: 1.1rem; opacity: 0.9;">
+        ¿Cómo deseas buscar tu turno hoy?
+      </p>
     </div>
-  </section>
+
+    <div class="row justify-content-center">
+
+      <div class="col-md-5 mb-4">
+        <a href="solicitar-turno-profesional.php" class="card action-card shadow-sm h-100 text-center py-5">
+          <div class="card-body">
+            <i class="fas fa-user-md icon-large"></i>
+            <h3 class="card-title mt-2">Por Profesional</h3>
+            <p class="card-text text-muted px-4">
+              Elige a tu veterinario de confianza y visualiza su disponibilidad horaria.
+            </p>
+            <span class="btn btn-outline-success rounded-pill mt-3 font-weight-bold px-4">
+              Buscar Profesional
+            </span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-5 mb-4">
+        <a href="solicitar-turno-servicio.php" class="card action-card shadow-sm h-100 text-center py-5">
+          <div class="card-body">
+            <i class="fas fa-briefcase-medical icon-large"></i>
+            <h3 class="card-title mt-2">Por Servicio</h3>
+            <p class="card-text text-muted px-4">
+              Selecciona el tipo de atención (Consulta, Vacunación, etc.) y mira los horarios disponibles.
+            </p>
+            <span class="btn btn-outline-info rounded-pill mt-3 font-weight-bold px-4"
+              style="color: #00897b; border-color: #00897b;">
+              Ver Servicios
+            </span>
+          </div>
+        </a>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="autogestion-turnos.php" class="btn btn-outline-secondary btn-back shadow-sm">
+        <i class="fas fa-arrow-left mr-2"></i> Volver al menú anterior
+      </a>
+    </div>
+
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
   <?php require_once '../shared/footer.php'; ?>
 </body>
 
