@@ -4,7 +4,7 @@
       <div class="col-md-6 mb-4">
         <h5>Veterinaria San Antón</h5>
         <p class="small mb-1">📞 Teléfono: 115673346</p>
-        <p class="small mb-1">✉️ Mail: sananton24@gmail.com</p>
+        <p class="small mb-1">✉️ Mail: sanantonn24@gmail.com</p>
       </div>
 
       <div class="col-md-6 mb-4">
