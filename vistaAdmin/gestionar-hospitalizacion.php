@@ -51,24 +51,24 @@ $resHistorial = $conn->query($queryHistorial);
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2><i class="fas fa-hospital-alt text-danger"></i> Pacientes Hospitalizados</h2>
       <?php if ($_SESSION['usuario_tipo'] === 'especialista'): ?>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#modalIngreso">
-          <i class="fas fa-plus"></i> Registrar Nuevo Ingreso
-        </button>
+          <button class="btn btn-primary" data-toggle="modal" data-target="#modalIngreso">
+            <i class="fas fa-plus"></i> Registrar Nuevo Ingreso
+          </button>
       <?php endif; ?>
     </div>
 
     <?php if (isset($_GET['res'])): ?>
-      <?php if ($_GET['res'] == 'ok'): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-          ¡Ingreso registrado correctamente!
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-        </div>
-      <?php elseif ($_GET['res'] == 'alta_ok'): ?>
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-          Alta médica procesada con éxito.
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-        </div>
-      <?php endif; ?>
+        <?php if ($_GET['res'] == 'ok'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              ¡Ingreso registrado correctamente!
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        <?php elseif ($_GET['res'] == 'alta_ok'): ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+              Alta médica procesada con éxito.
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <div class="card shadow mb-5">
@@ -88,28 +88,28 @@ $resHistorial = $conn->query($queryHistorial);
           </thead>
           <tbody>
             <?php if ($resActivas && $resActivas->num_rows > 0): ?>
-              <?php while ($h = $resActivas->fetch_assoc()): ?>
-                <tr>
-                  <td><strong><?= htmlspecialchars($h['mascota']) ?></strong></td>
-                  <td><?= date('d/m/Y H:i', strtotime($h['fecha_ingreso'])) ?></td>
-                  <td><?= htmlspecialchars($h['profesional']) ?></td>
-                  <td><?= htmlspecialchars($h['motivo']) ?></td>
-                  <td>
-                    <?php if ($_SESSION['usuario_tipo'] === 'especialista'): ?>
-                      <button type="button" class="btn btn-success btn-sm"
-                        onclick="abrirModalAlta(<?= $h['id'] ?>, '<?= htmlspecialchars($h['mascota']) ?>')">
-                        Dar de Alta
-                      </button>
-                    <?php else: ?>
-                      <span class="badge badge-secondary">Solo lectura (Admin)</span>
-                    <?php endif; ?>
-                  </td>
-                </tr>
-              <?php endwhile; ?>
+                <?php while ($h = $resActivas->fetch_assoc()): ?>
+                    <tr>
+                      <td><strong><?= htmlspecialchars($h['mascota']) ?></strong></td>
+                      <td><?= date('d/m/Y H:i', strtotime($h['fecha_ingreso'])) ?></td>
+                      <td><?= htmlspecialchars($h['profesional']) ?></td>
+                      <td><?= htmlspecialchars($h['motivo']) ?></td>
+                      <td>
+                        <?php if ($_SESSION['usuario_tipo'] === 'especialista'): ?>
+                            <button type="button" class="btn btn-success btn-sm"
+                              onclick="abrirModalAlta(<?= $h['id'] ?>, '<?= htmlspecialchars($h['mascota']) ?>')">
+                              Dar de Alta
+                            </button>
+                        <?php else: ?>
+                            <span class="badge badge-secondary">Solo lectura (Admin)</span>
+                        <?php endif; ?>
+                      </td>
+                    </tr>
+                <?php endwhile; ?>
             <?php else: ?>
-              <tr>
-                <td colspan="5" class="text-center py-4">No hay mascotas internadas ahora.</td>
-              </tr>
+                <tr>
+                  <td colspan="5" class="text-center py-4">No hay mascotas internadas ahora.</td>
+                </tr>
             <?php endif; ?>
           </tbody>
         </table>
@@ -132,12 +132,12 @@ $resHistorial = $conn->query($queryHistorial);
           </thead>
           <tbody>
             <?php while ($hist = $resHistorial->fetch_assoc()): ?>
-              <tr>
-                <td><?= htmlspecialchars($hist['mascota']) ?></td>
-                <td><?= date('d/m/Y', strtotime($hist['fecha_ingreso'])) ?></td>
-                <td><?= date('d/m/Y', strtotime($hist['fecha_egreso_real'])) ?></td>
-                <td><?= htmlspecialchars($hist['motivo']) ?></td>
-              </tr>
+                <tr>
+                  <td><?= htmlspecialchars($hist['mascota']) ?></td>
+                  <td><?= date('d/m/Y', strtotime($hist['fecha_ingreso'])) ?></td>
+                  <td><?= date('d/m/Y', strtotime($hist['fecha_egreso_real'])) ?></td>
+                  <td><?= htmlspecialchars($hist['motivo']) ?></td>
+                </tr>
             <?php endwhile; ?>
           </tbody>
         </table>

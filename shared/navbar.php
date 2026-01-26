@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
   /* Estilos personalizados para la Navbar */
   .navbar-custom {
@@ -27,6 +28,16 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 5px;
     transform: translateY(-1px);
+  }
+
+  /* Color específico para el dropdown de gestión */
+  #adminDropdown {
+    color: #b2dfdb !important;
+    /* Un verde agua claro para diferenciarlo */
+  }
+
+  #adminDropdown:hover {
+    color: #fff !important;
   }
 
   .navbar-toggler {
@@ -109,7 +120,7 @@
         <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] !== 'cliente'): ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle font-weight-bold" href="#" id="adminDropdown" role="button"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #b2dfdb !important;">
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fas fa-cogs mr-1"></i> Gestión
             </a>
             <div class="dropdown-menu shadow" aria-labelledby="adminDropdown">
@@ -209,7 +220,10 @@
             'solicitar-turno-servicio.php' => 'Turno por Servicio',
             'detalle-mascota.php' => 'Detalle de Mascota',
             'detalle-atencionAP.php' => 'Detalle de Atención',
-            'gestionar-hospitalizacion.php' => 'Administración de Internaciones'
+            'gestionar-hospitalizacion.php' => 'Administración de Internaciones',
+            'gestionar-clientes.php' => 'Gestión de Clientes',
+            'agregar-mascota.php' => 'Alta de Mascota',
+            'gestionar-mascotas.php' => 'Gestión de Mascotas'
           ];
 
           $label = $nombres_paginas[$pagina_actual] ?? ucfirst(str_replace(['-', '.php'], [' ', ''], $pagina_actual));
