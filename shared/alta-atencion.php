@@ -3,11 +3,7 @@ session_start();
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    
@@ -60,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "res=ok");
         exit;
     } else {
-        echo "Error al registrar: " . $conn->error;
+        echo "Error: " . $conn->error;
     }
 }
 

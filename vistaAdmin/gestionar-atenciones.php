@@ -48,36 +48,16 @@ if (!$resServicios) {
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Atenciones - San Antón</title>
-
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/es.js'></script>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../styles.css" rel="stylesheet">
-
-    <style>
-        #calendario {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .contenedor-registro {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
 
-<body>
+<body class="bg-light">
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container-fluid mt-4 px-lg-5">
@@ -85,40 +65,50 @@ if (!$resServicios) {
 
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <div id="calendario"></div>
+                <div id="calendario" class="bg-white p-3 shadow-sm rounded border"></div>
             </div>
-
             <div class="col-lg-4">
-                <div class="contenedor-registro">
-                    <h4 class="mb-4 text-primary border-bottom pb-2">Registrar Nueva Atención</h4>
+                <div class="bg-white p-4 shadow-sm rounded border">
+                    <h4 class="text-primary mb-3 border-bottom pb-2">Registrar Turno</h4>
+
+                    <?php if (isset($_GET['res']) && $_GET['res'] == 'ok'): ?>
+                        <div class="alert alert-success alert-dismissible fade show">
+                            ¡Turno registrado! <button class="close" data-dismiss="alert">&times;</button>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($_GET['error']) && $_GET['error'] == 'especialista_ocupado'): ?>
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            El especialista ya tiene un turno en ese horario. <button class="close"
+                                data-dismiss="alert">&times;</button>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($_GET['error']) && $_GET['error'] == 'mascota_ocupada'): ?>
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            Esa mascota ya tiene un turno pendiente en el horario seleccionado. <button class="close"
+                                data-dismiss="alert">&times;</button>
+                        </div>
+                    <?php endif; ?>
+
                     <form action="../shared/alta-atencion.php" method="POST">
                         <div class="form-group">
                             <label>Fecha</label>
-                            <input type="date" class="form-control" name="fecha" id="fecha_input" required>
+                            <input type="date" class="form-control" name="fecha" id="fecha_input" required
+                                min="<?= date('Y-m-d') ?>">
                         </div>
+
                         <div class="form-group">
-                            <label>Hora</label>
-                            <select class="form-control" name="hora" required>
-                                <option value="">Seleccione hora</option>
-                                <?php
-                                for ($h = 9; $h <= 18; $h++) {
-                                    foreach (['00', '30'] as $m) {
-                                        $hora = sprintf("%02d:%s", $h, $m);
-                                        echo "<option value='$hora'>$hora</option>";
-                                    }
-                                }
-                                ?>
+                            <label>Especialista</label>
+                            <select class="form-control" name="especialista_id" id="especialista_id" required disabled>
+                                <option value="">Seleccione fecha primero</option>
                             </select>
                         </div>
+
                         <div class="form-group">
-                            <label>Mascota</label>
-                            <select class="form-control" name="mascota_id" required>
-                                <option value="">Seleccione mascota...</option>
-                                <?php $resMascotas->data_seek(0);
-                                while ($m = $resMascotas->fetch_assoc()): ?>
-                                    <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['nombre']); ?>
-                                    </option>
-                                <?php endwhile; ?>
+                            <label>Servicio</label>
+                            <select class="form-control" name="servicio_id" id="servicio_select" required disabled>
+                                <option value="">Seleccione especialista primero</option>
                             </select>
                         </div>
                         <?php if ($usuarioTipo === 'especialista'): ?>
@@ -141,17 +131,21 @@ if (!$resServicios) {
                             </div>
                         <?php endif; ?>
                         <div class="form-group">
-                            <label>Servicio</label>
-                            <select class="form-control" name="servicio_id" required>
-                                <option value="">Seleccione servicio...</option>
-                                <?php $resServicios->data_seek(0);
-                                while ($s = $resServicios->fetch_assoc()): ?>
-                                    <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['nombre']); ?>
-                                    </option>
-                                <?php endwhile; ?>
+                            <label>Mascota</label>
+                            <select class="form-control" name="mascota_id" required>
+                                <option value="">Seleccione...</option>
+                                <?php
+                                if ($resMascotas) {
+                                    while ($m = $resMascotas->fetch_assoc()):
+                                        ?>
+                                        <option value="<?= $m['id']; ?>"><?= htmlspecialchars($m['nombre']); ?></option>
+                                        <?php
+                                    endwhile;
+                                }
+                                ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Registrar Atención</button>
+                        <button type="submit" class="btn btn-primary btn-block">Confirmar Cita</button>
                     </form>
                 </div>
             </div>
@@ -248,13 +242,6 @@ if (!$resServicios) {
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'es',
                 initialView: 'dayGridMonth',
-                height: 'auto',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 events: '../shared/atenciones.php',
                 dateClick: function (info) {
                     document.getElementById('fecha_input').value = info.dateStr;
