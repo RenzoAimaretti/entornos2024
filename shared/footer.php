@@ -20,10 +20,41 @@
           </div>
           <div class="col-6">
             <ul class="list-unstyled small">
-              <li><a href="mis-mascotas.php">Mis Mascotas</a></li>
-              <li><a href="mis-turnos.php">Mis Turnos</a></li>
-              <li><a href="../iniciar-sesion.php">Ingresar</a></li>
-              <li><a href="../registrarse.php">Registrarse</a></li>
+
+              <?php
+              // 1. SI ES CLIENTE
+              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'cliente'):
+                ?>
+                  <li><a href="../vistaCliente/mis-mascotas.php">Mis Mascotas</a></li>
+                  <li><a href="../vistaCliente/mis-turnos.php">Mis Turnos</a></li>
+             <?php endif; ?>
+
+              <?php
+              // 2. SI ES ESPECIALISTA (AGREGADO)
+              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especialista'):
+                ?>
+                <li><a href="../vistaAdmin/gestionar-hospitalizacion.php">Gestión de Hospitalizaciones</a></li>
+             <?php endif; ?>
+
+              <?php
+              // 3. SI ES ADMIN
+              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'):
+                ?>
+                <li><a href="../vistaAdmin/gestionar-hospitalizacion.php">Gestión de Hospitalizaciones</a></li>
+                  <li><a href="../vistaAdmin/gestionar-atenciones.php">Gestión de Atenciones</a></li>
+                  <li><a href="../vistaAdmin/gestionar-especialistas.php">Gestión de Profesionales</a></li>
+                  <li><a href="../vistaAdmin/gestionar-clientes.php">Gestión de Clientes</a></li>
+                  <li><a href="../vistaAdmin/gestionar-mascotas.php">Gestión de Mascotas</a></li>
+              <?php endif; ?>
+
+              <?php
+              // 4. SI NO ESTÁ LOGUEADO (INVITADO)
+              if (!isset($_SESSION['usuario_id'])):
+                ?>
+                  <li><a href="../iniciar-sesion.php">Ingresar</a></li>
+                  <li><a href="../registrarse.php">Registrarse</a></li>
+              <?php endif; ?>
+
             </ul>
           </div>
         </div>
