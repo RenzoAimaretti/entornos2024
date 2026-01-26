@@ -33,8 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $stmt = $conn->prepare("INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, 'Atención programada')");
-    $stmt->bind_param("iiis", $id_mascota, $id_serv, $id_pro, $fecha_hora);
+    // --- MODIFICACIÓN AQUÍ ---
+    // 1. Definimos una variable vacía para el detalle
+    $detalle = "";
+
+    // 2. Cambiamos la consulta para usar un marcador de posición (?) en lugar del texto fijo
+    $stmt = $conn->prepare("INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, ?)");
+
+    // 3. Agregamos la 's' extra en los tipos (iiiss) y la variable $detalle al final
+    $stmt->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_hora, $detalle);
 
     if ($stmt->execute()) {
         header("Location: ../vistaAdmin/gestionar-atenciones.php?res=ok");
@@ -42,3 +49,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Error: " . $conn->error;
     }
 }
+?>

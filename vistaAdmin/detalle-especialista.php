@@ -144,11 +144,13 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                             </ul>
                         </div>
 
-                        <button type="button"
-                            class="btn btn-outline-warning btn-block rounded-pill font-weight-bold mt-4"
-                            data-toggle="modal" data-target="#editarModal">
-                            <i class="fas fa-edit mr-2"></i> Editar Perfil
-                        </button>
+                        <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+                            <button type="button"
+                                class="btn btn-outline-warning btn-block rounded-pill font-weight-bold mt-4"
+                                data-toggle="modal" data-target="#editarModal">
+                                <i class="fas fa-edit mr-2"></i> Editar Perfil
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -243,80 +245,83 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
         </div>
     </div>
 
-    <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <form action="../shared/editar-especialista.php" method="POST">
-                    <div class="modal-header bg-teal text-white">
-                        <h5 class="modal-title font-weight-bold">Editar Datos del Especialista</h5>
-                        <button type="button" class="close text-white"
-                            data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <input type="hidden" name="id" value="<?php echo $id; ?>">
-
-                        <div class="form-row mb-3">
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold text-muted small">Teléfono</label>
-                                <input type="text" class="form-control" name="telefono"
-                                    value="<?php echo htmlspecialchars($telefono); ?>" required>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold text-muted small">Especialidad</label>
-                                <select class="form-control" name="especialidad">
-                                    <?php
-                                    $espR = $conn->query("SELECT id, nombre FROM especialidad");
-                                    while ($e = $espR->fetch_assoc()) {
-                                        $sel = ($e['nombre'] === $especialidad) ? 'selected' : '';
-                                        echo "<option value='{$e['id']}' $sel>{$e['nombre']}</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
+    <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+        <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    <form action="../shared/editar-especialista.php" method="POST">
+                        <div class="modal-header bg-teal text-white">
+                            <h5 class="modal-title font-weight-bold">Editar Datos del Especialista</h5>
+                            <button type="button" class="close text-white"
+                                data-dismiss="modal"><span>&times;</span></button>
                         </div>
+                        <div class="modal-body p-4">
+                            <input type="hidden" name="id" value="<?php echo $id; ?>">
 
-                        <hr>
+                            <div class="form-row mb-3">
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold text-muted small">Teléfono</label>
+                                    <input type="text" class="form-control" name="telefono"
+                                        value="<?php echo htmlspecialchars($telefono); ?>" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="font-weight-bold text-muted small">Especialidad</label>
+                                    <select class="form-control" name="especialidad">
+                                        <?php
+                                        $espR = $conn->query("SELECT id, nombre FROM especialidad");
+                                        while ($e = $espR->fetch_assoc()) {
+                                            $sel = ($e['nombre'] === $especialidad) ? 'selected' : '';
+                                            echo "<option value='{$e['id']}' $sel>{$e['nombre']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
 
-                        <h6 class="text-teal font-weight-bold mb-3">Configuración de Horarios</h6>
-                        <div id="dias-container"></div>
+                            <hr>
 
-                        <button type="button" class="btn btn-outline-info btn-sm mt-2 rounded-pill font-weight-bold"
-                            id="add-dia-btn">
-                            <i class="fas fa-plus mr-1"></i> Agregar Jornada
-                        </button>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success font-weight-bold px-4">Guardar Cambios</button>
-                    </div>
-                </form>
+                            <h6 class="text-teal font-weight-bold mb-3">Configuración de Horarios</h6>
+                            <div id="dias-container"></div>
+
+                            <button type="button" class="btn btn-outline-info btn-sm mt-2 rounded-pill font-weight-bold"
+                                id="add-dia-btn">
+                                <i class="fas fa-plus mr-1"></i> Agregar Jornada
+                            </button>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success font-weight-bold px-4">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+    <?php endif; ?>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-        const container = document.getElementById('dias-container');
+    <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
+        <script>
+            const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+            const container = document.getElementById('dias-container');
 
-        // 1. Cargamos los horarios actuales desde la base de datos a un array de JS
-        const horariosActuales = <?php
-        $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
-        $datos = [];
-        while ($r = $hResJS->fetch_assoc()) {
-            $datos[] = $r;
-        }
-        echo json_encode($datos);
-        ?>;
+            // 1. Cargamos los horarios actuales desde la base de datos a un array de JS
+            const horariosActuales = <?php
+            $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
+            $datos = [];
+            while ($r = $hResJS->fetch_assoc()) {
+                $datos[] = $r;
+            }
+            echo json_encode($datos);
+            ?>;
 
-        // Función para crear una fila de horario
-        function agregarFilaHorario(dia = 'Lun', inicio = '08:00', fin = '12:00') {
-            const index = container.children.length;
-            const div = document.createElement('div');
-            div.className = 'form-row mb-2 align-items-center row-horario bg-light p-2 rounded border';
-            div.innerHTML = `
+            // Función para crear una fila de horario
+            function agregarFilaHorario(dia = 'Lun', inicio = '08:00', fin = '12:00') {
+                const index = container.children.length;
+                const div = document.createElement('div');
+                div.className = 'form-row mb-2 align-items-center row-horario bg-light p-2 rounded border';
+                div.innerHTML = `
                 <div class="col-4">
                     <select name="dias[${index}][dia]" class="form-control form-control-sm">
                         ${diasSemana.map(d => `<option value="${d}" ${d === dia ? 'selected' : ''}>${d}</option>`).join('')}
@@ -334,31 +339,32 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                     </button>
                 </div>
             `;
-            container.appendChild(div);
-        }
-
-        // 2. Precargar filas al iniciar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            if (horariosActuales.length > 0) {
-                horariosActuales.forEach(h => {
-                    // Quitamos los segundos (:00) si vienen de la base de datos para el input type="time"
-                    agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5));
-                });
-            } else {
-                // Si no hay horarios, mostramos mensaje o una fila vacía
-                container.innerHTML = '<div class="text-muted small text-center mb-3">No hay horarios definidos.</div>';
+                container.appendChild(div);
             }
-        });
 
-        // 3. Botón para agregar nuevos
-        document.getElementById('add-dia-btn').addEventListener('click', () => {
-            // Limpiar mensaje de "no hay horarios" si existe
-            if (container.querySelector('.text-center')) {
-                container.innerHTML = '';
-            }
-            agregarFilaHorario();
-        });
-    </script>
+            // 2. Precargar filas al iniciar la página
+            document.addEventListener('DOMContentLoaded', () => {
+                if (horariosActuales.length > 0) {
+                    horariosActuales.forEach(h => {
+                        // Quitamos los segundos (:00) si vienen de la base de datos para el input type="time"
+                        agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5));
+                    });
+                } else {
+                    // Si no hay horarios, mostramos mensaje o una fila vacía
+                    container.innerHTML = '<div class="text-muted small text-center mb-3">No hay horarios definidos.</div>';
+                }
+            });
+
+            // 3. Botón para agregar nuevos
+            document.getElementById('add-dia-btn').addEventListener('click', () => {
+                // Limpiar mensaje de "no hay horarios" si existe
+                if (container.querySelector('.text-center')) {
+                    container.innerHTML = '';
+                }
+                agregarFilaHorario();
+            });
+        </script>
+    <?php endif; ?>
 
     <?php
     $conn->close();

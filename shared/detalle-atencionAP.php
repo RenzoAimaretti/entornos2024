@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Validación de sesión corregida
+// Validación de sesión
 if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo'] !== 'especialista')) {
     header('Location: ../index.php');
     exit();
@@ -23,6 +23,9 @@ if (!isset($_GET['id'])) {
 }
 
 $idAtencion = intval($_GET['id']);
+
+// Variable para verificar si es admin (usada para ocultar botones)
+$esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
 
 $query = "SELECT a.id, 
                  m.nombre as nombreMascota,
@@ -154,12 +157,13 @@ if (!$atencion) {
                     </div>
                     <div class="card-body">
 
-                        <button type="button" class="btn btn-warning btn-block font-weight-bold mb-3 shadow-sm"
-                            data-toggle="modal" data-target="#editarAtencionModal">
-                            <i class="fas fa-edit mr-2"></i> Editar Informe
-                        </button>
-
-                        <div class="border-top pt-3 mb-3"></div>
+                        <?php if ($esAdmin): ?>
+                            <button type="button" class="btn btn-warning btn-block font-weight-bold mb-3 shadow-sm"
+                                data-toggle="modal" data-target="#editarAtencionModal">
+                                <i class="fas fa-edit mr-2"></i> Editar Informe
+                            </button>
+                            <div class="border-top pt-3 mb-3"></div>
+                        <?php endif; ?>
 
                         <a href="../shared/detalle-mascota.php?idMascota=<?php echo $atencion['idMascota']; ?>"
                             class="btn btn-outline-info btn-block mb-2">
@@ -171,18 +175,20 @@ if (!$atencion) {
                             <i class="fas fa-user-md mr-2"></i> Perfil Profesional
                         </a>
 
-                        <div class="border-top pt-3 mb-3"></div>
+                        <?php if ($esAdmin): ?>
+                            <div class="border-top pt-3 mb-3"></div>
 
-                        <?php if (strtotime($atencion['fecha']) < time()): ?>
-                            <button class="btn btn-light btn-block text-muted" disabled>
-                                <i class="fas fa-lock mr-2"></i> Eliminar (Bloqueado)
-                            </button>
-                            <small class="text-center d-block text-muted mt-1">No se puede borrar historial pasado.</small>
-                        <?php else: ?>
-                            <button type="button" class="btn btn-outline-danger btn-block" data-toggle="modal"
-                                data-target="#modalEliminar">
-                                <i class="fas fa-trash-alt mr-2"></i> Cancelar Turno
-                            </button>
+                            <?php if (strtotime($atencion['fecha']) < time()): ?>
+                                <button class="btn btn-light btn-block text-muted" disabled>
+                                    <i class="fas fa-lock mr-2"></i> Eliminar (Bloqueado)
+                                </button>
+                                <small class="text-center d-block text-muted mt-1">No se puede borrar historial pasado.</small>
+                            <?php else: ?>
+                                <button type="button" class="btn btn-outline-danger btn-block" data-toggle="modal"
+                                    data-target="#modalEliminar">
+                                    <i class="fas fa-trash-alt mr-2"></i> Cancelar Turno
+                                </button>
+                            <?php endif; ?>
                         <?php endif; ?>
 
                     </div>
@@ -192,60 +198,64 @@ if (!$atencion) {
         </div>
     </div>
 
-    <div class="modal fade" id="editarAtencionModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-teal text-white">
-                    <h5 class="modal-title font-weight-bold">Editar Informe Médico</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <form action="../shared/editar-atencion.php" method="POST">
-                    <div class="modal-body p-4">
-                        <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
-
-                        <div class="form-group">
-                            <label class="font-weight-bold text-muted small">Fecha y Hora</label>
-                            <input type="datetime-local" class="form-control" name="fecha"
-                                value="<?php echo date('Y-m-d\TH:i', strtotime($atencion['fecha'])); ?>" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="font-weight-bold text-muted small">Detalles del Procedimiento /
-                                Observaciones</label>
-                            <textarea class="form-control" name="detalle" rows="6"
-                                required><?php echo htmlspecialchars($atencion['detalle']); ?></textarea>
-                        </div>
+    <?php if ($esAdmin): ?>
+        <div class="modal fade" id="editarAtencionModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-teal text-white">
+                        <h5 class="modal-title font-weight-bold">Editar Informe Médico</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                     </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success font-weight-bold">Guardar Cambios</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                    <form action="../shared/editar-atencion.php" method="POST">
+                        <div class="modal-body p-4">
+                            <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
 
-    <div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title font-weight-bold">Confirmar Eliminación</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body text-center p-5">
-                    <i class="fas fa-exclamation-triangle text-warning fa-4x mb-3"></i>
-                    <h4>¿Estás seguro?</h4>
-                    <p class="text-muted">Se eliminará permanentemente este registro de atención.</p>
+                            <div class="form-group">
+                                <label class="font-weight-bold text-muted small">Fecha y Hora</label>
+                                <input type="datetime-local" class="form-control" name="fecha"
+                                    value="<?php echo date('Y-m-d\TH:i', strtotime($atencion['fecha'])); ?>" required>
+                            </div>
 
-                    <form action="../shared/eliminar-atencion.php" method="POST" class="mt-4">
-                        <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
-                        <button type="button" class="btn btn-secondary px-4 mr-2" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger px-4 font-weight-bold">Sí, Eliminar</button>
+                            <div class="form-group">
+                                <label class="font-weight-bold text-muted small">Detalles del Procedimiento /
+                                    Observaciones</label>
+                                <textarea class="form-control" name="detalle" rows="6"
+                                    required><?php echo htmlspecialchars($atencion['detalle']); ?></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success font-weight-bold">Guardar Cambios</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    <?php endif; ?>
+
+    <?php if ($esAdmin): ?>
+        <div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title font-weight-bold">Confirmar Eliminación</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body text-center p-5">
+                        <i class="fas fa-exclamation-triangle text-warning fa-4x mb-3"></i>
+                        <h4>¿Estás seguro?</h4>
+                        <p class="text-muted">Se eliminará permanentemente este registro de atención.</p>
+
+                        <form action="../shared/eliminar-atencion.php" method="POST" class="mt-4">
+                            <input type="hidden" name="id" value="<?php echo $atencion['id']; ?>">
+                            <button type="button" class="btn btn-secondary px-4 mr-2" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger px-4 font-weight-bold">Sí, Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
