@@ -1,48 +1,52 @@
 <?php
 session_start();
+
 require '../vendor/autoload.php';
-
-// 1. Verifica permisos: solo admin o especialista pueden ver los eventos
-if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
-    header('Content-Type: application/json');
-    echo json_encode([]); // Devolver array vacío si no hay permiso
-    exit;
-}
-
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
-    die("Error de conexión");
+    die("Error de conexión: " . $conn->connect_error);
 }
 
-// 2. Construir query base
-// Usamos CONCAT para que en el calendario se vea "Nombre Mascota - Nombre Servicio"
-$query = "SELECT a.id, 
-                 CONCAT(m.nombre, ' - ', s.nombre) AS title, 
-                 a.fecha AS start
-          FROM atenciones a
-          INNER JOIN mascotas m ON a.id_mascota = m.id
-          INNER JOIN servicios s ON a.id_serv = s.id";
+$usuarioId = $_SESSION['usuario_id'];
+$usuarioTipo = $_SESSION['usuario_tipo']; // 'admin' o 'especialista'
 
-// 3. Si el usuario es especialista, filtramos para que solo vea SUS turnos
-if ($_SESSION['usuario_tipo'] === 'especialista') {
-    $idProfesional = intval($_SESSION['usuario_id']);
-    $query .= " WHERE a.id_pro = $idProfesional";
+
+if ($usuarioTipo === 'especialista') {
+    // Especialista: solo sus turnos
+    $sql = "SELECT a.id, a.fecha, a.detalle, m.nombre AS mascota
+            FROM atenciones a
+            INNER JOIN mascotas m ON a.id_mascota = m.id
+            WHERE a.id_pro = ?
+            ORDER BY a.fecha ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $usuarioId);
+} else {
+    // Administrador: todos los turnos
+    $sql = "SELECT a.id, a.fecha, a.detalle, m.nombre AS mascota
+            FROM atenciones a
+            INNER JOIN mascotas m ON a.id_mascota = m.id
+            ORDER BY a.fecha ASC";
+    $stmt = $conn->prepare($sql);
 }
 
-$result = $conn->query($query);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $eventos = [];
-if ($result && $result->num_rows > 0) {
-    while ($fila = $result->fetch_assoc()) {
-        $eventos[] = $fila;
-    }
+while ($row = $result->fetch_assoc()) {
+    $eventos[] = [
+        'id' => $row['id'],
+        'title' => $row['mascota'] . ' - ' . $row['detalle'],
+        'start' => $row['fecha']
+    ];
 }
 
-// 4. IMPORTANTE: Definir el header como JSON para que FullCalendar lo entienda
+$stmt->close();
+$conn->close();
+
 header('Content-Type: application/json');
 echo json_encode($eventos);
-$conn->close();
 ?>

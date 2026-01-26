@@ -6,39 +6,60 @@ $dotenv->load();
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id_pro = intval($_POST['especialista_id']);
-    $fecha = $_POST['fecha'];
-    $hora = $_POST['hora'];
-    $id_mascota = intval($_POST['mascota_id']);
-    $id_serv = intval($_POST['servicio_id']);
+   
+    if ($_SESSION['usuario_tipo'] === 'especialista') {
+        $id_pro = $_SESSION['usuario_id'];
+    } else {
+        $id_pro = isset($_POST['especialista_id']) ? intval($_POST['especialista_id']) : null;
+    }
+
+    $fecha = $_POST['fecha'] ?? '';
+    $hora = $_POST['hora'] ?? '';
+    $id_mascota = isset($_POST['mascota_id']) ? intval($_POST['mascota_id']) : 0;
+    $id_serv = isset($_POST['servicio_id']) ? intval($_POST['servicio_id']) : null;
+    $detalle = $_POST['detalle'] ?? '';
+
+   
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 
-    // Validación de seguridad (Especialista ocupado)
-    $check = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
-    $check->bind_param("is", $id_pro, $fecha_hora);
-    $check->execute();
+    
 
-    if ($check->get_result()->num_rows > 0) {
-        header("Location: ../vistaAdmin/gestionar-atenciones.php?error=especialista_ocupado");
+    
+    $checkMascota = $conn->prepare("SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?");
+    $checkMascota->bind_param("is", $id_mascota, $fecha_hora);
+    $checkMascota->execute();
+    if ($checkMascota->get_result()->num_rows > 0) {
+        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "error=mascota_ocupada");
         exit;
     }
 
-    // Validación: Mascota no tenga turno en ese horario
-    $check_mascota = $conn->prepare("SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?");
-    $check_mascota->bind_param("is", $id_mascota, $fecha_hora);
-    $check_mascota->execute();
-
-    if ($check_mascota->get_result()->num_rows > 0) {
-        header("Location: ../vistaAdmin/gestionar-atenciones.php?error=mascota_ocupada");
+    
+    $checkPro = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
+    $checkPro->bind_param("is", $id_pro, $fecha_hora);
+    $checkPro->execute();
+    if ($checkPro->get_result()->num_rows > 0) {
+        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "error=especialista_ocupado");
         exit;
     }
 
-    $stmt = $conn->prepare("INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, 'Atención programada')");
-    $stmt->bind_param("iiis", $id_mascota, $id_serv, $id_pro, $fecha_hora);
+   
+
+    
+    $stmt = $conn->prepare("
+        INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle)
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_hora, $detalle);
 
     if ($stmt->execute()) {
-        header("Location: ../vistaAdmin/gestionar-atenciones.php?res=ok");
+        
+        header("Location: " . $_SERVER['HTTP_REFERER'] . (strpos($_SERVER['HTTP_REFERER'], '?') !== false ? '&' : '?') . "res=ok");
+        exit;
     } else {
         echo "Error: " . $conn->error;
     }
 }
+
+
+
+

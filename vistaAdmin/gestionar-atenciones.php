@@ -1,13 +1,47 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: ../index.php');
+    exit();
+}
+
+$usuarioId = $_SESSION['usuario_id'];
+$usuarioTipo = $_SESSION['usuario_tipo']; // 'admin' o 'especialista'
+$usuarioNombre = $_SESSION['usuario_nombre'];
+
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
-// Cargar Selectores Iniciales
-$resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
-// Los servicios se cargan dinámicamente según el especialista seleccionado
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+
+
+if ($usuarioTipo === 'admin') {
+   
+    $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
+    $resEspecialistas = $conn->query("SELECT id, nombre FROM usuarios WHERE tipo = 'especialista' ORDER BY nombre ASC");
+} elseif ($usuarioTipo === 'especialista') {
+   
+    $resMascotas = $conn->query("
+        SELECT DISTINCT m.id, m.nombre 
+        FROM mascotas m
+        INNER JOIN atenciones a ON m.id = a.id_mascota
+        WHERE a.id_pro = $usuarioId
+        ORDER BY m.nombre ASC
+    ");
+    if (!$resMascotas) {
+        die("Error en la consulta de mascotas: " . $conn->error);
+    }
+}
+
+$resServicios = $conn->query("SELECT id, nombre FROM servicios ORDER BY nombre ASC");
+if (!$resServicios) {
+    die("Error en la consulta de servicios: " . $conn->error);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,7 +61,8 @@ $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container-fluid mt-4 px-lg-5">
-        <h2 class="text-center mb-4">Gestión de Atenciones</h2>
+        <h2 class="text-center mb-4">Panel de Gestión de Atenciones</h2>
+
         <div class="row">
             <div class="col-lg-8 mb-4">
                 <div id="calendario" class="bg-white p-3 shadow-sm rounded border"></div>
@@ -76,14 +111,25 @@ $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC
                                 <option value="">Seleccione especialista primero</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label>Hora Disponible</label>
-                            <select class="form-control" name="hora" id="hora_select" required disabled>
-                                <option value="">Elija médico</option>
-                            </select>
-                        </div>
-
+                        <?php if ($usuarioTipo === 'especialista'): ?>
+                            <div class="form-group">
+                                <label>Especialista</label>
+                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($usuarioNombre); ?>" disabled>
+                                <input type="hidden" name="especialista_id" value="<?php echo $usuarioId; ?>">
+                            </div>
+                        <?php elseif ($usuarioTipo === 'admin'): ?>
+                            <div class="form-group">
+                                <label>Especialista</label>
+                                <select class="form-control" name="especialista_id" required>
+                                    <option value="">Seleccione médico...</option>
+                                    <?php $resEspecialistas->data_seek(0);
+                                    while ($e = $resEspecialistas->fetch_assoc()): ?>
+                                        <option value="<?php echo $e['id']; ?>"><?php echo htmlspecialchars($e['nombre']); ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                         <div class="form-group">
                             <label>Mascota</label>
                             <select class="form-control" name="mascota_id" required>
@@ -106,112 +152,148 @@ $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC
         </div>
     </div>
 
-    <div class="modal fade" id="modalDetalles" tabindex="-1" role="dialog">
+    
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title">Detalle Turno</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="alertModalLabel">Advertencia</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <div class="modal-body text-center">
-                    <p id="textoDetalle" class="lead"></p>
+                <div class="modal-body" id="alertModalBody">
+                    
                 </div>
-                <div class="modal-footer justify-content-center">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    <a id="btnVerMas" href="#" class="btn btn-primary">Ver Ficha</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'especialista_ocupado'): ?>
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>El especialista seleccionado ya tiene una atención programada en el horario indicado.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                
+                $('#errorModal').modal('show');
+
+               
+                const url = new URL(window.location.href);
+                url.searchParams.delete('error');
+                window.history.replaceState({}, document.title, url.toString());
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'mascota_ocupada'): ?>
+        <div class="modal fade" id="errorMascotaModal" tabindex="-1" role="dialog" aria-labelledby="errorMascotaModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorMascotaModalLabel">Error</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>La mascota seleccionada ya tiene una atención programada en el horario indicado.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                
+                $('#errorMascotaModal').modal('show');
+
+                
+                const url = new URL(window.location.href);
+                url.searchParams.delete('error');
+                window.history.replaceState({}, document.title, url.toString());
+            });
+        </script>
+    <?php endif; ?>
+
     <script>
-        $(document).ready(function () {
-            const fechaInput = $('#fecha_input');
-            const espSelect = $('#especialista_id');
-            const horaSelect = $('#hora_select');
-
-            // 1. CARGAR MÉDICOS DEL DÍA (SIN DUPLICADOS)
-            fechaInput.on('change', function () {
-                const fecha = $(this).val();
-                if (!fecha) return;
-
-                espSelect.html('<option value="">Buscando...</option>').prop('disabled', true);
-                horaSelect.html('<option value="">Esperando...</option>').prop('disabled', true);
-                $('#servicio_select').html('<option value="">Seleccione especialista primero</option>').prop('disabled', true);
-
-                $.post('../shared/obtener-medicos-por-fecha.php', { fecha: fecha }, function (data) {
-                    espSelect.html('<option value="">Seleccione médico</option>');
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(function (m) {
-                            espSelect.append(`<option value="${m.id}">${m.nombre}</option>`);
-                        });
-                        espSelect.prop('disabled', false);
-                    } else {
-                        espSelect.html('<option value="">Sin médicos este día</option>');
-                    }
-                }, 'json').fail(function () {
-                    espSelect.html('<option value="">Error de conexión</option>');
-                });
-            });
-
-            // 2. CARGAR SERVICIOS Y HORAS DISPONIBLES
-            espSelect.on('change', function () {
-                const idPro = $(this).val();
-                if (!idPro) {
-                    $('#servicio_select').html('<option value="">Seleccione especialista primero</option>').prop('disabled', true);
-                    horaSelect.prop('disabled', true);
-                    return;
-                }
-
-                // Cargar servicios del especialista
-                $('#servicio_select').html('<option value="">Cargando servicios...</option>').prop('disabled', true);
-                $.post('../shared/obtener-servicios-especialista.php', { id_especialista: idPro }, function (data) {
-                    $('#servicio_select').html('<option value="">Seleccione servicio</option>');
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(function (s) {
-                            $('#servicio_select').append(`<option value="${s.id}">${s.nombre}</option>`);
-                        });
-                        $('#servicio_select').prop('disabled', false);
-                    } else {
-                        $('#servicio_select').html('<option value="">Sin servicios disponibles</option>');
-                    }
-                }, 'json').fail(function () {
-                    $('#servicio_select').html('<option value="">Error de conexión</option>');
-                });
-
-                horaSelect.html('<option value="">Cargando horas...</option>').prop('disabled', true);
-
-                $.post('../shared/obtener-horas-especialista.php', { id_pro: idPro, fecha: fechaInput.val() }, function (data) {
-                    horaSelect.html('<option value="">Seleccione hora</option>');
-                    if (data.disponibles && data.disponibles.length > 0) {
-                        data.disponibles.forEach(function (h) {
-                            horaSelect.append(`<option value="${h}">${h}</option>`);
-                        });
-                        horaSelect.prop('disabled', false);
-                    } else {
-                        horaSelect.html('<option value="">Sin turnos libres</option>');
-                    }
-                }, 'json');
-            });
-
-            var calendar = new FullCalendar.Calendar(document.getElementById('calendario'), {
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendario');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'es',
                 initialView: 'dayGridMonth',
                 events: '../shared/atenciones.php',
                 dateClick: function (info) {
-                    fechaInput.val(info.dateStr).trigger('change');
+                    document.getElementById('fecha_input').value = info.dateStr;
                 },
                 eventClick: function (info) {
-                    $('#textoDetalle').text(info.event.title);
-                    $('#btnVerMas').attr('href', '../shared/detalle-atencionAP.php?id=' + info.event.id);
+                    var idAtencion = info.event.id;
+                    var titulo = info.event.title;
+
+                    document.getElementById('textoDetalle').innerText = titulo;
+                    document.getElementById('btnVerMas').href = '../shared/detalle-atencionAP.php?id=' + idAtencion;
+
                     $('#modalDetalles').modal('show');
                 }
             });
             calendar.render();
         });
     </script>
-    <?php require_once '../shared/footer.php'; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            $('#fecha_input').attr('min', today);
+
+            
+            $('form').on('submit', function (e) {
+                const fechaSeleccionada = $('#fecha_input').val();
+                const horaSeleccionada = $('select[name="hora"]').val();
+
+                if (!fechaSeleccionada || !horaSeleccionada) {
+                    $('#alertModalBody').text('Por favor, selecciona una fecha y hora válidas.');
+                    $('#alertModal').modal('show');
+                    e.preventDefault();
+                    return;
+                }
+
+                const fechaHoraSeleccionada = new Date(`${fechaSeleccionada}T${horaSeleccionada}:00`);
+                const fechaHoraActual = new Date();
+
+                if (fechaHoraSeleccionada <= fechaHoraActual) {
+                    $('#alertModalBody').text('No puedes registrar un turno en una fecha u horario anterior al actual.');
+                    $('#alertModal').modal('show');
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
+<?php
+$conn->close();
+?>
