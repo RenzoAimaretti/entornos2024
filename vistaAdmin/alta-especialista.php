@@ -6,6 +6,20 @@ $dotenv->load();
 // Crear conexión
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
+// --- LÓGICA AJAX PARA VERIFICAR EMAIL EXISTENTE (NUEVO) ---
+if (isset($_POST['check_email'])) {
+    $emailToCheck = $_POST['email'];
+    $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
+    $stmt->bind_param("s", $emailToCheck);
+    $stmt->execute();
+    $stmt->store_result();
+    // Devolvemos JSON: true si existe, false si no
+    echo json_encode(['exists' => $stmt->num_rows > 0]);
+    $stmt->close();
+    exit(); // Terminamos la ejecución aquí para no cargar el HTML
+}
+// ----------------------------------------------------------
+
 $query = "select id, nombre from especialidad";
 $result = $conn->query($query);
 $especialidades = [];
@@ -51,6 +65,11 @@ if ($result->num_rows > 0) {
             margin-bottom: 10px;
             border: 1px solid #e9ecef;
         }
+
+        /* AJUSTE PARA MOSTRAR ERROR EN INPUT GROUP */
+        .input-group.is-invalid~.invalid-feedback {
+            display: block;
+        }
     </style>
 </head>
 
@@ -70,7 +89,7 @@ if ($result->num_rows > 0) {
                     </div>
 
                     <div class="card-body p-5">
-                        <form action="../shared/alta-especialista.php" method="POST">
+                        <form action="../shared/alta-especialista.php" method="POST" id="formAlta">
 
                             <div class="form-section-title"><i class="fas fa-id-card mr-2 text-teal"></i> Datos
                                 Personales</div>
@@ -91,7 +110,7 @@ if ($result->num_rows > 0) {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Email Profesional</label>
-                                        <div class="input-group">
+                                        <div class="input-group" id="grupo-email">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text bg-white border-right-0"><i
                                                         class="fas fa-envelope text-teal"></i></span>
@@ -99,18 +118,24 @@ if ($result->num_rows > 0) {
                                             <input type="email" class="form-control border-left-0" id="email"
                                                 name="email" required placeholder="dr.juan@vet.com">
                                         </div>
+                                        <div class="invalid-feedback font-weight-bold" id="error-email">
+                                            Este correo electrónico ya está registrado.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Teléfono</label>
-                                        <div class="input-group">
+                                        <div class="input-group" id="grupo-tel">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text bg-white border-right-0"><i
                                                         class="fas fa-phone text-teal"></i></span>
                                             </div>
                                             <input type="text" class="form-control border-left-0" id="tel" name="tel"
-                                                required placeholder="Ej: 11 1234-5678">
+                                                required placeholder="Ej: 1156781234" maxlength="10">
+                                        </div>
+                                        <div class="invalid-feedback font-weight-bold" id="error-tel">
+                                            El teléfono debe contener 10 números válidos.
                                         </div>
                                     </div>
                                 </div>
@@ -120,7 +145,7 @@ if ($result->num_rows > 0) {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Contraseña</label>
-                                        <div class="input-group">
+                                        <div class="input-group" id="grupo-pass">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text bg-white border-right-0"><i
                                                         class="fas fa-lock text-teal"></i></span>
@@ -128,18 +153,24 @@ if ($result->num_rows > 0) {
                                             <input type="password" class="form-control border-left-0" id="password"
                                                 name="password" required placeholder="******">
                                         </div>
+                                        <div class="invalid-feedback font-weight-bold" id="error-pass">
+                                            Debe tener 8 caracteres, 1 mayúscula y 1 número.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Repetir Contraseña</label>
-                                        <div class="input-group">
+                                        <div class="input-group" id="grupo-repass">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text bg-white border-right-0"><i
                                                         class="fas fa-lock text-teal"></i></span>
                                             </div>
                                             <input type="password" class="form-control border-left-0" id="repassword"
                                                 name="repassword" required placeholder="******">
+                                        </div>
+                                        <div class="invalid-feedback font-weight-bold" id="error-repass">
+                                            Las contraseñas no coinciden.
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +213,8 @@ if ($result->num_rows > 0) {
                             <div class="d-flex justify-content-between">
                                 <a href="gestionar-especialistas.php"
                                     class="btn btn-outline-secondary px-4">Cancelar</a>
-                                <button type="submit" class="btn btn-success px-5 font-weight-bold shadow-sm">Registrar
+                                <button type="submit" class="btn btn-success px-5 font-weight-bold shadow-sm"
+                                    id="btn-submit">Registrar
                                     Especialista</button>
                             </div>
 
@@ -198,10 +230,130 @@ if ($result->num_rows > 0) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        $(document).ready(function () {
+
+            // --- 1. VALIDACIÓN AJAX EMAIL (NUEVO) ---
+            $('#email').on('blur', function () {
+                var email = $(this).val();
+                var $input = $(this);
+
+                if (email.length > 0) {
+                    $.ajax({
+                        url: window.location.href, // Envía a este mismo archivo PHP
+                        type: 'POST',
+                        data: { check_email: true, email: email },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.exists) {
+                                $input.addClass('is-invalid');
+                                $('#grupo-email').addClass('is-invalid');
+                                $('#error-email').show();
+                                $('#btn-submit').prop('disabled', true); // Bloquear botón
+                            } else {
+                                $input.removeClass('is-invalid');
+                                $('#grupo-email').removeClass('is-invalid');
+                                $('#error-email').hide();
+                                $('#btn-submit').prop('disabled', false); // Habilitar botón
+                            }
+                        },
+                        error: function () {
+                            console.log('Error al verificar el email.');
+                        }
+                    });
+                }
+            });
+
+            // --- 2. VALIDACIÓN DE TELÉFONO (10 dígitos) ---
+            $('#tel').on('input', function () {
+                var valor = $(this).val();
+                var esValido = /^\d{10}$/.test(valor);
+
+                if (!esValido) {
+                    $(this).addClass('is-invalid');
+                    $('#grupo-tel').addClass('is-invalid');
+                    $('#error-tel').show();
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $('#grupo-tel').removeClass('is-invalid');
+                    $('#error-tel').hide();
+                }
+            });
+
+            // --- 3. VALIDACIÓN PASSWORD ---
+            $('#password').on('input', function () {
+                var pass = $(this).val();
+                var regexPass = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+                if (!regexPass.test(pass) && pass.length > 0) {
+                    $(this).addClass('is-invalid');
+                    $('#grupo-pass').addClass('is-invalid');
+                    $('#error-pass').show();
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $('#grupo-pass').removeClass('is-invalid');
+                    $('#error-pass').hide();
+                }
+                $('#repassword').trigger('input');
+            });
+
+            // --- 4. VALIDACIÓN REPETIR PASSWORD ---
+            $('#repassword').on('input', function () {
+                var pass = $('#password').val();
+                var repass = $(this).val();
+
+                if (pass !== repass && repass.length > 0) {
+                    $(this).addClass('is-invalid');
+                    $('#grupo-repass').addClass('is-invalid');
+                    $('#error-repass').show();
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $('#grupo-repass').removeClass('is-invalid');
+                    $('#error-repass').hide();
+                }
+            });
+
+            // --- 5. PREVENIR ENVÍO CON ERRORES ---
+            $('#formAlta').on('submit', function (e) {
+                var valid = true;
+
+                // Verificar email (clase is-invalid puesta por Ajax)
+                if ($('#email').hasClass('is-invalid')) valid = false;
+
+                // Verificar teléfono
+                if (!/^\d{10}$/.test($('#tel').val())) {
+                    $('#tel').addClass('is-invalid');
+                    $('#grupo-tel').addClass('is-invalid');
+                    $('#error-tel').show();
+                    valid = false;
+                }
+
+                // Verificar password
+                const passVal = $('#password').val();
+                if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(passVal)) {
+                    $('#password').addClass('is-invalid');
+                    $('#grupo-pass').addClass('is-invalid');
+                    $('#error-pass').show();
+                    valid = false;
+                }
+
+                // Verificar repassword
+                if (passVal !== $('#repassword').val()) {
+                    $('#repassword').addClass('is-invalid');
+                    $('#grupo-repass').addClass('is-invalid');
+                    $('#error-repass').show();
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    alert("Por favor corrija los errores marcados en rojo antes de enviar.");
+                }
+            });
+        });
+
+        // --- LÓGICA DE DÍAS Y HORARIOS (Existente) ---
         document.getElementById('add-dia-btn').addEventListener('click', function () {
             const container = document.getElementById('dias-container');
-
-            // Ocultar mensaje vacío si existe
             const emptyState = container.querySelector('.empty-state');
             if (emptyState) emptyState.style.display = 'none';
 
@@ -244,7 +396,6 @@ if ($result->num_rows > 0) {
             `;
             container.appendChild(div);
 
-            // Funcionalidad Eliminar
             div.querySelector('.remove-dia-btn').onclick = function () {
                 div.remove();
                 if (container.querySelectorAll('.day-row').length === 0) {
@@ -252,7 +403,6 @@ if ($result->num_rows > 0) {
                 }
             };
 
-            // Validación Lógica Horaria
             const horaInicio = div.querySelector('.hora-inicio');
             const horaFin = div.querySelector('.hora-fin');
 
@@ -267,7 +417,6 @@ if ($result->num_rows > 0) {
                     }
                 }
             }
-
             horaInicio.addEventListener('change', validarHoras);
             horaFin.addEventListener('change', validarHoras);
         });

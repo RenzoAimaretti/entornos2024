@@ -162,6 +162,8 @@ $conn->close();
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <style>
         /* Estilos personalizados */
         .card-profesional {
@@ -258,7 +260,8 @@ $conn->close();
                                 </div>
                                 <div>
                                     <h5 class="card-title mb-0 font-weight-bold text-dark">
-                                        <?= htmlspecialchars($profesional['nombre']) ?></h5>
+                                        <?= htmlspecialchars($profesional['nombre']) ?>
+                                    </h5>
                                     <small class="text-uppercase text-teal font-weight-bold" style="font-size: 0.75rem;">
                                         <?= htmlspecialchars($profesional['especialidad']) ?>
                                     </small>
@@ -353,6 +356,17 @@ $conn->close();
                         <div class="col-6 text-right">
                             <small class="text-muted d-block">Hora:</small>
                             <strong id="summary-hora" style="font-size: 1.1rem;"></strong>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Mascota:</small>
+                            <strong id="summary-mascota" style="font-size: 1.1rem;">--</strong>
+                        </div>
+                        <div class="col-6 text-right">
+                            <small class="text-muted d-block">Modalidad:</small>
+                            <strong id="summary-modalidad" style="font-size: 1.1rem;">Presencial</strong>
                         </div>
                     </div>
 
@@ -536,6 +550,10 @@ $conn->close();
                 $('#summary-precio').text('--');
 
                 $('#confirmacionModal').modal('show');
+
+                // Inicializar resumen
+                $('#summary-mascota').text('--');
+                $('#summary-modalidad').text('Presencial');
             });
 
             // Actualizar precio en modal
@@ -543,6 +561,18 @@ $conn->close();
                 const precio = $(this).find(':selected').data('precio');
                 $('#summary-precio').text(precio ? `$${precio}` : '--');
                 $('#form-service-id').val($(this).val());
+            });
+
+            // Actualizar resumen de mascota
+            $('#confirmacionForm select[name="id_mascota"]').on('change', function () {
+                const nombreMascota = $(this).find(':selected').text();
+                $('#summary-mascota').text(nombreMascota);
+            });
+
+            // Actualizar resumen de modalidad
+            $('#confirmacionForm input[name="modalidad"]').on('change', function () {
+                const modalidad = $(this).val();
+                $('#summary-modalidad').text(modalidad);
             });
 
             // Mostrar modal de éxito si PHP lo indica
