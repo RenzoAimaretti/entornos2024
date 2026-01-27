@@ -18,7 +18,7 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 2. Consulta (DISTINCT para no repetir mascotas si las atendiste muchas veces)
+// 2. Consulta (DISTINCT para no repetir mascotas)
 $sql = "SELECT DISTINCT m.id, m.nombre, m.raza, m.fecha_nac
         FROM atenciones a
         INNER JOIN mascotas m ON a.id_mascota = m.id
@@ -40,35 +40,45 @@ $result = $stmt->get_result();
 
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-
     <link href="../styles.css" rel="stylesheet">
 
     <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
+        .text-teal { color: #00897b; }
         .page-item.active .page-link {
             background-color: #00897b;
             border-color: #00897b;
         }
-
         .avatar-paw {
-            width: 40px;
-            height: 40px;
-            background-color: #e0f2f1;
-            color: #00897b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 40px; height: 40px;
+            background-color: #e0f2f1; color: #00897b;
+            display: flex; align-items: center; justify-content: center;
             border-radius: 50%;
+        }
+
+        /* --- ESTILO DE FLECHAS ORIGINALES CON DISTANCIA NORMAL --- */
+        
+        /* Restauramos el espaciado normal de la cabecera */
+        table.dataTable thead th {
+            padding-right: 30px !important;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        /* Posicionamiento de las dos flechas originales de DataTables */
+        table.dataTable thead .sorting:before, 
+        table.dataTable thead .sorting_asc:before, 
+        table.dataTable thead .sorting_desc:before,
+        table.dataTable thead .sorting:after, 
+        table.dataTable thead .sorting_asc:after, 
+        table.dataTable thead .sorting_desc:after {
+            right: 10px !important; /* Distancia estándar desde la derecha */
+        }
+
+        /* Quitamos las flechas de la columna de Acciones (índice 3) */
+        table.dataTable thead .sorting_disabled:before, 
+        table.dataTable thead .sorting_disabled:after {
+            display: none !important;
         }
     </style>
 </head>
@@ -78,7 +88,6 @@ $result = $stmt->get_result();
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container my-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0"><i class="fas fa-paw text-teal mr-2"></i> Mis Pacientes</h2>
@@ -104,49 +113,31 @@ $result = $stmt->get_result();
                             </thead>
                             <tbody>
                                 <?php while ($row = $result->fetch_assoc()):
-                                    // Cálculo de edad mejorado
                                     $edadTexto = "Desconocida";
-                                    $edadSort = 0; // Para ordenar correctamente en DataTables
-                            
+                                    $edadSort = 0;
                                     if (!empty($row['fecha_nac'])) {
                                         $nac = new DateTime($row['fecha_nac']);
                                         $hoy = new DateTime();
                                         $diff = $hoy->diff($nac);
-
-                                        if ($diff->y > 0) {
-                                            $edadTexto = $diff->y . " años";
-                                            $edadSort = $diff->y * 12; // Meses totales
-                                        } elseif ($diff->m > 0) {
-                                            $edadTexto = $diff->m . " meses";
-                                            $edadSort = $diff->m;
-                                        } else {
-                                            $edadTexto = $diff->d . " días";
-                                            $edadSort = 0;
-                                        }
+                                        if ($diff->y > 0) { $edadTexto = $diff->y . " años"; $edadSort = $diff->y * 12; }
+                                        elseif ($diff->m > 0) { $edadTexto = $diff->m . " meses"; $edadSort = $diff->m; }
+                                        else { $edadTexto = $diff->d . " días"; $edadSort = 0; }
                                     }
                                     ?>
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar-paw mr-3">
-                                                    <i class="fas fa-dog"></i>
-                                                </div>
-                                                <span
-                                                    class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></span>
+                                                <div class="avatar-paw mr-3"><i class="fas fa-dog"></i></div>
+                                                <span class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></span>
                                             </div>
                                         </td>
-
                                         <td class="align-middle"><?php echo htmlspecialchars($row['raza']); ?></td>
-
                                         <td class="align-middle" data-order="<?php echo $edadSort; ?>">
-                                            <span class="badge badge-light border text-muted">
-                                                <?php echo $edadTexto; ?>
-                                            </span>
+                                            <span class="badge badge-light border text-muted"><?php echo $edadTexto; ?></span>
                                         </td>
-
                                         <td class="text-center align-middle">
                                             <a href="../shared/detalle-mascota.php?idMascota=<?php echo urlencode($row['id']); ?>"
-                                                class="btn btn-sm btn-info rounded-pill px-3 shadow-sm">
+                                               class="btn btn-sm btn-info rounded-pill px-3 shadow-sm">
                                                 <i class="fas fa-notes-medical mr-1"></i> Ver Ficha
                                             </a>
                                         </td>
@@ -165,26 +156,34 @@ $result = $stmt->get_result();
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
         $(document).ready(function () {
+            if ($.fn.DataTable.isDataTable('#tablaPacientes')) {
+                $('#tablaPacientes').DataTable().destroy();
+            }
+
             $('#tablaPacientes').DataTable({
+                "pageLength": 10,
+                "autoWidth": true, // Restauramos el cálculo automático de anchos
+                "order": [[0, "asc"]], 
+                "columnDefs": [
+                    { "orderable": true, "targets": [0, 1, 2] }, 
+                    { "orderable": false, "targets": 3 }         
+                ],
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
-                },
-                "pageLength": 10
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                }
             });
         });
     </script>
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
-
 </html>
 <?php
 $stmt->close();

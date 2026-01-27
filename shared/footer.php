@@ -29,12 +29,7 @@
                   <li><a href="../vistaCliente/mis-turnos.php">Mis Turnos</a></li>
              <?php endif; ?>
 
-              <?php
-              // 2. SI ES ESPECIALISTA (AGREGADO)
-              if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especialista'):
-                ?>
-                <li><a href="../vistaAdmin/gestionar-hospitalizacion.php">Gestión de Hospitalizaciones</a></li>
-             <?php endif; ?>
+              
 
               <?php
               // 3. SI ES ADMIN

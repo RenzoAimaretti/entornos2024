@@ -46,25 +46,39 @@ $result = $stmt->get_result();
 
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-
     <link href="../styles.css" rel="stylesheet">
 
     <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
+        .text-teal { color: #00897b; }
+        .page-item.active .page-link { background-color: #00897b; border-color: #00897b; }
+        
+        /* --- ESTILO DE FLECHAS ORIGINALES CON DISTANCIA NORMAL --- */
+        
+        /* Restauramos el espaciado normal de la cabecera */
+        table.dataTable thead th {
+            padding-right: 30px !important;
+            position: relative;
+            white-space: nowrap;
         }
 
-        .text-teal {
-            color: #00897b;
+        /* Posicionamiento de las dos flechas originales de DataTables */
+        table.dataTable thead .sorting:before, 
+        table.dataTable thead .sorting_asc:before, 
+        table.dataTable thead .sorting_desc:before,
+        table.dataTable thead .sorting:after, 
+        table.dataTable thead .sorting_asc:after, 
+        table.dataTable thead .sorting_desc:after {
+            right: 10px !important; /* Distancia estándar */
         }
 
-        .page-item.active .page-link {
-            background-color: #00897b;
-            border-color: #00897b;
+        /* Quitamos las flechas de la columna Observaciones (índice 3) */
+        table.dataTable thead .sorting_disabled:before, 
+        table.dataTable thead .sorting_disabled:after {
+            display: none !important;
         }
+
+        #tablaHistorial { margin-top: 20px !important; margin-bottom: 20px !important; }
     </style>
 </head>
 
@@ -72,11 +86,9 @@ $result = $stmt->get_result();
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container my-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="font-weight-bold text-dark mb-0"><i class="fas fa-history text-teal mr-2"></i> Historial
-                    Médico</h2>
+                <h2 class="font-weight-bold text-dark mb-0"><i class="fas fa-history text-teal mr-2"></i> Historial Médico</h2>
                 <p class="text-muted">Registro completo de atenciones realizadas</p>
             </div>
             <a href="dashboardProfesional.php" class="btn btn-outline-secondary rounded-pill px-4">
@@ -91,10 +103,10 @@ $result = $stmt->get_result();
                         <table id="tablaHistorial" class="table table-hover" style="width:100%">
                             <thead class="thead-light">
                                 <tr>
-                                    <th style="width: 15%">Fecha</th>
-                                    <th style="width: 20%">Paciente</th>
-                                    <th style="width: 15%">Servicio</th>
-                                    <th style="width: 50%; text-align: left;">Observaciones / Diagnóstico</th>
+                                    <th>Fecha</th>
+                                    <th>Paciente</th>
+                                    <th>Servicio</th>
+                                    <th>Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,29 +115,20 @@ $result = $stmt->get_result();
                                     $horaF = date("H:i", strtotime($row['fecha']));
                                     ?>
                                     <tr>
-                                        <td data-order="<?php echo strtotime($row['fecha']); ?>" style="text-align: left;">
+                                        <td data-order="<?php echo strtotime($row['fecha']); ?>">
                                             <span class="font-weight-bold"><?php echo $fechaF; ?></span>
                                             <small class="d-block text-muted"><?php echo $horaF; ?> hs</small>
                                         </td>
-
-                                        <td style="text-align: left;">
-                                            <a href="../shared/detalle-mascota.php?idMascota=<?php echo $row['id_mascota']; ?>"
-                                                class="text-dark font-weight-bold">
+                                        <td>
+                                            <a href="../shared/detalle-mascota.php?idMascota=<?php echo $row['id_mascota']; ?>" class="text-dark font-weight-bold">
                                                 <?php echo htmlspecialchars($row['paciente']); ?>
                                             </a>
-                                            <small
-                                                class="d-block text-muted"><?php echo htmlspecialchars($row['raza']); ?></small>
+                                            <small class="d-block text-muted"><?php echo htmlspecialchars($row['raza']); ?></small>
                                         </td>
-
-                                        <td style="text-align: left;">
-                                            <span class="badge badge-info px-2 py-1">
-                                                <?php echo htmlspecialchars($row['servicio']); ?>
-                                            </span>
+                                        <td>
+                                            <span class="badge badge-info px-2 py-1"><?php echo htmlspecialchars($row['servicio']); ?></span>
                                         </td>
-
-                                        <td class="text-muted" style="white-space: pre-wrap; text-align: left;">
-                                            <?php echo htmlspecialchars($row['detalle']); ?>
-                                        </td>
+                                        <td class="text-muted" style="white-space: pre-wrap;"><?php echo htmlspecialchars($row['detalle']); ?></td>
                                     </tr>
                                 <?php endwhile; ?>
                             </tbody>
@@ -141,19 +144,28 @@ $result = $stmt->get_result();
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
         $(document).ready(function () {
-            // Inicializar DataTable en español
+            if ($.fn.DataTable.isDataTable('#tablaHistorial')) {
+                $('#tablaHistorial').DataTable().destroy();
+            }
+
             $('#tablaHistorial').DataTable({
-                "order": [[0, "desc"]], // Ordenar por fecha descendente
+                "pageLength": 10,
+                "autoWidth": true, // Restauramos el cálculo de anchos de Bootstrap
+                "order": [[0, "desc"]], 
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                "columnDefs": [
+                    { "orderable": true, "targets": [0, 1, 2] }, 
+                    { "orderable": false, "targets": 3 }         
+                ],
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
                 }
             });
         });
@@ -161,9 +173,4 @@ $result = $stmt->get_result();
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
-
 </html>
-<?php
-$stmt->close();
-$conn->close();
-?>

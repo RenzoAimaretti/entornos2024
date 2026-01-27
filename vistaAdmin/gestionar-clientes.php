@@ -34,35 +34,40 @@ $result = $conn->query($query);
     <title>Gestionar Clientes - Veterinaria San Antón</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
     <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
+        .bg-teal { background-color: #00897b; color: white; }
+        .text-teal { color: #00897b; }
+        .table-hover tbody tr:hover { background-color: #f1f8e9; transition: background-color 0.2s ease-in-out; }
+        .btn-circle-action { width: 35px; height: 35px; padding: 6px 0px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 1.42857; }
+
+        /* --- ESTILO DE FLECHAS ORIGINALES CON DISTANCIA NORMAL --- */
+        
+        /* Restauramos el espaciado normal de la cabecera */
+        table.dataTable thead th {
+            padding-right: 30px !important;
+            position: relative;
+            white-space: nowrap;
         }
 
-        .text-teal {
-            color: #00897b;
+        /* Posicionamiento de las flechas originales (antes estaban en 5px, ahora vuelven a 10px) */
+        table.dataTable thead .sorting:before, 
+        table.dataTable thead .sorting_asc:before, 
+        table.dataTable thead .sorting_desc:before,
+        table.dataTable thead .sorting:after, 
+        table.dataTable thead .sorting_asc:after, 
+        table.dataTable thead .sorting_desc:after {
+            right: 10px !important; 
         }
 
-        .table-hover tbody tr:hover {
-            background-color: #f1f8e9;
-            transition: background-color 0.2s ease-in-out;
+        /* Ocultar flechas en la columna de Acciones (índice 3) */
+        table.dataTable thead .sorting_disabled:before, 
+        table.dataTable thead .sorting_disabled:after {
+            display: none !important;
         }
 
-        .search-icon {
-            color: #ccc;
-        }
-
-        .btn-circle-action {
-            width: 35px;
-            height: 35px;
-            padding: 6px 0px;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 12px;
-            line-height: 1.42857;
-        }
+        .dataTables_wrapper .dataTables_filter { margin-bottom: 20px; }
     </style>
 </head>
 
@@ -70,57 +75,39 @@ $result = $conn->query($query);
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Clientes</h2>
                 <p class="text-muted small mb-0">Administración de usuarios y mascotas asociadas</p>
             </div>
-            <a href="../registrarse.php" class="btn btn-outline-success rounded-pill font-weight-bold px-4 shadow-sm">
-                <i class="fas fa-user-plus mr-2"></i> Nuevo Cliente
-            </a>
-        </div>
-
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-3">
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text bg-white border-0"><i
-                                class="fas fa-search search-icon"></i></span>
-                    </div>
-                    <input type="text" id="clienteSearch" class="form-control border-0"
-                        placeholder="Buscar por nombre, email o teléfono...">
-                </div>
-            </div>
+            
         </div>
 
         <div class="card shadow border-0">
-            <div class="card-body p-0">
+            <div class="card-body p-4">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="tablaClientes">
                         <thead class="bg-light text-secondary">
                             <tr>
-                                <th class="border-0 font-weight-bold pl-4">Cliente</th>
-                                <th class="border-0 font-weight-bold">Contacto</th>
-                                <th class="border-0 font-weight-bold">Ubicación</th>
-                                <th class="border-0 font-weight-bold text-center">Acciones</th>
+                                <th>Cliente</th>
+                                <th>Contacto</th>
+                                <th>Ubicación</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($result && $result->num_rows > 0): ?>
                                 <?php while ($row = $result->fetch_assoc()): ?>
                                     <tr>
-                                        <td class="pl-4 align-middle">
+                                        <td class="align-middle">
                                             <div class="d-flex align-items-center">
                                                 <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3 text-secondary font-weight-bold"
                                                     style="width: 40px; height: 40px;">
                                                     <?php echo strtoupper(substr($row['nombre'], 0, 1)); ?>
                                                 </div>
-                                                <div>
-                                                    <h6 class="mb-0 font-weight-bold text-dark">
-                                                        <?php echo htmlspecialchars($row['nombre']); ?>
-                                                    </h6>
-                                                </div>
+                                                <h6 class="mb-0 font-weight-bold text-dark">
+                                                    <?php echo htmlspecialchars($row['nombre']); ?>
+                                                </h6>
                                             </div>
                                         </td>
                                         <td class="align-middle">
@@ -137,50 +124,44 @@ $result = $conn->query($query);
                                         </td>
                                         <td class="align-middle text-center">
                                             <a href="detalle-cliente.php?id=<?php echo $row['id']; ?>"
-                                                class="btn btn-outline-info btn-circle-action shadow-sm" data-toggle="tooltip"
+                                                class="btn btn-outline-info btn-circle-action shadow-sm"
                                                 title="Ver Perfil y Mascotas">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="fas fa-users-slash fa-3x mb-3 opacity-25"></i><br>
-                                        No se encontraron clientes registrados.
-                                    </td>
-                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="card-footer bg-white border-0 text-right">
-                <small class="text-muted">Total de clientes: <strong><?php echo $result->num_rows; ?></strong></small>
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
         $(document).ready(function () {
-            // Inicializar tooltips
-            $('[data-toggle="tooltip"]').tooltip();
-
-            // Buscador en vivo
-            $("#clienteSearch").on("keyup", function () {
-                var value = $(this).val().toLowerCase();
-                $("#tablaClientes tbody tr").filter(function () {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
+            $('#tablaClientes').DataTable({
+                "pageLength": 10,
+                "autoWidth": true, // Restauramos el cálculo automático
+                "order": [[0, "asc"]],
+                "columnDefs": [
+                    { "orderable": true, "targets": [0, 1, 2] },
+                    { "orderable": false, "targets": 3 }
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                }
             });
         });
     </script>
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
-
 </html>
+<?php $conn->close(); ?>

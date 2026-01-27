@@ -153,7 +153,7 @@ $paginas_gestion = [
             href="../contactanos.php">Contacto</a>
         </li>
 
-        <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] !== 'cliente'): ?>
+        <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle font-weight-bold <?php echo (in_array($pagina_actual, $paginas_gestion)) ? 'active' : ''; ?>"
               href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
