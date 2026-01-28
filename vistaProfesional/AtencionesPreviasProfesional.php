@@ -31,13 +31,14 @@
             <div class="card-body">
                 <?php if ($result->num_rows > 0): ?>
                     <div class="table-responsive">
-                        <table id="tablaHistorial" class="table table-hover" style="width:100%">
+                        <table id="tablaHistorial" class="table table-hover w-100">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Paciente</th>
-                                    <th>Servicio</th>
-                                    <th>Observaciones</th>
+                                    <th style="width: 15%;">Fecha</th>
+                                    <th style="width: 20%;">Paciente</th>
+                                    <th style="width: 20%;">Servicio</th>
+                                    <th style="width: 45%; text-align: left !important; padding-left: 15px;">Observaciones
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -62,8 +63,8 @@
                                             <span
                                                 class="badge badge-info px-2 py-1"><?php echo htmlspecialchars($row['servicio']); ?></span>
                                         </td>
-                                        <td class="text-muted" style="white-space: pre-wrap;">
-                                            <?php echo htmlspecialchars($row['detalle']); ?></td>
+                                        <td style="text-align: left !important; white-space: pre-wrap; padding-left: 15px;"
+                                            class="text-muted"><?php echo htmlspecialchars(trim($row['detalle'])); ?></td>
                                     </tr>
                                 <?php endwhile; ?>
                             </tbody>
@@ -92,7 +93,7 @@
 
             $('#tablaHistorial').DataTable({
                 "pageLength": 10,
-                "autoWidth": true,
+                "autoWidth": false,
                 "order": [[0, "desc"]],
                 "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
                 "columnDefs": [

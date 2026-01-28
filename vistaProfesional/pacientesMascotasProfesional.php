@@ -30,13 +30,13 @@
             <div class="card-body">
                 <?php if ($result->num_rows > 0): ?>
                     <div class="table-responsive">
-                        <table id="tablaPacientes" class="table table-hover" style="width:100%">
+                        <table id="tablaPacientes" class="table table-hover w-100">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Nombre</th>
-                                    <th>Raza</th>
-                                    <th>Edad</th>
-                                    <th class="text-center">Acciones</th>
+                                    <th style="width: 35%;">Nombre</th>
+                                    <th style="width: 25%;">Raza</th>
+                                    <th style="width: 20%;">Edad</th>
+                                    <th style="width: 20%;" class="text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,17 +61,17 @@
                                     ?>
                                     <tr>
                                         <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-paw mr-3"><i class="fas fa-dog"></i></div>
+                                            <div class="nombre-container">
+                                                <div class="avatar-paw"><i class="fas fa-dog"></i></div>
                                                 <span
                                                     class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></span>
                                             </div>
                                         </td>
-                                        <td class="align-middle"><?php echo htmlspecialchars($row['raza']); ?></td>
-                                        <td class="align-middle" data-order="<?php echo $edadSort; ?>">
+                                        <td><?php echo htmlspecialchars($row['raza']); ?></td>
+                                        <td data-order="<?php echo $edadSort; ?>">
                                             <span class="badge badge-light border text-muted"><?php echo $edadTexto; ?></span>
                                         </td>
-                                        <td class="text-center align-middle">
+                                        <td class="text-center">
                                             <a href="../shared/detalle-mascota.php?idMascota=<?php echo urlencode($row['id']); ?>"
                                                 class="btn btn-sm btn-info rounded-pill px-3 shadow-sm">
                                                 <i class="fas fa-notes-medical mr-1"></i> Ver Ficha
@@ -105,7 +105,7 @@
 
             $('#tablaPacientes').DataTable({
                 "pageLength": 10,
-                "autoWidth": true,
+                "autoWidth": false,
                 "order": [[0, "asc"]],
                 "columnDefs": [
                     { "orderable": true, "targets": [0, 1, 2] },
@@ -122,7 +122,3 @@
 </body>
 
 </html>
-<?php
-$stmt->close();
-$conn->close();
-?>
