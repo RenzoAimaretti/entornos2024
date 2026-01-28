@@ -21,7 +21,6 @@ if ($conn->connect_error) {
 $turnoExitoso = false;
 $errorMascotaOcupada = false;
 
-// --- PROCESAMIENTO DEL FORMULARIO ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     $id_pro = $_POST['profesional_id'];
     $fecha_turno = $_POST['fecha_turno'];
@@ -100,8 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
             header("Location: solicitar-turno-servicio.php?service_id=" . $id_serv);
             exit();
 
-        } catch (Exception $e) { $conn->rollback(); } 
-        catch (mysqli_sql_exception $e) { $conn->rollback(); }
+        } catch (Exception $e) {
+            $conn->rollback();
+        } catch (mysqli_sql_exception $e) {
+            $conn->rollback();
+        }
     }
 }
 
@@ -110,7 +112,6 @@ if (isset($_SESSION['turno_exitoso']) && $_SESSION['turno_exitoso']) {
     unset($_SESSION['turno_exitoso']);
 }
 
-// --- CARGA DE DATOS ---
 $service_id_selected = isset($_GET['service_id']) ? intval($_GET['service_id']) : null;
 $servicios = [];
 $profesionales = [];
@@ -119,7 +120,6 @@ $mascotas = [];
 $servicio_seleccionado = null;
 
 if ($service_id_selected) {
-    // Lógica cuando hay servicio seleccionado...
     $sqlServicio = "SELECT id, nombre, precio, id_esp FROM servicios WHERE id = ?";
     $stmtServ = $conn->prepare($sqlServicio);
     $stmtServ->bind_param("i", $service_id_selected);
@@ -164,6 +164,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -172,37 +173,16 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .card-profesional { border: none; border-left: 5px solid #00897b; transition: transform 0.2s; }
-        .card-profesional:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .bg-teal { background-color: #00897b; color: white; }
-        .text-teal { color: #00897b; }
-        .booking-form { background-color: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #e9ecef; }
-        
-        .service-item {
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-        }
-        .service-item:hover {
-            background-color: #f8f9fa;
-            border-left-color: #00897b;
-            text-decoration: none;
-        }
-
-        /* --- ESTILO PARA QUE DATATABLES NO ROMPA EL DISEÑO --- */
-        #tablaServicios_wrapper .row:first-child { margin-bottom: 15px; }
-        #tablaServicios { border: none !important; }
-        #tablaServicios thead { display: none; } /* Ocultamos el header de la tabla para mantener tu formato */
-        .list-group-item { border: 1px solid rgba(0,0,0,.125) !important; margin-bottom: 5px; border-radius: 8px !important; }
-    </style>
 </head>
+
 <body class="bg-light">
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
         <?php if ($errorMascotaOcupada): ?>
             <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
-                <i class="fas fa-exclamation-triangle mr-2"></i> <strong>¡Atención!</strong> Esta mascota ya tiene un turno para ese horario.
+                <i class="fas fa-exclamation-triangle mr-2"></i> <strong>¡Atención!</strong> Esta mascota ya tiene un turno
+                para ese horario.
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
         <?php endif; ?>
@@ -210,7 +190,8 @@ $conn->close();
         <?php if ($service_id_selected && $servicio_seleccionado): ?>
             <div class="bg-green p-4 rounded text-white text-center shadow-sm mb-4">
                 <h1 class="mb-0 font-weight-bold">Elegí tu Profesional</h1>
-                <p class="mb-0 mt-1">Servicio: <strong><?= htmlspecialchars($servicio_seleccionado['nombre']) ?></strong></p>
+                <p class="mb-0 mt-1">Servicio: <strong><?= htmlspecialchars($servicio_seleccionado['nombre']) ?></strong>
+                </p>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -228,29 +209,48 @@ $conn->close();
                         <div class="card card-profesional shadow-sm h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; color: #00897b;">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3"
+                                        style="width: 50px; height: 50px; color: #00897b;">
                                         <i class="fas fa-user-md fa-lg"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-0 font-weight-bold"><?= htmlspecialchars($profesional['nombre']) ?></h5>
-                                        <small class="text-teal font-weight-bold"><?= htmlspecialchars($profesional['especialidad']) ?></small>
+                                        <h5 class="card-title mb-0 font-weight-bold">
+                                            <?= htmlspecialchars($profesional['nombre']) ?></h5>
+                                        <small
+                                            class="text-teal font-weight-bold"><?= htmlspecialchars($profesional['especialidad']) ?></small>
                                     </div>
                                 </div>
                                 <hr>
                                 <ul class="list-unstyled mb-3 small text-secondary">
-                                    <?php 
+                                    <?php
                                     $horarios = $horariosPorProfesional[$profesional['id']] ?? [];
                                     foreach ($horarios as $h): ?>
-                                        <li class="mb-1"><i class="fas fa-calendar-day mr-2 text-teal"></i><strong><?= $h['diaSem'] ?>:</strong> <?= $h['horaIni'] ?> - <?= $h['horaFin'] ?></li>
+                                        <li class="mb-1"><i
+                                                class="fas fa-calendar-day mr-2 text-teal"></i><strong><?= $h['diaSem'] ?>:</strong>
+                                            <?= $h['horaIni'] ?> - <?= $h['horaFin'] ?></li>
                                     <?php endforeach; ?>
                                 </ul>
-                                <button type="button" class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn" style="color:#00897b; border-color:#00897b;">Reservar Cita</button>
-                                
-                                <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>" data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>" data-id-serv="<?= $servicio_seleccionado['id'] ?>" data-service-nombre="<?= htmlspecialchars($servicio_seleccionado['nombre']) ?>" data-service-precio="<?= $servicio_seleccionado['precio'] ?>" style="display:none;">
-                                    <div class="form-group"><label class="small font-weight-bold">Fecha:</label><input type="date" class="form-control form-control-sm" name="fecha_turno" min="<?= date('Y-m-d') ?>" required></div>
-                                    <div class="form-group"><label class="small font-weight-bold">Hora:</label><select class="form-control form-control-sm" name="hora_turno" required disabled><option value="" disabled selected>Seleccione fecha</option></select></div>
-                                    <button type="button" class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold" disabled>Continuar</button>
-                                    <button type="button" class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
+                                <button type="button"
+                                    class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
+                                    style="color:#00897b; border-color:#00897b;">Reservar Cita</button>
+
+                                <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
+                                    data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
+                                    data-id-serv="<?= $servicio_seleccionado['id'] ?>"
+                                    data-service-nombre="<?= htmlspecialchars($servicio_seleccionado['nombre']) ?>"
+                                    data-service-precio="<?= $servicio_seleccionado['precio'] ?>" style="display:none;">
+                                    <div class="form-group"><label class="small font-weight-bold">Fecha:</label><input
+                                            type="date" class="form-control form-control-sm" name="fecha_turno"
+                                            min="<?= date('Y-m-d') ?>" required></div>
+                                    <div class="form-group"><label class="small font-weight-bold">Hora:</label><select
+                                            class="form-control form-control-sm" name="hora_turno" required disabled>
+                                            <option value="" disabled selected>Seleccione fecha</option>
+                                        </select></div>
+                                    <button type="button"
+                                        class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold"
+                                        disabled>Continuar</button>
+                                    <button type="button"
+                                        class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
                                 </form>
                             </div>
                         </div>
@@ -271,13 +271,17 @@ $conn->close();
             </div>
 
             <table id="tablaServicios" class="table" style="width:100%">
-                <thead><tr><th>Servicio</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Servicio</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <?php foreach ($servicios as $s): ?>
                         <tr>
                             <td class="p-0 border-0">
-                                <a href="solicitar-turno-servicio.php?service_id=<?= $s['id'] ?>" 
-                                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center service-item py-3 shadow-sm mb-2">
+                                <a href="solicitar-turno-servicio.php?service_id=<?= $s['id'] ?>"
+                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center service-item py-3 shadow-sm mb-2">
                                     <div>
                                         <h5 class="mb-1 text-dark font-weight-bold"><?= htmlspecialchars($s['nombre']) ?></h5>
                                         <small class="text-muted">Clic para ver profesionales disponibles</small>
@@ -313,16 +317,21 @@ $conn->close();
                         <input type="hidden" name="id_serv" id="form-service-id">
                         <div class="form-group"><label class="font-weight-bold">Mascota:</label>
                             <select class="form-control" name="id_mascota" required>
-                                <?php foreach ($mascotas as $m): ?><option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option><?php endforeach; ?>
+                                <?php foreach ($mascotas as $m): ?>
+                                    <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option><?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group"><label class="font-weight-bold d-block">Modalidad:</label>
                             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active"><input type="radio" name="modalidad" value="Presencial" checked> Presencial</label>
-                                <label class="btn btn-outline-secondary"><input type="radio" name="modalidad" value="A domicilio"> Domicilio</label>
+                                <label class="btn btn-outline-secondary active"><input type="radio" name="modalidad"
+                                        value="Presencial" checked> Presencial</label>
+                                <label class="btn btn-outline-secondary"><input type="radio" name="modalidad"
+                                        value="A domicilio"> Domicilio</label>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-success btn-block btn-lg font-weight-bold mt-4 shadow-sm">CONFIRMAR RESERVA</button>
+                        <button type="submit"
+                            class="btn btn-success btn-block btn-lg font-weight-bold mt-4 shadow-sm">CONFIRMAR
+                            RESERVA</button>
                     </form>
                 </div>
             </div>
@@ -336,12 +345,11 @@ $conn->close();
 
     <script>
         $(document).ready(function () {
-            // DataTables aplicado al formato original
             $('#tablaServicios').DataTable({
                 "pageLength": 10,
                 "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json" },
-                "ordering": false, // Desactivamos orden para que no interfiera con el diseño de lista
+                "ordering": false,
                 "info": false,
                 "lengthChange": false
             });
@@ -361,7 +369,7 @@ $conn->close();
                 const fecha = $(this).val();
                 const horaSelect = form.find('select[name="hora_turno"]');
                 if (fecha) {
-                    $.post('verificar-turno-disponible-servicio.php', { id_pro: proId, fecha: fecha }, function(disponibles) {
+                    $.post('verificar-turno-disponible-servicio.php', { id_pro: proId, fecha: fecha }, function (disponibles) {
                         horaSelect.empty().append('<option value="" disabled selected>Seleccione hora</option>');
                         disponibles.forEach(h => horaSelect.append(`<option value="${h}">${h.substring(0, 5)}</option>`));
                         horaSelect.prop('disabled', disponibles.length === 0);
@@ -394,4 +402,5 @@ $conn->close();
     </script>
     <?php require_once '../shared/footer.php'; ?>
 </body>
+
 </html>

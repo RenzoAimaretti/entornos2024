@@ -12,47 +12,6 @@ session_start();
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="../styles.css" rel="stylesheet">
-  <style>
-    /* Reutilizamos los estilos de tarjetas interactivas */
-    .action-card {
-      border: none;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      color: inherit;
-      background-color: #fff;
-      cursor: pointer;
-    }
-
-    .action-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 137, 123, 0.2) !important;
-      text-decoration: none;
-      color: #00897b;
-    }
-
-    .action-card:hover .icon-large {
-      transform: scale(1.1);
-    }
-
-    .icon-large {
-      font-size: 4rem;
-      color: #00897b;
-      transition: transform 0.3s ease;
-      margin-bottom: 20px;
-    }
-
-    .card-title {
-      font-weight: bold;
-      font-size: 1.4rem;
-    }
-
-    /* Estilo sutil para el botón volver */
-    .btn-back {
-      border-radius: 50px;
-      padding-left: 30px;
-      padding-right: 30px;
-    }
-  </style>
 </head>
 
 <body>

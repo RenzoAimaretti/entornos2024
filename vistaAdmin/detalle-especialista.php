@@ -1,19 +1,16 @@
 <?php
 session_start();
 
-// 1. Validamos acceso
 if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo'] !== 'especialista')) {
     header('Location: ../index.php');
     exit();
 }
 
-// 2. Capturamos el ID (por POST o GET, preferiblemente GET para enlaces directos)
 $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
 if ($id === 0) {
     die("ID de especialista no proporcionado.");
 }
 
-// 3. Conexión a la base de datos
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
@@ -23,7 +20,6 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 4. Obtener datos del especialista
 $query = "SELECT u.id, u.nombre, u.email, p.telefono, e.nombre as especialidad 
           FROM usuarios u 
           INNER JOIN profesionales p ON u.id = p.id
@@ -53,37 +49,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .profile-header {
-            background: linear-gradient(135deg, #00897b 0%, #4db6ac 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .avatar-circle {
-            width: 100px;
-            height: 100px;
-            background-color: white;
-            color: #00897b;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            margin: 0 auto 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -306,7 +271,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
             const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
             const container = document.getElementById('dias-container');
 
-            // 1. Cargamos los horarios actuales desde la base de datos a un array de JS
             const horariosActuales = <?php
             $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
             $datos = [];
@@ -316,7 +280,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
             echo json_encode($datos);
             ?>;
 
-            // Función para crear una fila de horario
             function agregarFilaHorario(dia = 'Lun', inicio = '08:00', fin = '12:00') {
                 const index = container.children.length;
                 const div = document.createElement('div');
@@ -342,22 +305,18 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                 container.appendChild(div);
             }
 
-            // 2. Precargar filas al iniciar la página
             document.addEventListener('DOMContentLoaded', () => {
                 if (horariosActuales.length > 0) {
                     horariosActuales.forEach(h => {
-                        // Quitamos los segundos (:00) si vienen de la base de datos para el input type="time"
+
                         agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5));
                     });
                 } else {
-                    // Si no hay horarios, mostramos mensaje o una fila vacía
                     container.innerHTML = '<div class="text-muted small text-center mb-3">No hay horarios definidos.</div>';
                 }
             });
 
-            // 3. Botón para agregar nuevos
             document.getElementById('add-dia-btn').addEventListener('click', () => {
-                // Limpiar mensaje de "no hay horarios" si existe
                 if (container.querySelector('.text-center')) {
                     container.innerHTML = '';
                 }

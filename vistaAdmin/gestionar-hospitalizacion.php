@@ -1,9 +1,9 @@
 <?php
 session_start();
-// Seguridad: Solo administrador
+
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-  header('Location: ../index.php');
-  exit();
+    header('Location: ../index.php');
+    exit();
 }
 
 require '../vendor/autoload.php';
@@ -12,10 +12,9 @@ $dotenv->load();
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
-  die("Error de conexión: " . $conn->connect_error);
+    die("Error de conexión: " . $conn->connect_error);
 }
 
-// Hospitalizaciones Activas (Con DataTables)
 $queryActivas = "SELECT h.*, m.nombre as mascota, u.nombre as profesional 
                  FROM hospitalizaciones h
                  INNER JOIN mascotas m ON h.id_mascota = m.id
@@ -23,7 +22,6 @@ $queryActivas = "SELECT h.*, m.nombre as mascota, u.nombre as profesional
                  WHERE h.estado = 'Activa' ORDER BY h.fecha_ingreso ASC";
 $resActivas = $conn->query($queryActivas);
 
-// Historial: Solo las últimas 5 (Tabla simple sin paginación)
 $queryHistorial = "SELECT h.*, m.nombre as mascota, u.nombre as profesional 
                     FROM hospitalizaciones h
                     INNER JOIN mascotas m ON h.id_mascota = m.id
@@ -45,26 +43,6 @@ $resHistorial = $conn->query($queryHistorial);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .card-header h5 { margin-bottom: 0; font-weight: bold; }
-        .table th, .table td { vertical-align: middle !important; }
-        .section-space { margin-bottom: 40px; }
-
-        /* Estilo de flechas pegadas para la tabla de activos */
-        table#tablaActivas thead th {
-            padding-right: 30px !important;
-            position: relative;
-            white-space: nowrap;
-        }
-        table#tablaActivas thead .sorting:before, 
-        table#tablaActivas thead .sorting_asc:before, 
-        table#tablaActivas thead .sorting_desc:before,
-        table#tablaActivas thead .sorting:after, 
-        table#tablaActivas thead .sorting_asc:after, 
-        table#tablaActivas thead .sorting_desc:after {
-            right: 10px !important; 
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -72,7 +50,8 @@ $resHistorial = $conn->query($queryHistorial);
 
     <div class="container mt-5 mb-5">
         <div class="mb-4">
-            <h2 class="text-dark font-weight-bold"><i class="fas fa-hospital-alt text-danger mr-2"></i> Control de Hospitalizaciones</h2>
+            <h2 class="text-dark font-weight-bold"><i class="fas fa-hospital-alt text-danger mr-2"></i> Control de
+                Hospitalizaciones</h2>
             <p class="text-muted">Panel administrativo de monitoreo de internaciones.</p>
         </div>
 
@@ -130,14 +109,17 @@ $resHistorial = $conn->query($queryHistorial);
                                     <tr>
                                         <td class="pl-4"><strong><?= htmlspecialchars($hist['mascota']) ?></strong></td>
                                         <td class="small"><?= date('d/m/Y', strtotime($hist['fecha_ingreso'])) ?></td>
-                                        <td class="small font-weight-bold text-success"><?= date('d/m/Y', strtotime($hist['fecha_egreso_real'])) ?></td>
+                                        <td class="small font-weight-bold text-success">
+                                            <?= date('d/m/Y', strtotime($hist['fecha_egreso_real'])) ?>
+                                        </td>
                                         <td class="text-muted small"><?= htmlspecialchars($hist['motivo']) ?></td>
                                         <td class="small"><?= htmlspecialchars($hist['profesional']) ?></td>
                                     </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">No hay registros de altas recientes.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">No hay registros de altas recientes.
+                                    </td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -154,7 +136,6 @@ $resHistorial = $conn->query($queryHistorial);
 
     <script>
         $(document).ready(function () {
-            // Solo inicializamos DataTables para la tabla superior
             $('#tablaActivas').DataTable({
                 "pageLength": 5,
                 "order": [[1, "asc"]],
@@ -167,4 +148,5 @@ $resHistorial = $conn->query($queryHistorial);
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
+
 </html>

@@ -9,7 +9,6 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-// Crear conexión
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
@@ -18,12 +17,10 @@ if ($conn->connect_error) {
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// Lógica para determinar el filtro y el orden
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'upcoming';
 $sqlFilter = '';
 $sqlOrder = '';
 
-// Variables para clases de botones (Estilo visual)
 $btnUpcomingClass = 'btn-outline-teal';
 $btnCompletedClass = 'btn-outline-secondary';
 
@@ -32,14 +29,13 @@ $now = date('Y-m-d H:i:s');
 if ($filter === 'completed') {
   $sqlFilter = "AND atenciones.fecha < '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha DESC";
-  $btnCompletedClass = 'btn-secondary text-white'; // Activo
+  $btnCompletedClass = 'btn-secondary text-white';
 } else {
   $sqlFilter = "AND atenciones.fecha >= '$now'";
   $sqlOrder = "ORDER BY atenciones.fecha ASC";
-  $btnUpcomingClass = 'btn-teal text-white'; // Activo
+  $btnUpcomingClass = 'btn-teal text-white';
 }
 
-// Obteniene los turnos del usuario con el filtro dinámico
 $sql = "SELECT atenciones.id, atenciones.fecha, servicios.nombre AS servicio, 
                usuarios.nombre AS profesional, mascotas.nombre AS mascota
         FROM atenciones
@@ -74,58 +70,6 @@ $conn->close();
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="../styles.css" rel="stylesheet">
-  <style>
-    /* Estilos personalizados para esta página */
-    .btn-teal {
-      background-color: #00897b;
-      border-color: #00897b;
-      color: white;
-    }
-
-    .btn-teal:hover {
-      background-color: #00695c;
-      color: white;
-    }
-
-    .btn-outline-teal {
-      color: #00897b;
-      border-color: #00897b;
-      background-color: white;
-    }
-
-    .btn-outline-teal:hover {
-      background-color: #00897b;
-      color: white;
-    }
-
-    /* Borde lateral de colores según estado */
-    .card-upcoming {
-      border-left: 5px solid #00897b;
-    }
-
-    .card-completed {
-      border-left: 5px solid #6c757d;
-      background-color: #f8f9fa;
-    }
-
-    .card-title {
-      color: #00897b;
-      font-weight: bold;
-    }
-
-    .info-row {
-      font-size: 0.95rem;
-      color: #555;
-      margin-bottom: 8px;
-    }
-
-    .info-row i {
-      width: 25px;
-      text-align: center;
-      color: #00897b;
-      margin-right: 5px;
-    }
-  </style>
 </head>
 
 <body>

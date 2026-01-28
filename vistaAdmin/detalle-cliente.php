@@ -15,7 +15,6 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Obtener Cliente
 $query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono 
           FROM usuarios u 
           JOIN clientes c ON u.id = c.id
@@ -23,7 +22,6 @@ $query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono
 $result = $conn->query($query);
 $cliente = ($result && $result->num_rows > 0) ? $result->fetch_assoc() : null;
 
-// Obtener Mascotas
 $queryMascotas = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue, m.foto 
                   FROM mascotas m 
                   WHERE m.id_cliente = $id";
@@ -41,81 +39,6 @@ $resultMascotas = $conn->query($queryMascotas);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .profile-card {
-            border-left: 5px solid #00897b;
-        }
-
-        .avatar-initial {
-            width: 80px;
-            height: 80px;
-            background-color: #e0f2f1;
-            color: #00897b;
-            font-size: 2.5rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-        }
-
-        /* Ajustes para que la tabla parezca lista de cards */
-        #tablaMascotas_wrapper .dataTables_filter {
-            margin-bottom: 1rem;
-        }
-
-        .pet-avatar {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 50%;
-            background-color: #f8f9fa;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .page-item.active .page-link {
-            background-color: #00897b;
-            border-color: #00897b;
-        }
-
-        /* Eliminar bordes innecesarios de la tabla para mantener estilo */
-        #tablaMascotas {
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        #tablaMascotas thead {
-            display: none;
-        }
-
-        /* Ocultamos cabecera para look de lista */
-        #tablaMascotas tr {
-            background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            transition: transform 0.2s;
-        }
-
-        #tablaMascotas tr:hover {
-            transform: scale(1.01);
-        }
-
-        #tablaMascotas td {
-            border: 1px solid #eee;
-            padding: 15px;
-        }
-    </style>
 </head>
 
 <body class="bg-light">

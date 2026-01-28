@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Importar clases de PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -22,7 +21,6 @@ if ($conn->connect_error) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
   $turno_id = $_POST['id'];
 
-  // 1. OBTENER INFORMACIÓN DEL TURNO ANTES DE BORRARLO
   $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre, a.fecha
                 FROM atenciones a
                 INNER JOIN mascotas m ON a.id_mascota = m.id
@@ -38,17 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
   $stmtInfo->close();
 
   if ($datosTurno) {
-    // 2. BORRAR EL TURNO
     $sql = "DELETE FROM atenciones WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $turno_id);
 
     if ($stmt->execute()) {
-      // 3. ENVIAR EL MAIL DE CANCELACIÓN
       $mail = new PHPMailer(true);
 
       try {
-        // Configuración del servidor
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
@@ -58,11 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $mail->Port = 587;
         $mail->CharSet = 'UTF-8';
 
-        // Destinatario
         $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
         $mail->addAddress($datosTurno['email'], $datosTurno['cliente_nombre']);
 
-        // Contenido
         $mail->isHTML(true);
         $mail->Subject = 'Turno Cancelado con Éxito - San Antón';
         $mail->Body = "
@@ -84,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $mail->send();
         $_SESSION['cancelacion_status'] = 'ok';
       } catch (Exception $e) {
-        // El turno se borró pero el mail falló, podrías loguear el error aquí
         $_SESSION['cancelacion_status'] = 'error_mail';
       }
 
@@ -96,6 +88,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $stmt->close();
   }
 }
-
 $conn->close();
 ?>

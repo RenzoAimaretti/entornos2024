@@ -43,7 +43,6 @@ if ($id_pro && $fecha) {
     $hora_inicio = $horarioAtencion['horaIni'];
     $hora_fin = $horarioAtencion['horaFin'];
 
-    // Obtener todos los turnos ocupados para ese día
     $sqlOcupados = "SELECT TIME(fecha) AS hora_ocupada FROM atenciones WHERE id_pro = ? AND DATE(fecha) = ?";
     $stmtOcupados = $conn->prepare($sqlOcupados);
     $stmtOcupados->bind_param("is", $id_pro, $fecha);
@@ -52,7 +51,6 @@ if ($id_pro && $fecha) {
     $horariosOcupados = array_column($resultOcupados->fetch_all(MYSQLI_ASSOC), 'hora_ocupada');
     $stmtOcupados->close();
 
-    // Generar y filtrar los horarios de 15 minutos
     $horaActual = strtotime($hora_inicio);
     $horaFinTimestamp = strtotime($hora_fin);
 

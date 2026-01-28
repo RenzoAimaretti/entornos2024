@@ -13,13 +13,11 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-// Crear conexión
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
   die("Error de conexión: " . $conn->connect_error);
 }
 
-// Obtener fecha de hoy para el límite del calendario
 $hoy = date('Y-m-d');
 
 $query = "SELECT u.id, u.nombre FROM usuarios u WHERE u.id = $id";
@@ -37,73 +35,6 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="../styles.css" rel="stylesheet">
-  <style>
-    /* Estilos Específicos */
-    .bg-teal {
-      background-color: #00897b;
-      color: white;
-    }
-
-    .text-teal {
-      color: #00897b;
-    }
-
-    /* Tarjeta de Mascota */
-    .pet-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      border: none;
-      overflow: hidden;
-    }
-
-    .pet-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .pet-img-container {
-      height: 200px;
-      background-color: #e0f2f1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .pet-img-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .no-photo-icon {
-      font-size: 4rem;
-      color: #b2dfdb;
-    }
-
-    /* Estilo del input file personalizado */
-    .custom-file-label::after {
-      content: "Buscar";
-    }
-
-    /* Preview de imagen circular */
-    #preview-container {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background-color: #f1f1f1;
-      overflow: hidden;
-      margin: 0 auto 15px auto;
-      display: none;
-      /* Oculto por defecto */
-      border: 3px solid #00897b;
-    }
-
-    #preview-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  </style>
 </head>
 
 <body>
@@ -203,9 +134,7 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
         if ($result_mascotas->num_rows > 0) {
           echo '<div class="row">';
           while ($row = $result_mascotas->fetch_assoc()) {
-            // Lógica para mostrar imagen o icono por defecto
-            $tieneFoto = !empty($row['foto']) && file_exists($row['foto']); // Ojo: file_exists depende de la ruta relativa
-            // Ajustamos la ruta para visualización si es necesario (asumiendo que $row['foto'] guarda la ruta relativa correcta desde este archivo o absoluta)
+            $tieneFoto = !empty($row['foto']) && file_exists($row['foto']);
             $imagenSrc = !empty($row['foto']) ? $row['foto'] : '';
             ?>
 
@@ -237,7 +166,7 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
 
             <?php
           }
-          echo '</div>'; // Fin Row
+          echo '</div>';
         } else {
           ?>
           <div class="text-center py-5 bg-light rounded shadow-sm border border-light">
@@ -261,7 +190,6 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-    // Script para previsualizar la imagen antes de subirla
     function previewFile() {
       var preview = document.querySelector('#preview-image');
       var container = document.querySelector('#preview-container');
@@ -270,12 +198,11 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
 
       reader.onloadend = function () {
         preview.src = reader.result;
-        container.style.display = 'block'; // Mostrar el contenedor circular
+        container.style.display = 'block';
       }
 
       if (file) {
         reader.readAsDataURL(file);
-        // Actualizar el label del input con el nombre del archivo
         document.querySelector('.custom-file-label').textContent = file.name;
       } else {
         preview.src = "";

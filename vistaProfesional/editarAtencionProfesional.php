@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 1. Seguridad
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
     header('Location: ../index.php');
     exit();
@@ -17,19 +16,16 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 2. Procesar Guardado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'];
     $detalle = $_POST['detalle'];
 
-    // Actualizamos el detalle
     $sql = "UPDATE atenciones SET detalle = ? WHERE id = ? AND id_pro = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sii", $detalle, $id, $profesionalId);
 
     if ($stmt->execute()) {
         $stmt->close();
-        // Redirigir con éxito
         header("Location: dashboardProfesional.php?success=Informe actualizado correctamente");
         exit();
     } else {
@@ -37,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 3. Obtener Datos
 function get_param($key)
 {
     if (isset($_GET[$key]))
@@ -83,50 +78,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .info-card {
-            border: none;
-            background-color: #f8f9fa;
-            border-left: 4px solid #00897b;
-            border-radius: 5px;
-        }
-
-        .label-dato {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #6c757d;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .valor-dato {
-            font-size: 1.1rem;
-            color: #212529;
-            font-weight: 600;
-        }
-
-        .editor-area {
-            border-color: #ced4da;
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        .editor-area:focus {
-            border-color: #00897b;
-            box-shadow: 0 0 0 0.2rem rgba(0, 137, 123, 0.25);
-        }
-    </style>
 </head>
 
 <body class="bg-light">

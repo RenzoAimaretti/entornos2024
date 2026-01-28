@@ -5,11 +5,10 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
     die("Acceso denegado");
 }
 
-// Conexión a la base de datos
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-// Crear conexión
+
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
@@ -20,7 +19,7 @@ $query = "SELECT u.id, u.nombre, u.email, p.telefono, e.nombre as especialidad
           FROM usuarios u 
           INNER JOIN profesionales p ON u.id = p.id
           INNER JOIN especialidad e on p.id_esp = e.id
-          ORDER BY u.nombre ASC"; // Orden alfabético
+          ORDER BY u.nombre ASC";
 
 $result = $conn->query($query);
 ?>
@@ -36,47 +35,6 @@ $result = $conn->query($query);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #f1f8e9;
-        }
-
-        .btn-circle {
-            border-radius: 50px;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-
-        /* Ajuste de flechas de ordenamiento pegadas al texto */
-        table.dataTable thead th {
-            position: relative;
-            padding-right: 25px !important;
-            white-space: nowrap;
-        }
-
-        table.dataTable thead .sorting:before, 
-        table.dataTable thead .sorting_asc:before, 
-        table.dataTable thead .sorting_desc:before,
-        table.dataTable thead .sorting:after, 
-        table.dataTable thead .sorting_asc:after, 
-        table.dataTable thead .sorting_desc:after {
-            right: 5px !important; 
-        }
-
-        table.dataTable thead .sorting_disabled:before, 
-        table.dataTable thead .sorting_disabled:after {
-            display: none !important;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -124,7 +82,8 @@ $result = $conn->query($query);
                                             </div>
                                         </td>
                                         <td class="align-middle">
-                                            <span class="badge badge-info px-2 py-1"><?php echo htmlspecialchars($row['especialidad']); ?></span>
+                                            <span
+                                                class="badge badge-info px-2 py-1"><?php echo htmlspecialchars($row['especialidad']); ?></span>
                                         </td>
                                         <td class="align-middle">
                                             <div class="small">
@@ -167,7 +126,7 @@ $result = $conn->query($query);
                 "order": [[0, "asc"]],
                 "columnDefs": [
                     { "orderable": true, "targets": [0, 1, 2] },
-                    { "orderable": false, "targets": 3 } // Deshabilitar orden en 'Acciones'
+                    { "orderable": false, "targets": 3 }
                 ],
                 "language": {
                     "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"

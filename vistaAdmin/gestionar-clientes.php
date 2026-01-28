@@ -5,18 +5,16 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
     die("Acceso denegado");
 }
 
-// Conexión a la base de datos
 require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
-// Crear conexión
+
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Consulta optimizada para traer solo clientes
 $query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono 
           FROM usuarios u 
           JOIN clientes c ON u.id = c.id
@@ -36,39 +34,6 @@ $result = $conn->query($query);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal { background-color: #00897b; color: white; }
-        .text-teal { color: #00897b; }
-        .table-hover tbody tr:hover { background-color: #f1f8e9; transition: background-color 0.2s ease-in-out; }
-        .btn-circle-action { width: 35px; height: 35px; padding: 6px 0px; border-radius: 50%; text-align: center; font-size: 12px; line-height: 1.42857; }
-
-        /* --- ESTILO DE FLECHAS ORIGINALES CON DISTANCIA NORMAL --- */
-        
-        /* Restauramos el espaciado normal de la cabecera */
-        table.dataTable thead th {
-            padding-right: 30px !important;
-            position: relative;
-            white-space: nowrap;
-        }
-
-        /* Posicionamiento de las flechas originales (antes estaban en 5px, ahora vuelven a 10px) */
-        table.dataTable thead .sorting:before, 
-        table.dataTable thead .sorting_asc:before, 
-        table.dataTable thead .sorting_desc:before,
-        table.dataTable thead .sorting:after, 
-        table.dataTable thead .sorting_asc:after, 
-        table.dataTable thead .sorting_desc:after {
-            right: 10px !important; 
-        }
-
-        /* Ocultar flechas en la columna de Acciones (índice 3) */
-        table.dataTable thead .sorting_disabled:before, 
-        table.dataTable thead .sorting_disabled:after {
-            display: none !important;
-        }
-
-        .dataTables_wrapper .dataTables_filter { margin-bottom: 20px; }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -80,7 +45,7 @@ $result = $conn->query($query);
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Clientes</h2>
                 <p class="text-muted small mb-0">Administración de usuarios y mascotas asociadas</p>
             </div>
-            
+
         </div>
 
         <div class="card shadow border-0">
@@ -148,7 +113,7 @@ $result = $conn->query($query);
         $(document).ready(function () {
             $('#tablaClientes').DataTable({
                 "pageLength": 10,
-                "autoWidth": true, // Restauramos el cálculo automático
+                "autoWidth": true,
                 "order": [[0, "asc"]],
                 "columnDefs": [
                     { "orderable": true, "targets": [0, 1, 2] },
@@ -163,5 +128,6 @@ $result = $conn->query($query);
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
+
 </html>
 <?php $conn->close(); ?>

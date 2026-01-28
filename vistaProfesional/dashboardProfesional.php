@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 1. Verificación de Seguridad
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
     header('Location: ../index.php');
     exit();
@@ -11,18 +10,15 @@ require_once '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-// 2. Configuración
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 $nombre = $_SESSION['usuario_nombre'];
 $profesional_id = $_SESSION['usuario_id'];
 
-// 3. Conexión BD
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 4. Lógica POST (Acciones)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['accion'])) {
         if ($_POST['accion'] === 'finalizar') {
@@ -62,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 5. Consultas de Datos
 $hoy = date('Y-m-d');
 
 $turnos_hoy = $conn->query("
@@ -96,49 +91,6 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .card-dashboard {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-        }
-
-        .card-dashboard:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .icon-box {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 1.5rem;
-        }
-
-        /* Estilos de paginación similares al historial */
-        .page-item.active .page-link {
-            background-color: #00897b;
-            border-color: #00897b;
-        }
-
-        table.dataTable thead th {
-            position: relative;
-            padding-right: 30px !important;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -392,11 +344,10 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
 
     <script>
         $(document).ready(function () {
-            // Inicializar DataTables para Hospitalizaciones
             $('#tablaHosp').DataTable({
                 "pageLength": 5,
                 "autoWidth": true,
-                "order": [[1, "asc"]], // Ordenar por fecha de ingreso
+                "order": [[1, "asc"]],
                 "lengthMenu": [[5, 10, 25, -1], [5, 10, 25, "Todos"]],
                 "columnDefs": [
                     { "orderable": false, "targets": [3, 4] }
@@ -406,7 +357,6 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                 }
             });
 
-            // Lógica para el modal de Alta
             $('.btn-dar-alta').on('click', function () {
                 const id = $(this).data('id');
                 const nombre = $(this).data('nombre');
@@ -414,7 +364,6 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                 $('#altaNombrePaciente').text(nombre);
             });
 
-            // Fecha mínima
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             $('#fecha_egreso_prevista').attr('min', now.toISOString().slice(0, 16));

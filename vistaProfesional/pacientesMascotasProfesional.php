@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 1. Seguridad
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
     header('Location: ../index.php');
     exit();
@@ -18,7 +17,6 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// 2. Consulta (DISTINCT para no repetir mascotas)
 $sql = "SELECT DISTINCT m.id, m.nombre, m.raza, m.fecha_nac
         FROM atenciones a
         INNER JOIN mascotas m ON a.id_mascota = m.id
@@ -42,45 +40,6 @@ $result = $stmt->get_result();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
-
-    <style>
-        .text-teal { color: #00897b; }
-        .page-item.active .page-link {
-            background-color: #00897b;
-            border-color: #00897b;
-        }
-        .avatar-paw {
-            width: 40px; height: 40px;
-            background-color: #e0f2f1; color: #00897b;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-        }
-
-        /* --- ESTILO DE FLECHAS ORIGINALES CON DISTANCIA NORMAL --- */
-        
-        /* Restauramos el espaciado normal de la cabecera */
-        table.dataTable thead th {
-            padding-right: 30px !important;
-            position: relative;
-            white-space: nowrap;
-        }
-
-        /* Posicionamiento de las dos flechas originales de DataTables */
-        table.dataTable thead .sorting:before, 
-        table.dataTable thead .sorting_asc:before, 
-        table.dataTable thead .sorting_desc:before,
-        table.dataTable thead .sorting:after, 
-        table.dataTable thead .sorting_asc:after, 
-        table.dataTable thead .sorting_desc:after {
-            right: 10px !important; /* Distancia estándar desde la derecha */
-        }
-
-        /* Quitamos las flechas de la columna de Acciones (índice 3) */
-        table.dataTable thead .sorting_disabled:before, 
-        table.dataTable thead .sorting_disabled:after {
-            display: none !important;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -119,16 +78,24 @@ $result = $stmt->get_result();
                                         $nac = new DateTime($row['fecha_nac']);
                                         $hoy = new DateTime();
                                         $diff = $hoy->diff($nac);
-                                        if ($diff->y > 0) { $edadTexto = $diff->y . " años"; $edadSort = $diff->y * 12; }
-                                        elseif ($diff->m > 0) { $edadTexto = $diff->m . " meses"; $edadSort = $diff->m; }
-                                        else { $edadTexto = $diff->d . " días"; $edadSort = 0; }
+                                        if ($diff->y > 0) {
+                                            $edadTexto = $diff->y . " años";
+                                            $edadSort = $diff->y * 12;
+                                        } elseif ($diff->m > 0) {
+                                            $edadTexto = $diff->m . " meses";
+                                            $edadSort = $diff->m;
+                                        } else {
+                                            $edadTexto = $diff->d . " días";
+                                            $edadSort = 0;
+                                        }
                                     }
                                     ?>
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar-paw mr-3"><i class="fas fa-dog"></i></div>
-                                                <span class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></span>
+                                                <span
+                                                    class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['nombre']); ?></span>
                                             </div>
                                         </td>
                                         <td class="align-middle"><?php echo htmlspecialchars($row['raza']); ?></td>
@@ -137,7 +104,7 @@ $result = $stmt->get_result();
                                         </td>
                                         <td class="text-center align-middle">
                                             <a href="../shared/detalle-mascota.php?idMascota=<?php echo urlencode($row['id']); ?>"
-                                               class="btn btn-sm btn-info rounded-pill px-3 shadow-sm">
+                                                class="btn btn-sm btn-info rounded-pill px-3 shadow-sm">
                                                 <i class="fas fa-notes-medical mr-1"></i> Ver Ficha
                                             </a>
                                         </td>
@@ -169,11 +136,11 @@ $result = $stmt->get_result();
 
             $('#tablaPacientes').DataTable({
                 "pageLength": 10,
-                "autoWidth": true, // Restauramos el cálculo automático de anchos
-                "order": [[0, "asc"]], 
+                "autoWidth": true,
+                "order": [[0, "asc"]],
                 "columnDefs": [
-                    { "orderable": true, "targets": [0, 1, 2] }, 
-                    { "orderable": false, "targets": 3 }         
+                    { "orderable": true, "targets": [0, 1, 2] },
+                    { "orderable": false, "targets": 3 }
                 ],
                 "language": {
                     "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
@@ -184,6 +151,7 @@ $result = $stmt->get_result();
 
     <?php require_once '../shared/footer.php'; ?>
 </body>
+
 </html>
 <?php
 $stmt->close();

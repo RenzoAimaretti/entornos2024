@@ -5,7 +5,6 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Importar clases de PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -22,7 +21,6 @@ if ($conn->connect_error) {
 $turnoExitoso = false;
 $errorMascotaOcupada = false;
 
-// --- PROCESAMIENTO DEL FORMULARIO (POST) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     $id_pro = $_POST['profesional_id'];
     $fecha_turno = $_POST['fecha_turno'];
@@ -33,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
 
     $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
 
-    // Verificar si la mascota ya tiene turno
     $sqlCheck = "SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $stmtCheck->bind_param("is", $id_mascota, $fecha_datetime);
@@ -45,13 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     } else {
         $conn->begin_transaction();
         try {
-            // INSERTAR TURNO
             $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, ?)";
             $stmtInsert = $conn->prepare($sqlInsert);
             $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
             $stmtInsert->execute();
 
-            // OBTENER DATOS PARA EL MAIL
             $sqlInfo = "SELECT u_cli.email as mail_cliente, u_cli.nombre as nombre_cliente, 
                                m.nombre as nombre_mascota, u_pro.nombre as nombre_pro, s.nombre as nombre_serv
                         FROM usuarios u_cli
@@ -64,9 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
             $stmtInfo->execute();
             $infoMail = $stmtInfo->get_result()->fetch_assoc();
 
-            // --- ENVÍO DE EMAIL CON PHPMAILER ---
             $mail = new PHPMailer(true);
-            // Configuración del servidor
+
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
@@ -76,11 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
             $mail->Port = 587;
             $mail->CharSet = 'UTF-8';
 
-            // Destinatarios
             $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
             $mail->addAddress($infoMail['mail_cliente'], $infoMail['nombre_cliente']);
 
-            // Contenido del mail
             $mail->isHTML(true);
             $mail->Subject = 'Confirmación de Turno - San Antón';
             $mail->Body = "
@@ -99,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
             ";
 
             $mail->send();
-            // -------------------------------------
 
             $conn->commit();
             $_SESSION['turno_exitoso'] = true;
@@ -122,7 +113,6 @@ if (isset($_SESSION['turno_exitoso']) && $_SESSION['turno_exitoso']) {
     unset($_SESSION['turno_exitoso']);
 }
 
-// --- OBTENCIÓN DE DATOS ---
 $sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad, especialidad.id AS id_esp
         FROM profesionales
         INNER JOIN usuarios ON profesionales.id = usuarios.id
@@ -164,52 +154,6 @@ $conn->close();
     <link href="../styles.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <style>
-        /* Estilos personalizados */
-        .card-profesional {
-            border: none;
-            border-left: 5px solid #00897b;
-            /* Borde lateral Teal */
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .card-profesional:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .booking-form {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        /* Input de búsqueda estilizado */
-        .search-input {
-            border-radius: 50px;
-            padding-left: 45px;
-            height: 50px;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 15px;
-            color: #00897b;
-            font-size: 1.2rem;
-            z-index: 10;
-        }
-    </style>
 </head>
 
 <body>
@@ -461,7 +405,6 @@ $conn->close();
                 serviciosPorEspecialidad[s.id_esp].push(s);
             });
 
-            // Filtro de búsqueda
             $('#filtroProfesionales').on('input', function () {
                 const searchTerm = $(this).val().toLowerCase();
                 $('.card-profesional').each(function () {
@@ -470,7 +413,6 @@ $conn->close();
                 });
             });
 
-            // Mostrar/Ocultar formulario en tarjeta
             $('.mostrar-formulario-btn').on('click', function () {
                 $(this).hide().closest('.card-body').find('.booking-form').slideDown();
             });
@@ -486,7 +428,6 @@ $conn->close();
                 });
             });
 
-            // Lógica de Fechas y Horarios
             $('.booking-form').on('change', 'input[type="date"]', function () {
                 const form = $(this).closest('.booking-form');
                 const proId = form.data('id-pro');
@@ -530,7 +471,6 @@ $conn->close();
                 $(this).closest('.booking-form').find('.sacar-turno-btn').prop('disabled', false);
             });
 
-            // Abrir Modal de Confirmación
             $('.sacar-turno-btn').on('click', function () {
                 const form = $(this).closest('.booking-form');
                 const idEsp = form.data('id-esp');
@@ -551,31 +491,26 @@ $conn->close();
 
                 $('#confirmacionModal').modal('show');
 
-                // Inicializar resumen
                 $('#summary-mascota').text('--');
                 $('#summary-modalidad').text('Presencial');
             });
 
-            // Actualizar precio en modal
             $('#id_serv_modal').on('change', function () {
                 const precio = $(this).find(':selected').data('precio');
                 $('#summary-precio').text(precio ? `$${precio}` : '--');
                 $('#form-service-id').val($(this).val());
             });
 
-            // Actualizar resumen de mascota
             $('#confirmacionForm select[name="id_mascota"]').on('change', function () {
                 const nombreMascota = $(this).find(':selected').text();
                 $('#summary-mascota').text(nombreMascota);
             });
 
-            // Actualizar resumen de modalidad
             $('#confirmacionForm input[name="modalidad"]').on('change', function () {
                 const modalidad = $(this).val();
                 $('#summary-modalidad').text(modalidad);
             });
 
-            // Mostrar modal de éxito si PHP lo indica
             if (<?php echo json_encode($turnoExitoso); ?>) {
                 $('#turnoExitosoModal').modal('show');
             }

@@ -5,15 +5,12 @@ $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
-// 1. Detectar Rol y ID
 $esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
 $idUsuario = $_SESSION['usuario_id'];
 $nombreUsuario = isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Especialista';
 
-// 2. Cargar Selectores Iniciales (Mascotas)
 $resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
 
-// 3. Cargar servicios del profesional logueado (Server-Side)
 $serviciosDelProfesional = [];
 if (!$esAdmin) {
     $stmtEsp = $conn->prepare("SELECT id_esp FROM profesionales WHERE id = ?");
@@ -194,15 +191,13 @@ if (!$esAdmin) {
 
     <script>
         $(document).ready(function () {
-            // DETECTAR PARÁMETROS URL PARA MOSTRAR MODALES
+
             const urlParams = new URLSearchParams(window.location.search);
 
-            // CASO ÉXITO
             if (urlParams.get('res') === 'ok') {
                 $('#modalExitoTurno').modal('show');
             }
 
-            // CASO ERROR
             if (urlParams.has('error')) {
                 const errorType = urlParams.get('error');
                 let mensaje = "Ocurrió un error desconocido.";
@@ -217,13 +212,11 @@ if (!$esAdmin) {
                 $('#modalErrorTurno').modal('show');
             }
 
-            // Limpiar URL para que no salga al recargar
             if (urlParams.has('res') || urlParams.has('error')) {
                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                 window.history.replaceState({ path: newUrl }, '', newUrl);
             }
 
-            // Variables y lógica de FullCalendar / AJAX...
             const esAdmin = <?= json_encode($esAdmin); ?>;
             const idUsuarioLogueado = <?= json_encode($idUsuario); ?>;
 
@@ -232,7 +225,6 @@ if (!$esAdmin) {
             const servicioSelect = $('#servicio_select');
             const horaSelect = $('#hora_select');
 
-            // --- FUNCIONES AJAX ---
             function cargarServiciosAdmin(idPro) {
                 servicioSelect.html('<option value="">Cargando servicios...</option>').prop('disabled', true);
                 $.post('../shared/obtener-servicios-especialista.php', { id_especialista: idPro }, function (data) {
@@ -278,7 +270,6 @@ if (!$esAdmin) {
                 }, 'json');
             }
 
-            // --- EVENTOS ---
             fechaInput.on('change', function () {
                 const fecha = $(this).val();
                 if (!fecha) return;
@@ -318,13 +309,11 @@ if (!$esAdmin) {
                 });
             }
 
-            // --- CALENDARIO ---
             var calendar = new FullCalendar.Calendar(document.getElementById('calendario'), {
                 locale: 'es',
                 initialView: 'dayGridMonth',
                 events: '../shared/atenciones.php',
                 dateClick: function (info) {
-                    // Validar fecha pasada
                     var clickedDate = new Date(info.dateStr);
                     var today = new Date();
                     today.setHours(0, 0, 0, 0);
