@@ -1,28 +1,4 @@
-<?php
-session_start();
-
-if ($_SESSION['usuario_tipo'] !== 'admin') {
-    die("Acceso denegado");
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono 
-          FROM usuarios u 
-          JOIN clientes c ON u.id = c.id
-          ORDER BY u.nombre ASC";
-
-$result = $conn->query($query);
-?>
-
+<?php require_once '../shared/logica_gestionar_clientes.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -45,7 +21,6 @@ $result = $conn->query($query);
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Clientes</h2>
                 <p class="text-muted small mb-0">Administración de usuarios y mascotas asociadas</p>
             </div>
-
         </div>
 
         <div class="card shadow border-0">
@@ -77,10 +52,12 @@ $result = $conn->query($query);
                                         </td>
                                         <td class="align-middle">
                                             <div class="small">
-                                                <div class="mb-1"><i class="fas fa-envelope text-muted mr-2"></i>
-                                                    <?php echo htmlspecialchars($row['email']); ?></div>
-                                                <div><i class="fas fa-phone text-muted mr-2"></i>
-                                                    <?php echo htmlspecialchars($row['telefono'] ?? 'N/A'); ?></div>
+                                                <div class="mb-1"><i
+                                                        class="fas fa-envelope text-muted mr-2"></i><?php echo htmlspecialchars($row['email']); ?>
+                                                </div>
+                                                <div><i
+                                                        class="fas fa-phone text-muted mr-2"></i><?php echo htmlspecialchars($row['telefono'] ?? 'N/A'); ?>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="align-middle text-muted small">

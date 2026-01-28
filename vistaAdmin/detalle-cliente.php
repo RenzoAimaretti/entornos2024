@@ -1,36 +1,6 @@
-<?php
-session_start();
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if ($_SESSION['usuario_tipo'] !== 'admin') {
-    die("Acceso denegado");
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "SELECT u.id, u.nombre, u.email, c.direccion, c.telefono 
-          FROM usuarios u 
-          JOIN clientes c ON u.id = c.id
-          WHERE u.id = $id";
-$result = $conn->query($query);
-$cliente = ($result && $result->num_rows > 0) ? $result->fetch_assoc() : null;
-
-$queryMascotas = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue, m.foto 
-                  FROM mascotas m 
-                  WHERE m.id_cliente = $id";
-$resultMascotas = $conn->query($queryMascotas);
-?>
-
+<?php require_once '../shared/consultas_detalle_cliente.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +10,6 @@ $resultMascotas = $conn->query($queryMascotas);
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
 </head>
-
 <body class="bg-light">
     <?php require_once '../shared/navbar.php'; ?>
 
@@ -204,5 +173,4 @@ $resultMascotas = $conn->query($queryMascotas);
     </script>
     <?php require_once '../shared/footer.php'; ?>
 </body>
-
 </html>

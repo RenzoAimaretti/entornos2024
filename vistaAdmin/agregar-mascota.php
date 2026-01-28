@@ -1,37 +1,4 @@
-<?php
-session_start();
-$id = $_GET['id'] ?? 0;
-
-if ($_SESSION['usuario_tipo'] !== 'admin') {
-    die("Acceso denegado");
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error)
-    die("Error: " . $conn->connect_error);
-
-$registroExitoso = false;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $stmt = $conn->prepare("INSERT INTO mascotas (nombre, raza, fecha_nac, fecha_mue, id_cliente) VALUES (?, ?, ?, ?, ?)");
-    $nac = !empty($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : null;
-    $mue = !empty($_POST['fecha_muerte']) ? $_POST['fecha_muerte'] : null;
-    $stmt->bind_param("ssssi", $_POST['nombre'], $_POST['raza'], $nac, $mue, $_POST['id_cliente']);
-
-    if ($stmt->execute())
-        $registroExitoso = true;
-    $stmt->close();
-}
-
-$cliente = $conn->query("SELECT nombre FROM usuarios WHERE id = " . intval($id))->fetch_assoc();
-$nombreCliente = $cliente ? $cliente['nombre'] : "Cliente no encontrado";
-$hoy = date('Y-m-d');
-?>
-
+<?php require_once '../shared/logica_agregar_mascota.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 

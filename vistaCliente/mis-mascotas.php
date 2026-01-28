@@ -1,30 +1,4 @@
-<?php
-session_start();
-
-date_default_timezone_set('America/Argentina/Buenos_Aires');
-
-$id = $_SESSION['usuario_id'] ?? 0;
-if (!isset($_SESSION['usuario_id'])) {
-  header('Location: iniciar-sesion.php');
-  exit();
-}
-
-require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-  die("Error de conexión: " . $conn->connect_error);
-}
-
-$hoy = date('Y-m-d');
-
-$query = "SELECT u.id, u.nombre FROM usuarios u WHERE u.id = $id";
-$result = $conn->query($query);
-$nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : "Cliente";
-?>
-
+<?php require_once '../shared/logica_mis_mascotas.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -41,21 +15,18 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
   <?php require_once '../shared/navbar.php'; ?>
 
   <div class="container mt-5 mb-5">
-
     <div class="bg-green p-4 rounded text-white text-center shadow-sm mb-5">
       <h1 class="mb-0 font-weight-bold">Mis Mascotas</h1>
       <p class="mb-0 mt-1" style="opacity: 0.9;">Gestiona el perfil de tus compañeros fieles</p>
     </div>
 
     <div class="row">
-
       <div class="col-lg-4 mb-4">
         <div class="card shadow-lg border-0 sticky-top" style="top: 100px; z-index: 1;">
           <div class="card-header bg-white text-center border-0 pt-4">
             <h4 class="text-teal font-weight-bold"><i class="fas fa-plus-circle"></i> Nueva Mascota</h4>
           </div>
           <div class="card-body p-4">
-
             <?php if (isset($_GET['error']) && $_GET['error'] == 'fecha'): ?>
               <div class="alert alert-danger small">
                 <i class="fas fa-exclamation-circle"></i> La fecha no puede ser futura.
@@ -124,51 +95,35 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
       <div class="col-lg-8">
         <h3 class="mb-4 text-secondary">Tus Mascotas Registradas</h3>
 
-        <?php
-        $sql = "SELECT * FROM mascotas WHERE id_cliente = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $result_mascotas = $stmt->get_result();
-
-        if ($result_mascotas->num_rows > 0) {
-          echo '<div class="row">';
-          while ($row = $result_mascotas->fetch_assoc()) {
-            $tieneFoto = !empty($row['foto']) && file_exists($row['foto']);
-            $imagenSrc = !empty($row['foto']) ? $row['foto'] : '';
-            ?>
-
-            <div class="col-md-6 mb-4">
-              <div class="card pet-card shadow-sm h-100">
-
-                <div class="pet-img-container">
-                  <?php if (!empty($imagenSrc)): ?>
-                    <img src="<?php echo htmlspecialchars($imagenSrc); ?>"
-                      alt="<?php echo htmlspecialchars($row['nombre']); ?>">
-                  <?php else: ?>
-                    <i class="fas fa-paw no-photo-icon"></i>
-                  <?php endif; ?>
-                </div>
-
-                <div class="card-body text-center">
-                  <h4 class="card-title font-weight-bold mb-1"><?php echo htmlspecialchars($row['nombre']); ?></h4>
-                  <p class="text-muted mb-3"><?php echo htmlspecialchars($row['raza'] ?? 'Raza desconocida'); ?></p>
-
-                  <div class="d-flex justify-content-center">
-                    <a href="../shared/detalle-mascota.php?idMascota=<?php echo $row['id']; ?>"
-                      class="btn btn-outline-info rounded-pill px-4" style="color: #00897b; border-color: #00897b;">
-                      <i class="fas fa-notes-medical mr-1"></i> Ver Historia Clínica
-                    </a>
+        <?php if ($result_mascotas->num_rows > 0): ?>
+          <div class="row">
+            <?php while ($row = $result_mascotas->fetch_assoc()):
+              $imagenSrc = !empty($row['foto']) ? $row['foto'] : ''; ?>
+              <div class="col-md-6 mb-4">
+                <div class="card pet-card shadow-sm h-100">
+                  <div class="pet-img-container">
+                    <?php if (!empty($imagenSrc)): ?>
+                      <img src="<?php echo htmlspecialchars($imagenSrc); ?>"
+                        alt="<?php echo htmlspecialchars($row['nombre']); ?>">
+                    <?php else: ?>
+                      <i class="fas fa-paw no-photo-icon"></i>
+                    <?php endif; ?>
+                  </div>
+                  <div class="card-body text-center">
+                    <h4 class="card-title font-weight-bold mb-1"><?php echo htmlspecialchars($row['nombre']); ?></h4>
+                    <p class="text-muted mb-3"><?php echo htmlspecialchars($row['raza'] ?? 'Raza desconocida'); ?></p>
+                    <div class="d-flex justify-content-center">
+                      <a href="../shared/detalle-mascota.php?idMascota=<?php echo $row['id']; ?>"
+                        class="btn btn-outline-info rounded-pill px-4" style="color: #00897b; border-color: #00897b;">
+                        <i class="fas fa-notes-medical mr-1"></i> Ver Historia Clínica
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <?php
-          }
-          echo '</div>';
-        } else {
-          ?>
+            <?php endwhile; ?>
+          </div>
+        <?php else: ?>
           <div class="text-center py-5 bg-light rounded shadow-sm border border-light">
             <div class="mb-3">
               <i class="fas fa-dog fa-4x text-muted" style="opacity: 0.3;"></i>
@@ -176,11 +131,7 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
             <h4 class="text-muted">Aún no tienes mascotas registradas.</h4>
             <p class="text-muted">Utiliza el formulario de la izquierda para agregar a tu primer amigo.</p>
           </div>
-          <?php
-        }
-        $stmt->close();
-        $conn->close();
-        ?>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -216,3 +167,8 @@ $nombre_cliente = ($result && $row = $result->fetch_assoc()) ? $row['nombre'] : 
 </body>
 
 </html>
+<?php
+$stmt->close();
+$stmt_mascotas->close();
+$conn->close();
+?>

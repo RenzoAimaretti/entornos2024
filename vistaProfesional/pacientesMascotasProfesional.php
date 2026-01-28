@@ -1,33 +1,4 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
-    header('Location: ../index.php');
-    exit();
-}
-
-require_once '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$profesionalId = $_SESSION['usuario_id'];
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$sql = "SELECT DISTINCT m.id, m.nombre, m.raza, m.fecha_nac
-        FROM atenciones a
-        INNER JOIN mascotas m ON a.id_mascota = m.id
-        WHERE a.id_pro = ?
-        ORDER BY m.nombre ASC";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $profesionalId);
-$stmt->execute();
-$result = $stmt->get_result();
-?>
+<?php require_once '../shared/logica_pacientes_profesional.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -35,7 +6,6 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Pacientes - San Antón</title>
-
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
@@ -43,7 +13,6 @@ $result = $stmt->get_result();
 </head>
 
 <body class="bg-light">
-
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container my-5">

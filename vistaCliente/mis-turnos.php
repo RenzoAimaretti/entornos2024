@@ -1,65 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION['usuario_id'])) {
-  header('Location: iniciar-sesion.php');
-  exit();
-}
-
-require __DIR__ . '/../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-  die("Error de conexión: " . $conn->connect_error);
-}
-
-$usuario_id = $_SESSION['usuario_id'];
-
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'upcoming';
-$sqlFilter = '';
-$sqlOrder = '';
-
-$btnUpcomingClass = 'btn-outline-teal';
-$btnCompletedClass = 'btn-outline-secondary';
-
-$now = date('Y-m-d H:i:s');
-
-if ($filter === 'completed') {
-  $sqlFilter = "AND atenciones.fecha < '$now'";
-  $sqlOrder = "ORDER BY atenciones.fecha DESC";
-  $btnCompletedClass = 'btn-secondary text-white';
-} else {
-  $sqlFilter = "AND atenciones.fecha >= '$now'";
-  $sqlOrder = "ORDER BY atenciones.fecha ASC";
-  $btnUpcomingClass = 'btn-teal text-white';
-}
-
-$sql = "SELECT atenciones.id, atenciones.fecha, servicios.nombre AS servicio, 
-               usuarios.nombre AS profesional, mascotas.nombre AS mascota
-        FROM atenciones
-        INNER JOIN servicios ON atenciones.id_serv = servicios.id
-        INNER JOIN profesionales ON atenciones.id_pro = profesionales.id
-        INNER JOIN usuarios ON profesionales.id = usuarios.id
-        INNER JOIN mascotas ON atenciones.id_mascota = mascotas.id
-        WHERE mascotas.id_cliente = ? $sqlFilter $sqlOrder";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $usuario_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$turnos = [];
-if ($result->num_rows > 0) {
-  while ($row = $result->fetch_assoc()) {
-    $turnos[] = $row;
-  }
-}
-
-$stmt->close();
-$conn->close();
-?>
+<?php require_once '../shared/logica_mis_turnos.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -76,7 +15,6 @@ $conn->close();
   <?php require_once '../shared/navbar.php'; ?>
 
   <div class="container mt-5 mb-5">
-
     <div class="bg-green p-4 rounded text-white text-center shadow-sm mb-4">
       <h1 class="mb-0 font-weight-bold">Mis Turnos</h1>
       <p class="mb-0 mt-1" style="opacity: 0.9;">Gestiona tus próximas visitas a la veterinaria</p>
@@ -92,7 +30,6 @@ $conn->close();
     <?php endif; ?>
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
-
       <div class="btn-group mb-3 mb-md-0 shadow-sm" role="group">
         <a href="mis-turnos.php?filter=upcoming" class="btn <?php echo $btnUpcomingClass; ?>">
           <i class="fas fa-calendar-alt mr-2"></i> Próximos
@@ -101,7 +38,6 @@ $conn->close();
           <i class="fas fa-history mr-2"></i> Historial
         </a>
       </div>
-
       <a href="solicitar-turno.php" class="btn btn-teal shadow-sm rounded-pill px-4 font-weight-bold">
         <i class="fas fa-plus-circle mr-2"></i> Solicitar Nuevo Turno
       </a>
@@ -115,40 +51,26 @@ $conn->close();
           $fechaFormateada = date('d/m/Y', strtotime($turno['fecha']));
           $horaFormateada = date('H:i', strtotime($turno['fecha']));
           ?>
-
           <div class="col-md-6 col-lg-4 mb-4">
             <div class="card shadow-sm border-0 h-100 <?php echo $cardClass; ?>">
               <div class="card-body">
-
                 <div class="d-flex justify-content-between align-items-start mb-3">
-                  <h5 class="card-title mb-0">
-                    <?php echo htmlspecialchars($turno['servicio']); ?>
-                  </h5>
+                  <h5 class="card-title mb-0"><?php echo htmlspecialchars($turno['servicio']); ?></h5>
                   <?php if ($filter === 'upcoming'): ?>
                     <span class="badge badge-success px-2 py-1">Activo</span>
                   <?php else: ?>
                     <span class="badge badge-secondary px-2 py-1">Finalizado</span>
                   <?php endif; ?>
                 </div>
-
                 <hr>
-
-                <div class="info-row">
-                  <i class="fas fa-calendar-day"></i>
-                  <strong>Fecha:</strong> <?php echo $fechaFormateada; ?>
+                <div class="info-row"><i class="fas fa-calendar-day"></i> <strong>Fecha:</strong>
+                  <?php echo $fechaFormateada; ?></div>
+                <div class="info-row"><i class="fas fa-clock"></i> <strong>Hora:</strong> <?php echo $horaFormateada; ?> hs
                 </div>
-                <div class="info-row">
-                  <i class="fas fa-clock"></i>
-                  <strong>Hora:</strong> <?php echo $horaFormateada; ?> hs
-                </div>
-                <div class="info-row">
-                  <i class="fas fa-paw"></i>
-                  <strong>Mascota:</strong> <?php echo htmlspecialchars($turno['mascota']); ?>
-                </div>
-                <div class="info-row">
-                  <i class="fas fa-user-md"></i>
-                  <strong>Prof:</strong> <?php echo htmlspecialchars($turno['profesional']); ?>
-                </div>
+                <div class="info-row"><i class="fas fa-paw"></i> <strong>Mascota:</strong>
+                  <?php echo htmlspecialchars($turno['mascota']); ?></div>
+                <div class="info-row"><i class="fas fa-user-md"></i> <strong>Prof:</strong>
+                  <?php echo htmlspecialchars($turno['profesional']); ?></div>
 
                 <?php if ($filter === 'upcoming'): ?>
                   <div class="mt-4 text-right">
@@ -158,18 +80,14 @@ $conn->close();
                     </button>
                   </div>
                 <?php endif; ?>
-
               </div>
             </div>
           </div>
         <?php endforeach; ?>
       </div>
-
     <?php else: ?>
       <div class="text-center py-5">
-        <div class="mb-3">
-          <i class="fas fa-calendar-times fa-4x text-muted" style="opacity: 0.3;"></i>
-        </div>
+        <div class="mb-3"><i class="fas fa-calendar-times fa-4x text-muted" style="opacity: 0.3;"></i></div>
         <h4 class="text-muted">No hay turnos <?php echo ($filter === 'upcoming') ? 'pendientes' : 'en el historial'; ?>.
         </h4>
         <?php if ($filter === 'upcoming'): ?>
@@ -178,20 +96,14 @@ $conn->close();
         <?php endif; ?>
       </div>
     <?php endif; ?>
-
   </div>
 
-  <div class="modal fade" id="cancelacionModal" tabindex="-1" role="dialog" aria-labelledby="cancelacionModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="cancelacionModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="cancelacionModalLabel">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Confirmar Cancelación
-          </h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle mr-2"></i> Confirmar Cancelación</h5>
+          <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
         </div>
         <div class="modal-body text-center p-4">
           <p class="lead mb-0">¿Estás seguro de que deseas cancelar este turno?</p>
@@ -211,16 +123,13 @@ $conn->close();
   <script>
     $(document).ready(function () {
       let turnoIdParaCancelar;
-
       $('.cancelar-turno').on('click', function () {
         turnoIdParaCancelar = $(this).data('id');
         $('#cancelacionModal').modal('show');
       });
-
       $('#confirmar-cancelacion').on('click', function () {
         const form = $('<form action="cancelar-turno.php" method="post" style="display:none;"></form>');
-        const input = $('<input type="hidden" name="id" value="' + turnoIdParaCancelar + '">');
-        form.append(input);
+        form.append($('<input type="hidden" name="id" value="' + turnoIdParaCancelar + '">'));
         $('body').append(form);
         form.submit();
       });

@@ -1,44 +1,4 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo'] !== 'especialista')) {
-    header('Location: ../index.php');
-    exit();
-}
-
-$id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
-if ($id === 0) {
-    die("ID de especialista no proporcionado.");
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "SELECT u.id, u.nombre, u.email, p.telefono, e.nombre as especialidad 
-          FROM usuarios u 
-          INNER JOIN profesionales p ON u.id = p.id
-          INNER JOIN especialidad e on p.id_esp = e.id
-          WHERE u.id = $id";
-$resultEsp = $conn->query($query);
-
-$nombre = "No encontrado";
-$email = $telefono = $especialidad = "";
-
-if ($resultEsp && $resultEsp->num_rows > 0) {
-    $row = $resultEsp->fetch_assoc();
-    $nombre = $row['nombre'];
-    $email = $row['email'];
-    $telefono = $row['telefono'];
-    $especialidad = $row['especialidad'];
-}
-?>
-
+<?php require_once '../shared/consultas_detalle_especialista.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -55,7 +15,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
-
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb bg-transparent p-0 mb-4">
                 <li class="breadcrumb-item"><a href="../vistaAdmin/gestionar-especialistas.php">Especialistas</a></li>
@@ -94,7 +53,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                             <small class="text-muted text-uppercase font-weight-bold">Horarios de Atención</small>
                             <ul class="list-unstyled mt-2 small">
                                 <?php
-                                $hRes = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id ORDER BY CASE diaSem WHEN 'Lun' THEN 1 WHEN 'Mar' THEN 2 WHEN 'Mie' THEN 3 WHEN 'Jue' THEN 4 WHEN 'Vie' THEN 5 WHEN 'Sab' THEN 6 ELSE 7 END");
                                 if ($hRes->num_rows > 0) {
                                     while ($hRow = $hRes->fetch_assoc()) {
                                         echo "<li class='mb-1 d-flex justify-content-between'>
@@ -121,7 +79,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
             </div>
 
             <div class="col-lg-8">
-
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
                         <h5 class="text-teal font-weight-bold"><i class="fas fa-calendar-check mr-2"></i> Próximos
@@ -140,11 +97,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $atNext = $conn->query("SELECT a.id, a.fecha, s.nombre as serv, m.nombre as masc 
-                                                            FROM atenciones a 
-                                                            INNER JOIN servicios s ON a.id_serv = s.id 
-                                                            INNER JOIN mascotas m ON a.id_mascota = m.id
-                                                            WHERE a.id_pro = $id AND a.fecha >= CURDATE() ORDER BY a.fecha ASC LIMIT 5");
                                     if ($atNext && $atNext->num_rows > 0) {
                                         while ($r = $atNext->fetch_assoc()) {
                                             echo "<tr>
@@ -182,11 +134,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $atPast = $conn->query("SELECT a.id, a.fecha, s.nombre as serv, m.nombre as masc 
-                                                            FROM atenciones a 
-                                                            INNER JOIN servicios s ON a.id_serv = s.id 
-                                                            INNER JOIN mascotas m ON a.id_mascota = m.id
-                                                            WHERE a.id_pro = $id AND a.fecha < CURDATE() ORDER BY a.fecha DESC LIMIT 5");
                                     if ($atPast && $atPast->num_rows > 0) {
                                         while ($r = $atPast->fetch_assoc()) {
                                             echo "<tr>
@@ -205,7 +152,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -222,7 +168,6 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                         </div>
                         <div class="modal-body p-4">
                             <input type="hidden" name="id" value="<?php echo $id; ?>">
-
                             <div class="form-row mb-3">
                                 <div class="form-group col-md-6">
                                     <label class="font-weight-bold text-muted small">Teléfono</label>
@@ -242,12 +187,9 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                                     </select>
                                 </div>
                             </div>
-
                             <hr>
-
                             <h6 class="text-teal font-weight-bold mb-3">Configuración de Horarios</h6>
                             <div id="dias-container"></div>
-
                             <button type="button" class="btn btn-outline-info btn-sm mt-2 rounded-pill font-weight-bold"
                                 id="add-dia-btn">
                                 <i class="fas fa-plus mr-1"></i> Agregar Jornada
@@ -270,15 +212,7 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
         <script>
             const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
             const container = document.getElementById('dias-container');
-
-            const horariosActuales = <?php
-            $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
-            $datos = [];
-            while ($r = $hResJS->fetch_assoc()) {
-                $datos[] = $r;
-            }
-            echo json_encode($datos);
-            ?>;
+            const horariosActuales = <?php echo json_encode($horariosJS); ?>;
 
             function agregarFilaHorario(dia = 'Lun', inicio = '08:00', fin = '12:00') {
                 const index = container.children.length;
@@ -290,45 +224,32 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
                         ${diasSemana.map(d => `<option value="${d}" ${d === dia ? 'selected' : ''}>${d}</option>`).join('')}
                     </select>
                 </div>
-                <div class="col-3">
-                    <input type="time" name="dias[${index}][horaInicio]" class="form-control form-control-sm" value="${inicio}">
-                </div>
-                <div class="col-3">
-                    <input type="time" name="dias[${index}][horaFin]" class="form-control form-control-sm" value="${fin}">
-                </div>
+                <div class="col-3"><input type="time" name="dias[${index}][horaInicio]" class="form-control form-control-sm" value="${inicio}"></div>
+                <div class="col-3"><input type="time" name="dias[${index}][horaFin]" class="form-control form-control-sm" value="${fin}"></div>
                 <div class="col-2 text-right">
                     <button type="button" class="btn btn-danger btn-sm rounded-circle shadow-sm" onclick="this.closest('.row-horario').remove()">
                         <i class="fas fa-trash-alt"></i>
                     </button>
-                </div>
-            `;
+                </div>`;
                 container.appendChild(div);
             }
 
             document.addEventListener('DOMContentLoaded', () => {
                 if (horariosActuales.length > 0) {
-                    horariosActuales.forEach(h => {
-
-                        agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5));
-                    });
+                    horariosActuales.forEach(h => agregarFilaHorario(h.diaSem, h.horaIni.substring(0, 5), h.horaFin.substring(0, 5)));
                 } else {
                     container.innerHTML = '<div class="text-muted small text-center mb-3">No hay horarios definidos.</div>';
                 }
             });
 
             document.getElementById('add-dia-btn').addEventListener('click', () => {
-                if (container.querySelector('.text-center')) {
-                    container.innerHTML = '';
-                }
+                if (container.querySelector('.text-center')) container.innerHTML = '';
                 agregarFilaHorario();
             });
         </script>
     <?php endif; ?>
 
-    <?php
-    $conn->close();
-    require_once '../shared/footer.php';
-    ?>
+    <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>

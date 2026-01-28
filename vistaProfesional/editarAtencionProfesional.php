@@ -1,73 +1,4 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
-    header('Location: ../index.php');
-    exit();
-}
-$profesionalId = $_SESSION['usuario_id'];
-
-require_once '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'];
-    $detalle = $_POST['detalle'];
-
-    $sql = "UPDATE atenciones SET detalle = ? WHERE id = ? AND id_pro = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sii", $detalle, $id, $profesionalId);
-
-    if ($stmt->execute()) {
-        $stmt->close();
-        header("Location: dashboardProfesional.php?success=Informe actualizado correctamente");
-        exit();
-    } else {
-        echo "Error al guardar.";
-    }
-}
-
-function get_param($key)
-{
-    if (isset($_GET[$key]))
-        return $_GET[$key];
-    elseif (isset($_POST[$key]))
-        return $_POST[$key];
-    return null;
-}
-
-$id = get_param('id');
-
-if (!$id) {
-    die("ID de atención no proporcionado.");
-}
-
-$sql = "SELECT a.*, m.nombre AS mascota, m.raza, s.nombre AS servicio
-        FROM atenciones a
-        INNER JOIN mascotas m ON a.id_mascota = m.id
-        INNER JOIN servicios s ON a.id_serv = s.id
-        WHERE a.id = ? AND a.id_pro = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ii", $id, $profesionalId);
-$stmt->execute();
-$result = $stmt->get_result();
-$atencion = $result->fetch_assoc();
-$stmt->close();
-$conn->close();
-
-if (!$atencion) {
-    die("Atención no encontrada o no tienes permisos para verla.");
-}
-
-$fecha = date('d/m/Y', strtotime($atencion['fecha']));
-$hora = date('H:i', strtotime($atencion['fecha']));
-?>
+<?php require_once '../shared/logica_editar_atencion.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -84,7 +15,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container my-5">
-
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb bg-transparent p-0 mb-4">
                 <li class="breadcrumb-item"><a href="panel-profesional.php" class="text-teal">Panel</a></li>
@@ -99,7 +29,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
                         <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i> Datos del Turno</h5>
                     </div>
                     <div class="card-body">
-
                         <div class="mb-4">
                             <div class="label-dato">Paciente</div>
                             <div class="d-flex align-items-center mt-1">
@@ -140,7 +69,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -178,7 +106,6 @@ $hora = date('H:i', strtotime($atencion['fecha']));
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <?php require_once '../shared/footer.php'; ?>
 </body>
 

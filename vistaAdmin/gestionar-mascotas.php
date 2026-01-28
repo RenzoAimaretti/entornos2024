@@ -1,34 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header('Location: ../index.php');
-    exit();
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "Select m.id, m.nombre, raza, fecha_nac, fecha_mue, u.nombre as nombreDueño from mascotas m 
-inner join clientes c on m.id_cliente=c.id
-inner join usuarios u on c.id=u.id 
-ORDER BY m.nombre ASC";
-
-$result = $conn->query($query);
-$mascotas = [];
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $mascotas[] = $row;
-    }
-}
-?>
-
+<?php require_once '../shared/logica_gestionar_mascotas.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -46,14 +16,11 @@ if ($result->num_rows > 0) {
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Mascotas</h2>
                 <p class="text-muted small mb-0">Listado general de pacientes</p>
             </div>
-
-            </a>
         </div>
 
         <div class="card shadow border-0">

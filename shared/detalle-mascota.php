@@ -1,53 +1,4 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_tipo'])) {
-    header('Location: ../iniciar-sesion.php');
-    exit();
-}
-
-if (!isset($_GET['idMascota'])) {
-    die("ID de mascota no proporcionado.");
-}
-
-$idMascota = intval($_GET['idMascota']);
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "SELECT m.id, m.nombre AS mascota_nombre, m.raza, m.fecha_nac, m.fecha_mue, m.id_cliente, m.foto
-          FROM mascotas m
-          WHERE m.id = $idMascota";
-
-$result = $conn->query($query);
-
-if ($result && $result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $mascota_nombre = $row['mascota_nombre'];
-    $raza = $row['raza'];
-    $fecha_nac = $row['fecha_nac'];
-    $fecha_mue = $row['fecha_mue'];
-    $idPropietario = $row['id_cliente'];
-    $fotoMascota = $row['foto'];
-} else {
-    die("Mascota no encontrada.");
-}
-
-if ($_SESSION['usuario_tipo'] === 'cliente' && $_SESSION['usuario_id'] != $idPropietario) {
-    die("Acceso denegado: esta mascota no le pertenece.");
-}
-
-$hoy = date('Y-m-d');
-$esProfesional = ($_SESSION['usuario_tipo'] === 'admin' || $_SESSION['usuario_tipo'] === 'especialista');
-$esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
-?>
-
+<?php require_once '../shared/consultas_mascotas.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -149,39 +100,70 @@ $esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
             </div>
             <div class="card-body">
                 <div class="tab-content" id="mascotaTabContent">
+                    <?php
+                    $tabs = [
+                        'historia' => ['res' => $resH, 'cols' => ['Fecha', 'Servicio', 'Profesional', 'Detalle']],
+                        'vacunas' => ['res' => $resVac, 'cols' => ['Fecha', 'Vacuna', 'Profesional', 'Detalle']],
+                        'estetica' => ['res' => $resEst, 'cols' => ['Fecha', 'Servicio', 'Esteticista', 'Detalle']]
+                    ];
 
-                    <div class="tab-pane fade show active" id="historia" role="tabpanel">
+                    foreach ($tabs as $id => $data): ?>
+                        <div class="tab-pane fade <?php echo $id === 'historia' ? 'show active' : ''; ?>"
+                            id="<?php echo $id; ?>" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover tab-datatable">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <?php foreach ($data['cols'] as $col): ?>
+                                                <th <?php echo $col === 'Detalle' ? 'class="text-center"' : ''; ?>>
+                                                    <?php echo $col; ?>
+                                                </th>
+                                            <?php endforeach; ?>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($row = $data['res']->fetch_assoc()):
+                                            $btnHref = $esProfesional ? "detalle-atencionAP.php?id={$row['id']}" : "#"; ?>
+                                            <tr>
+                                                <td><?php echo date('d/m/Y', strtotime($row['fecha'])); ?></td>
+                                                <td><?php echo $row['servicio']; ?></td>
+                                                <td><?php echo $row['profesional']; ?></td>
+                                                <td class="text-center"><a href="<?php echo $btnHref; ?>"
+                                                        class="btn btn-sm btn-info rounded-pill px-3"><i
+                                                            class="fas fa-eye"></i></a></td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <div class="tab-pane fade" id="internacion" role="tabpanel">
                         <div class="table-responsive">
                             <table class="table table-hover tab-datatable">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Fecha</th>
-                                        <th>Servicio</th>
-                                        <th>Profesional</th>
-                                        <th class="text-center">Detalle</th>
+                                        <th>Ingreso</th>
+                                        <th>Egreso</th>
+                                        <th>Derivado por</th>
+                                        <th>Motivo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php
-                                    $qH = "SELECT a.id, a.fecha, s.nombre as servicio, u.nombre as profesional FROM atenciones a INNER JOIN servicios s ON a.id_serv = s.id INNER JOIN usuarios u ON a.id_pro = u.id WHERE a.id_mascota = $idMascota AND s.nombre NOT LIKE '%vacuna%' AND s.nombre NOT LIKE '%corte de pelo%' ORDER BY a.fecha DESC";
-                                    $resH = $conn->query($qH);
-                                    while ($at = $resH->fetch_assoc()):
-                                        $btnHref = $esProfesional ? "detalle-atencionAP.php?id={$at['id']}" : "#";
-                                        ?>
+                                    <?php while ($h = $resHosp->fetch_assoc()):
+                                        $egreso = ($h['estado'] == 'Activa') ? '<span class="badge badge-warning">En curso</span>' : date('d/m/Y', strtotime($h['fecha_egreso_real'])); ?>
                                         <tr>
-                                            <td><?php echo date('d/m/Y', strtotime($at['fecha'])); ?></td>
-                                            <td><?php echo $at['servicio']; ?></td>
-                                            <td><?php echo $at['profesional']; ?></td>
-                                            <td class="text-center"><a href="<?php echo $btnHref; ?>"
-                                                    class="btn btn-sm btn-info rounded-pill px-3"><i
-                                                        class="fas fa-eye"></i></a></td>
+                                            <td><?php echo date('d/m/Y', strtotime($h['fecha_ingreso'])); ?></td>
+                                            <td><?php echo $egreso; ?></td>
+                                            <td><?php echo $h['profesional']; ?></td>
+                                            <td><?php echo htmlspecialchars($h['motivo']); ?></td>
                                         </tr>
                                     <?php endwhile; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -233,7 +215,6 @@ $esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
                 "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json" },
                 "order": [[0, "desc"]]
             });
-
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
             });

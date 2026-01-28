@@ -1,39 +1,4 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialista') {
-    header('Location: ../index.php');
-    exit();
-}
-$profesionalId = $_SESSION['usuario_id'];
-
-require_once '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$sql = "SELECT a.id, 
-               a.fecha, 
-               m.id AS id_mascota, 
-               m.nombre AS paciente, 
-               m.raza,
-               s.nombre AS servicio, 
-               a.detalle
-        FROM atenciones a
-        INNER JOIN mascotas m ON a.id_mascota = m.id
-        INNER JOIN servicios s ON a.id_serv = s.id
-        WHERE a.id_pro = ? AND a.fecha < NOW()
-        ORDER BY a.fecha DESC";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $profesionalId);
-$stmt->execute();
-$result = $stmt->get_result();
-?>
+<?php require_once '../shared/logica_atenciones_previas.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -41,7 +6,6 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historial de Atenciones - San Antón</title>
-
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">

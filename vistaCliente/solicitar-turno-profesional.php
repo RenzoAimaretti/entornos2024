@@ -1,147 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION['usuario_id'])) {
-    header('Location: iniciar-sesion.php');
-    exit();
-}
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require __DIR__ . '/../vendor/autoload.php';
-
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$turnoExitoso = false;
-$errorMascotaOcupada = false;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
-    $id_pro = $_POST['profesional_id'];
-    $fecha_turno = $_POST['fecha_turno'];
-    $hora_turno = $_POST['hora_turno'];
-    $id_mascota = $_POST['id_mascota'];
-    $id_serv = $_POST['id_serv'];
-    $modalidad = $_POST['modalidad'];
-
-    $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
-
-    $sqlCheck = "SELECT id FROM atenciones WHERE id_mascota = ? AND fecha = ?";
-    $stmtCheck = $conn->prepare($sqlCheck);
-    $stmtCheck->bind_param("is", $id_mascota, $fecha_datetime);
-    $stmtCheck->execute();
-    $resultCheck = $stmtCheck->get_result();
-
-    if ($resultCheck->num_rows > 0) {
-        $errorMascotaOcupada = true;
-    } else {
-        $conn->begin_transaction();
-        try {
-            $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, ?)";
-            $stmtInsert = $conn->prepare($sqlInsert);
-            $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
-            $stmtInsert->execute();
-
-            $sqlInfo = "SELECT u_cli.email as mail_cliente, u_cli.nombre as nombre_cliente, 
-                               m.nombre as nombre_mascota, u_pro.nombre as nombre_pro, s.nombre as nombre_serv
-                        FROM usuarios u_cli
-                        INNER JOIN mascotas m ON m.id_cliente = u_cli.id
-                        INNER JOIN usuarios u_pro ON u_pro.id = ?
-                        INNER JOIN servicios s ON s.id = ?
-                        WHERE m.id = ? AND u_cli.id = ?";
-            $stmtInfo = $conn->prepare($sqlInfo);
-            $stmtInfo->bind_param("iiii", $id_pro, $id_serv, $id_mascota, $_SESSION['usuario_id']);
-            $stmtInfo->execute();
-            $infoMail = $stmtInfo->get_result()->fetch_assoc();
-
-            $mail = new PHPMailer(true);
-
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = $_ENV['MAIL_USERNAME'];
-            $mail->Password = $_ENV['MAIL_PASSWORD'];
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            $mail->CharSet = 'UTF-8';
-
-            $mail->setFrom($_ENV['MAIL_USERNAME'], 'Veterinaria San Antón');
-            $mail->addAddress($infoMail['mail_cliente'], $infoMail['nombre_cliente']);
-
-            $mail->isHTML(true);
-            $mail->Subject = 'Confirmación de Turno - San Antón';
-            $mail->Body = "
-                <div style='font-family: Arial, sans-serif; color: #333;'>
-                    <h2 style='color: #00897b;'>¡Hola {$infoMail['nombre_cliente']}!</h2>
-                    <p>Tu turno ha sido confirmado con éxito.</p>
-                    <div style='background-color: #f8f9fa; padding: 15px; border-left: 4px solid #00897b;'>
-                        <p><strong>Mascota:</strong> {$infoMail['nombre_mascota']}</p>
-                        <p><strong>Servicio:</strong> {$infoMail['nombre_serv']}</p>
-                        <p><strong>Profesional:</strong> {$infoMail['nombre_pro']}</p>
-                        <p><strong>Fecha y Hora:</strong> " . date('d/m/Y H:i', strtotime($fecha_datetime)) . "</p>
-                        <p><strong>Modalidad:</strong> $modalidad</p>
-                    </div>
-                    <p>Gracias por confiar en San Antón.</p>
-                </div>
-            ";
-
-            $mail->send();
-
-            $conn->commit();
-            $_SESSION['turno_exitoso'] = true;
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit();
-
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo "<div class='alert alert-danger'>El turno se agendó pero no se pudo enviar el mail: {$mail->ErrorInfo}</div>";
-        } catch (mysqli_sql_exception $e) {
-            $conn->rollback();
-            echo "<div class='alert alert-danger'>Error en la base de datos: {$e->getMessage()}</div>";
-        }
-    }
-    $stmtCheck->close();
-}
-
-if (isset($_SESSION['turno_exitoso']) && $_SESSION['turno_exitoso']) {
-    $turnoExitoso = true;
-    unset($_SESSION['turno_exitoso']);
-}
-
-$sql = "SELECT profesionales.id, usuarios.nombre, especialidad.nombre AS especialidad, especialidad.id AS id_esp
-        FROM profesionales
-        INNER JOIN usuarios ON profesionales.id = usuarios.id
-        INNER JOIN especialidad ON profesionales.id_esp = especialidad.id";
-$result = $conn->query($sql);
-$profesionales = $result->fetch_all(MYSQLI_ASSOC);
-
-$horariosPorProfesional = [];
-$sqlHorarios = "SELECT idPro, diaSem, horaIni, horaFin FROM profesionales_horarios";
-$resultHorarios = $conn->query($sqlHorarios);
-while ($row = $resultHorarios->fetch_assoc()) {
-    $horariosPorProfesional[$row['idPro']][] = $row;
-}
-
-$sqlMascotas = "SELECT id, nombre FROM mascotas WHERE id_cliente = ?";
-$stmtMasc = $conn->prepare($sqlMascotas);
-$stmtMasc->bind_param("i", $_SESSION['usuario_id']);
-$stmtMasc->execute();
-$resMasc = $stmtMasc->get_result();
-$mascotas = $resMasc->fetch_all(MYSQLI_ASSOC);
-$stmtMasc->close();
-
-$sqlServicios = "SELECT id, nombre, precio, id_esp FROM servicios";
-$resServ = $conn->query($sqlServicios);
-$servicios = $resServ->fetch_all(MYSQLI_ASSOC);
-
-$conn->close();
-?>
-
+<?php require_once '../shared/logica_solicitar_turno_profesional.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -160,7 +17,6 @@ $conn->close();
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
-
         <?php if ($errorMascotaOcupada): ?>
             <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fas fa-exclamation-triangle mr-2"></i> <strong>¡Atención!</strong> Esta mascota ya tiene un turno
@@ -194,7 +50,6 @@ $conn->close();
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card card-profesional shadow-sm h-100">
                         <div class="card-body">
-
                             <div class="d-flex align-items-center mb-3">
                                 <div class="mr-3">
                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
@@ -206,14 +61,11 @@ $conn->close();
                                     <h5 class="card-title mb-0 font-weight-bold text-dark">
                                         <?= htmlspecialchars($profesional['nombre']) ?>
                                     </h5>
-                                    <small class="text-uppercase text-teal font-weight-bold" style="font-size: 0.75rem;">
-                                        <?= htmlspecialchars($profesional['especialidad']) ?>
-                                    </small>
+                                    <small class="text-uppercase text-teal font-weight-bold"
+                                        style="font-size: 0.75rem;"><?= htmlspecialchars($profesional['especialidad']) ?></small>
                                 </div>
                             </div>
-
                             <hr>
-
                             <h6 class="text-muted mb-3" style="font-size: 0.9rem;"><i class="far fa-clock mr-1"></i>
                                 Horarios de atención:</h6>
                             <ul class="list-unstyled mb-3 small text-secondary">
@@ -231,7 +83,6 @@ $conn->close();
                                     <li class="text-muted font-italic">Sin horarios asignados.</li>
                                 <?php endif; ?>
                             </ul>
-
                             <div class="text-center mt-auto">
                                 <button type="button"
                                     class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
@@ -239,19 +90,15 @@ $conn->close();
                                     Sacar Turno
                                 </button>
                             </div>
-
                             <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
                                 data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
                                 data-id-esp="<?= $profesional['id_esp'] ?>" style="display:none;">
-
                                 <h6 class="text-teal font-weight-bold mb-3">Reservar Cita</h6>
-
                                 <div class="form-group">
                                     <label class="small font-weight-bold">Fecha:</label>
                                     <input type="date" class="form-control form-control-sm" name="fecha_turno"
                                         min="<?= date('Y-m-d') ?>" required>
                                 </div>
-
                                 <div class="form-group">
                                     <label class="small font-weight-bold">Hora:</label>
                                     <select class="form-control form-control-sm" name="hora_turno" required disabled>
@@ -259,16 +106,11 @@ $conn->close();
                                     </select>
                                     <small class="form-text text-danger" style="display:none;"></small>
                                 </div>
-
                                 <button type="button"
                                     class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold shadow-sm"
-                                    disabled>
-                                    Continuar
-                                </button>
+                                    disabled>Continuar</button>
                                 <button type="button"
-                                    class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">
-                                    Cancelar
-                                </button>
+                                    class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
                             </form>
                         </div>
                     </div>
@@ -281,8 +123,7 @@ $conn->close();
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-teal text-white">
-                    <h5 class="modal-title font-weight-bold">
-                        <i class="fas fa-clipboard-check mr-2"></i> Confirmar Turno
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-clipboard-check mr-2"></i> Confirmar Turno
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                 </div>
@@ -291,41 +132,28 @@ $conn->close();
                         <h5 class="text-teal mb-0" id="summary-profesional"></h5>
                         <small class="text-muted">Profesional Seleccionado</small>
                     </div>
-
                     <div class="row mb-3">
-                        <div class="col-6">
-                            <small class="text-muted d-block">Fecha:</small>
-                            <strong id="summary-fecha" style="font-size: 1.1rem;"></strong>
-                        </div>
-                        <div class="col-6 text-right">
-                            <small class="text-muted d-block">Hora:</small>
-                            <strong id="summary-hora" style="font-size: 1.1rem;"></strong>
-                        </div>
+                        <div class="col-6"><small class="text-muted d-block">Fecha:</small><strong id="summary-fecha"
+                                style="font-size: 1.1rem;"></strong></div>
+                        <div class="col-6 text-right"><small class="text-muted d-block">Hora:</small><strong
+                                id="summary-hora" style="font-size: 1.1rem;"></strong></div>
                     </div>
-
                     <div class="row mb-3">
-                        <div class="col-6">
-                            <small class="text-muted d-block">Mascota:</small>
-                            <strong id="summary-mascota" style="font-size: 1.1rem;">--</strong>
-                        </div>
-                        <div class="col-6 text-right">
-                            <small class="text-muted d-block">Modalidad:</small>
-                            <strong id="summary-modalidad" style="font-size: 1.1rem;">Presencial</strong>
-                        </div>
+                        <div class="col-6"><small class="text-muted d-block">Mascota:</small><strong
+                                id="summary-mascota" style="font-size: 1.1rem;">--</strong></div>
+                        <div class="col-6 text-right"><small class="text-muted d-block">Modalidad:</small><strong
+                                id="summary-modalidad" style="font-size: 1.1rem;">Presencial</strong></div>
                     </div>
-
                     <form method="POST" id="confirmacionForm">
                         <input type="hidden" name="profesional_id" id="form-profesional-id">
                         <input type="hidden" name="fecha_turno" id="form-fecha">
                         <input type="hidden" name="hora_turno" id="form-hora">
                         <input type="hidden" name="id_serv" id="form-service-id">
-
                         <div class="form-group">
                             <label class="font-weight-bold">¿Qué mascota vendrá?</label>
                             <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-white"><i class="fas fa-paw text-teal"></i></span>
-                                </div>
+                                <div class="input-group-prepend"><span class="input-group-text bg-white"><i
+                                            class="fas fa-paw text-teal"></i></span></div>
                                 <select class="form-control" name="id_mascota" required>
                                     <?php if (!empty($mascotas)): ?>
                                         <?php foreach ($mascotas as $m): ?>
@@ -337,7 +165,6 @@ $conn->close();
                                 </select>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label class="font-weight-bold">Servicio:</label>
                             <select class="form-control" name="id_serv" id="id_serv_modal" required>
@@ -348,24 +175,19 @@ $conn->close();
                                 <strong class="text-success" id="summary-precio">--</strong>
                             </div>
                         </div>
-
                         <div class="form-group mt-3">
                             <label class="font-weight-bold d-block mb-2">Modalidad de atención:</label>
                             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="modalidad" value="Presencial" checked>
-                                    <i class="fas fa-hospital mr-1"></i> Presencial
-                                </label>
-                                <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="modalidad" value="A domicilio">
-                                    <i class="fas fa-home mr-1"></i> A domicilio
-                                </label>
+                                <label class="btn btn-outline-secondary active"><input type="radio" name="modalidad"
+                                        value="Presencial" checked><i class="fas fa-hospital mr-1"></i>
+                                    Presencial</label>
+                                <label class="btn btn-outline-secondary"><input type="radio" name="modalidad"
+                                        value="A domicilio"><i class="fas fa-home mr-1"></i> A domicilio</label>
                             </div>
                         </div>
-
-                        <button type="submit" class="btn btn-success btn-block btn-lg mt-4 font-weight-bold shadow-sm">
-                            CONFIRMAR RESERVA
-                        </button>
+                        <button type="submit"
+                            class="btn btn-success btn-block btn-lg mt-4 font-weight-bold shadow-sm">CONFIRMAR
+                            RESERVA</button>
                     </form>
                 </div>
             </div>
@@ -379,9 +201,7 @@ $conn->close();
                     <h5 class="modal-title font-weight-bold">¡Reserva Exitosa!</h5>
                 </div>
                 <div class="modal-body p-5">
-                    <div class="mb-4 text-success">
-                        <i class="fas fa-check-circle fa-5x"></i>
-                    </div>
+                    <div class="mb-4 text-success"><i class="fas fa-check-circle fa-5x"></i></div>
                     <h4 class="mb-3">¡Tu turno está confirmado!</h4>
                     <p class="text-muted">Hemos enviado los detalles a tu correo electrónico.</p>
                 </div>
@@ -490,7 +310,6 @@ $conn->close();
                 $('#summary-precio').text('--');
 
                 $('#confirmacionModal').modal('show');
-
                 $('#summary-mascota').text('--');
                 $('#summary-modalidad').text('Presencial');
             });

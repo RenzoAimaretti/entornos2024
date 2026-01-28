@@ -1,29 +1,4 @@
-<?php
-session_start();
-
-if ($_SESSION['usuario_tipo'] !== 'admin') {
-    die("Acceso denegado");
-}
-
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-
-$query = "SELECT u.id, u.nombre, u.email, p.telefono, e.nombre as especialidad 
-          FROM usuarios u 
-          INNER JOIN profesionales p ON u.id = p.id
-          INNER JOIN especialidad e on p.id_esp = e.id
-          ORDER BY u.nombre ASC";
-
-$result = $conn->query($query);
-?>
-
+<?php require_once '../shared/logica_gestionar_especialistas.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -41,7 +16,6 @@ $result = $conn->query($query);
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Especialistas</h2>
@@ -139,6 +113,4 @@ $result = $conn->query($query);
 </body>
 
 </html>
-<?php
-$conn->close();
-?>
+<?php $conn->close(); ?>
