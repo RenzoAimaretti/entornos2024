@@ -3,7 +3,7 @@ require '../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-$conn = new mysqli('localhost', 'root', 'marcoruben9', 'veterinaria2');
+$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
@@ -13,7 +13,7 @@ $especialistaId = isset($_GET['especialista_id']) ? (int) $_GET['especialista_id
 $resultados = [];
 
 if ($especialistaId > 0) {
-    // Consulta para buscar servicios según la especialidad del especialista
+
     $sql = "SELECT s.id, s.nombre 
             FROM servicios s
             INNER JOIN profesionales p ON s.id_esp = p.id_esp

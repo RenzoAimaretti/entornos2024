@@ -21,7 +21,6 @@ if ($modo === 'especialista' && $profesionalId) {
     $dotenv->load();
     $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
-    // Servicios del profesional
     $stmt = $conn->prepare("SELECT s.id, s.nombre FROM servicios s INNER JOIN especialidad esp ON esp.id = s.id_esp INNER JOIN profesionales p ON p.id_esp = esp.id WHERE p.id = ?");
     $stmt->bind_param('i', $profesionalId);
     $stmt->execute();
@@ -30,7 +29,6 @@ if ($modo === 'especialista' && $profesionalId) {
         $servicios[] = $row;
     }
 
-    // Mascotas
     $stmt = $conn->prepare("SELECT DISTINCT m.id, m.nombre FROM mascotas m INNER JOIN atenciones a ON a.id_mascota = m.id WHERE a.id_pro = ?");
     $stmt->bind_param('i', $profesionalId);
     $stmt->execute();
@@ -113,7 +111,7 @@ if ($modo === 'especialista' && $profesionalId) {
 
 <script>
     $(document).ready(function () {
-        // Función genérica de autocomplete
+
         function buscar(tipo, texto, callback) {
             $.get('../shared/buscar-' + tipo + '.php', { q: texto }, function (data) {
                 callback(data);
@@ -122,7 +120,6 @@ if ($modo === 'especialista' && $profesionalId) {
             });
         }
 
-        // Autocomplete para mascota
         $('#mascota').on('input', function () {
             const query = $(this).val();
             if (query.length > 1) {
@@ -134,7 +131,6 @@ if ($modo === 'especialista' && $profesionalId) {
             }
         });
 
-        // Autocomplete para especialista
         $('#especialista').on('input', function () {
             const fecha = $('#fecha').val();
             const hora = $('#hora').val();
@@ -150,9 +146,6 @@ if ($modo === 'especialista' && $profesionalId) {
             }
         });
 
-        // Autocomplete para servicio - REMOVED since it's now select
-
-        // Función para mostrar sugerencias
         function mostrarSugerencias(tipo, data) {
             const sugerenciasDiv = $('#' + tipo + '_sugerencias');
             sugerenciasDiv.empty();
@@ -162,7 +155,7 @@ if ($modo === 'especialista' && $profesionalId) {
                         $('#' + tipo).val(item.nombre);
                         $('#' + tipo + '_id').val(item.id);
                         if (tipo === 'especialista') {
-                            // Load services for this specialist
+
                             $.get('../shared/buscar-servicio.php', { especialista_id: item.id }, function (data) {
                                 $('#servicio').empty();
                                 $('#servicio').append('<option value="">Seleccione un servicio</option>');
@@ -183,7 +176,6 @@ if ($modo === 'especialista' && $profesionalId) {
             }
         }
 
-        // Ocultar sugerencias al hacer clic fuera
         $(document).click(function (e) {
             if (!$(e.target).closest('.position-relative').length) {
                 $('.autocomplete-list').hide();

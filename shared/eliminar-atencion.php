@@ -17,7 +17,6 @@ if ($conn->connect_error) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = intval($_POST['id']);
 
-    // 1. Obtener información del turno ANTES de eliminarlo
     $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre, a.fecha
                 FROM atenciones a
                 INNER JOIN mascotas m ON a.id_mascota = m.id
@@ -30,13 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $datos = $stmtInfo->get_result()->fetch_assoc();
     $stmtInfo->close();
 
-    // 2. Eliminar la atención
     $query = "DELETE FROM atenciones WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
-        // 3. Enviar Mail de Cancelación
+
         if ($datos) {
             $mail = new PHPMailer(true);
             try {
@@ -67,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
 
                 $mail->send();
             } catch (Exception $e) {
-                // Error de mail omitido
             }
         }
         header("Location: ../vistaAdmin/gestionar-atenciones.php?res=eliminado");

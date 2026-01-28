@@ -23,18 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_muerte = !empty($_POST['fecha_mue']) ? $_POST['fecha_mue'] : null;
     $hoy = date('Y-m-d');
 
-    // --- VALIDACIONES DE SERVIDOR ---
-
     if (empty($nombre_mascota)) {
         die("El nombre es obligatorio.");
     }
 
-    // 1. Nacimiento no puede ser futuro
     if ($fecha_nacimiento && $fecha_nacimiento > $hoy) {
         die("Error: La fecha de nacimiento no puede ser futura.");
     }
 
-    // 2. Muerte no puede ser anterior a nacimiento ni futura
     if ($fecha_muerte) {
         if ($fecha_muerte > $hoy) {
             die("Error: La fecha de muerte no puede ser futura.");
@@ -44,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Actualizar
     $sql = "UPDATE mascotas SET nombre = ?, raza = ?, fecha_nac = ?, fecha_mue = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssi", $nombre_mascota, $raza, $fecha_nacimiento, $fecha_muerte, $idMascota);

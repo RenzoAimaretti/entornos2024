@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_nacimiento = !empty($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : null;
     $fecha_muerte = !empty($_POST['fecha_muerte']) ? $_POST['fecha_muerte'] : null;
 
-
     $ruta_foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
         $carpeta_destino = '../uploads/';
@@ -43,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-
     if ($fecha_nacimiento) {
         $hoy = date('Y-m-d');
         if ($fecha_nacimiento > $hoy) {
@@ -53,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-
 
     $sql = "INSERT INTO mascotas (nombre, id_cliente, raza, fecha_nac, fecha_mue, foto) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);

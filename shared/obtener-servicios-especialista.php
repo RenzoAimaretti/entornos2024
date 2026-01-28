@@ -1,5 +1,4 @@
 <?php
-// Limpiar cualquier salida previa accidental
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
@@ -24,7 +23,6 @@ if (!$id_especialista) {
   exit;
 }
 
-// Consulta para obtener servicios del especialista basado en su especialidad
 $sql = "SELECT s.id, s.nombre
         FROM servicios s
         INNER JOIN especialidad e ON s.id_esp = e.id
@@ -42,7 +40,6 @@ while ($row = $res->fetch_assoc()) {
   $servicios[] = $row;
 }
 
-// Limpiar buffer y enviar JSON puro
 ob_end_clean();
 echo json_encode($servicios);
 exit;

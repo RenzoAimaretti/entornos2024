@@ -11,13 +11,10 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Verificar si se recibieron los datos necesarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'];
     $direccion = $_POST['direccion'] ?? '';
     $telefono = $_POST['telefono'] ?? '';
-
-
 
     $query = "UPDATE clientes SET direccion = ?, telefono = ? WHERE id = ?";
     $stmt = $conn->prepare($query);

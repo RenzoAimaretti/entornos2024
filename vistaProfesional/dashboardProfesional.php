@@ -25,7 +25,6 @@ if ($conn->connect_error) {
 // 4. Lógica POST (Acciones)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['accion'])) {
-        // A. Finalizar Hospitalización
         if ($_POST['accion'] === 'finalizar') {
             $id_hosp = $_POST['id_hosp'];
             $fecha_egreso = date('Y-m-d H:i:s');
@@ -38,8 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: " . $_SERVER['PHP_SELF'] . "?error=Error al finalizar");
             }
             exit();
-
-            // B. Crear Hospitalización
         } elseif ($_POST['accion'] === 'crear') {
             $id_mascota = $_POST['id_mascota'];
             $motivo = $_POST['motivo'];
@@ -68,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // 5. Consultas de Datos
 $hoy = date('Y-m-d');
 
-// Turnos de Hoy
 $turnos_hoy = $conn->query("
     SELECT a.id, DATE_FORMAT(a.fecha, '%H:%i') AS hora, m.nombre AS nombre_mascota, s.nombre AS nombre_servicio, a.detalle
     FROM atenciones a
@@ -78,7 +74,6 @@ $turnos_hoy = $conn->query("
     ORDER BY a.fecha ASC
 ")->fetch_all(MYSQLI_ASSOC);
 
-// Hospitalizaciones Activas
 $hosp_activas = $conn->query("
     SELECT h.id, m.nombre AS nombre_mascota, h.fecha_ingreso, h.fecha_egreso_prevista, h.motivo 
     FROM hospitalizaciones h 
@@ -87,7 +82,6 @@ $hosp_activas = $conn->query("
     ORDER BY h.fecha_ingreso ASC
 ")->fetch_all(MYSQLI_ASSOC);
 
-// Lista de Mascotas (Para el select del modal)
 $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")->fetch_all(MYSQLI_ASSOC);
 ?>
 
@@ -100,6 +94,7 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
     <title>Panel Profesional - San Antón</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
     <style>
         .bg-teal {
@@ -133,19 +128,23 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
             font-size: 1.5rem;
         }
 
-        /* Estilo sutil para hover en filas */
-        .table-hover tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
+        /* Estilos de paginación similares al historial */
+        .page-item.active .page-link {
+            background-color: #00897b;
+            border-color: #00897b;
+        }
+
+        table.dataTable thead th {
+            position: relative;
+            padding-right: 30px !important;
         }
     </style>
 </head>
 
 <body class="bg-light">
-
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container my-5">
-
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0">Panel de Control</h2>
@@ -159,15 +158,13 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
         <?php if (isset($_GET['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fas fa-check-circle mr-2"></i> <?php echo htmlspecialchars($_GET['success']); ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
         <?php endif; ?>
         <?php if (isset($_GET['error'])): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fas fa-exclamation-circle mr-2"></i> <?php echo htmlspecialchars($_GET['error']); ?>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
         <?php endif; ?>
 
@@ -222,9 +219,9 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                                 </table>
                             </div>
                         <?php else: ?>
-                            <div class="text-center py-5 text-muted">
-                                <i class="fas fa-calendar-check fa-3x mb-3 text-black-50"></i>
-                                <p class="mb-0">No tienes turnos programados para hoy.</p>
+                            <div class="text-center py-5 text-muted"><i
+                                    class="fas fa-calendar-check fa-3x mb-3 text-black-50"></i>
+                                <p>No hay turnos.</p>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -232,33 +229,23 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
             </div>
 
             <div class="col-lg-4">
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <div class="card card-dashboard bg-white">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="icon-box bg-light text-primary mr-3">
-                                    <i class="fas fa-history"></i>
-                                </div>
-                                <div>
-                                    <h6 class="font-weight-bold mb-1">Historial Clínico</h6>
-                                    <a href="atencionesPreviasProfesional.php"
-                                        class="stretched-link text-muted small">Ver atenciones pasadas</a>
-                                </div>
-                            </div>
+                <div class="card card-dashboard bg-white mb-3">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="icon-box bg-light text-primary mr-3"><i class="fas fa-history"></i></div>
+                        <div>
+                            <h6 class="font-weight-bold mb-1">Historial Clínico</h6><a
+                                href="atencionesPreviasProfesional.php" class="stretched-link text-muted small">Ver
+                                pasadas</a>
                         </div>
                     </div>
-                    <div class="col-12 mb-3">
-                        <div class="card card-dashboard bg-white">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="icon-box bg-light text-warning mr-3">
-                                    <i class="fas fa-paw"></i>
-                                </div>
-                                <div>
-                                    <h6 class="font-weight-bold mb-1">Mis Pacientes</h6>
-                                    <a href="pacientesMascotasProfesional.php"
-                                        class="stretched-link text-muted small">Listado de mascotas</a>
-                                </div>
-                            </div>
+                </div>
+                <div class="card card-dashboard bg-white mb-3">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="icon-box bg-light text-warning mr-3"><i class="fas fa-paw"></i></div>
+                        <div>
+                            <h6 class="font-weight-bold mb-1">Mis Pacientes</h6><a
+                                href="pacientesMascotasProfesional.php" class="stretched-link text-muted small">Ver
+                                todos</a>
                         </div>
                     </div>
                 </div>
@@ -280,7 +267,7 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                     <div class="card-body">
                         <?php if (count($hosp_activas) > 0): ?>
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table id="tablaHosp" class="table table-hover" style="width:100%">
                                     <thead class="thead-light">
                                         <tr>
                                             <th>Paciente</th>
@@ -296,26 +283,26 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                                                 <td class="align-middle font-weight-bold">
                                                     <?php echo htmlspecialchars($hosp['nombre_mascota']); ?>
                                                 </td>
-                                                <td class="align-middle">
+                                                <td class="align-middle"
+                                                    data-order="<?php echo strtotime($hosp['fecha_ingreso']); ?>">
                                                     <?php echo date('d/m/Y H:i', strtotime($hosp['fecha_ingreso'])); ?> hs
                                                 </td>
-                                                <td class="align-middle text-danger font-weight-bold">
+                                                <td class="align-middle text-danger font-weight-bold"
+                                                    data-order="<?php echo strtotime($hosp['fecha_egreso_prevista']); ?>">
                                                     <?php echo !empty($hosp['fecha_egreso_prevista']) ? date('d/m/Y H:i', strtotime($hosp['fecha_egreso_prevista'])) : 'Indefinido'; ?>
                                                     hs
                                                 </td>
                                                 <td class="align-middle text-muted small">
                                                     <?php echo htmlspecialchars($hosp['motivo']); ?>
                                                 </td>
-                                                <td class="text-right">
-                                                    <form method="POST"
-                                                        onsubmit="return confirm('¿Estás seguro de dar el alta médica a este paciente?');">
-                                                        <input type="hidden" name="id_hosp" value="<?php echo $hosp['id']; ?>">
-                                                        <input type="hidden" name="accion" value="finalizar">
-                                                        <button type="submit"
-                                                            class="btn btn-outline-success btn-sm rounded-pill px-3">
-                                                            <i class="fas fa-check mr-1"></i> Dar Alta
-                                                        </button>
-                                                    </form>
+                                                <td class="text-right align-middle">
+                                                    <button type="button"
+                                                        class="btn btn-outline-success btn-sm rounded-pill px-3 btn-dar-alta"
+                                                        data-id="<?php echo $hosp['id']; ?>"
+                                                        data-nombre="<?php echo htmlspecialchars($hosp['nombre_mascota']); ?>"
+                                                        data-toggle="modal" data-target="#modalConfirmarAlta">
+                                                        <i class="fas fa-check mr-1"></i> Dar Alta
+                                                    </button>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -323,15 +310,39 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                                 </table>
                             </div>
                         <?php else: ?>
-                            <div class="alert alert-light text-center border mt-2">
-                                <small class="text-muted">No hay pacientes internados actualmente.</small>
-                            </div>
+                            <div class="alert alert-light text-center border mt-2"><small class="text-muted">No hay
+                                    pacientes internados.</small></div>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="modal fade" id="modalConfirmarAlta" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold">Confirmar Alta Médica</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                    <p class="mb-1">¿Estás seguro de que deseas dar el alta a:</p>
+                    <h5 id="altaNombrePaciente" class="font-weight-bold text-dark"></h5>
+                    <p class="text-muted small">Esta acción registrará la fecha de egreso real como el momento actual.
+                    </p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center">
+                    <form method="POST">
+                        <input type="hidden" name="id_hosp" id="altaIdHosp">
+                        <input type="hidden" name="accion" value="finalizar">
+                        <button type="button" class="btn btn-secondary px-4 mr-2" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success px-4 font-weight-bold">Confirmar Alta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="modalNuevaHosp" tabindex="-1" role="dialog" aria-hidden="true">
@@ -341,41 +352,28 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
                     <div class="modal-header bg-danger text-white">
                         <h5 class="modal-title font-weight-bold"><i class="fas fa-hospital-symbol mr-2"></i> Ingreso a
                             Internación</h5>
-                        <button type="button" class="close text-white"
-                            data-dismiss="modal"><span>&times;</span></button>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                     </div>
                     <div class="modal-body p-4">
                         <input type="hidden" name="accion" value="crear">
-
                         <div class="form-group">
                             <label class="font-weight-bold small text-muted">Paciente</label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-light border-right-0"><i
-                                            class="fas fa-paw text-danger"></i></span>
-                                </div>
-                                <select name="id_mascota" class="form-control border-left-0" required>
-                                    <option value="">Seleccione mascota...</option>
-                                    <?php foreach ($mascotas as $m): ?>
-                                        <option value="<?php echo $m['id']; ?>">
-                                            <?php echo htmlspecialchars($m['nombre']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <select name="id_mascota" class="form-control" required>
+                                <option value="">Seleccione mascota...</option>
+                                <?php foreach ($mascotas as $m): ?>
+                                    <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['nombre']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
-
                         <div class="form-group">
                             <label class="font-weight-bold small text-muted">Egreso Estimado</label>
                             <input type="datetime-local" id="fecha_egreso_prevista" name="fecha_egreso_prevista"
                                 class="form-control" required>
-                            <small class="form-text text-muted">Seleccione una fecha y hora futura.</small>
                         </div>
-
                         <div class="form-group">
-                            <label class="font-weight-bold small text-muted">Diagnóstico / Motivo</label>
-                            <textarea name="motivo" class="form-control" rows="3"
-                                placeholder="Describa el motivo de la internación..." required></textarea>
+                            <label class="font-weight-bold small text-muted">Motivo</label>
+                            <textarea name="motivo" class="form-control" rows="3" required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer bg-light">
@@ -389,26 +387,40 @@ $mascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC")-
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+
     <script>
         $(document).ready(function () {
-            // Configurar fecha mínima para el input datetime-local
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const minDate = now.toISOString().slice(0, 16);
-            $('#fecha_egreso_prevista').attr('min', minDate);
-
-            // Validación extra al enviar
-            $('#formNuevaHosp').on('submit', function (e) {
-                const fechaSeleccionada = new Date($('#fecha_egreso_prevista').val());
-                const fechaActual = new Date();
-
-                if (fechaSeleccionada <= fechaActual) {
-                    alert('La fecha de egreso prevista debe ser posterior al momento actual.');
-                    e.preventDefault();
+            // Inicializar DataTables para Hospitalizaciones
+            $('#tablaHosp').DataTable({
+                "pageLength": 5,
+                "autoWidth": true,
+                "order": [[1, "asc"]], // Ordenar por fecha de ingreso
+                "lengthMenu": [[5, 10, 25, -1], [5, 10, 25, "Todos"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [3, 4] }
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
                 }
             });
+
+            // Lógica para el modal de Alta
+            $('.btn-dar-alta').on('click', function () {
+                const id = $(this).data('id');
+                const nombre = $(this).data('nombre');
+                $('#altaIdHosp').val(id);
+                $('#altaNombrePaciente').text(nombre);
+            });
+
+            // Fecha mínima
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            $('#fecha_egreso_prevista').attr('min', now.toISOString().slice(0, 16));
         });
     </script>
+    <?php require_once '../shared/footer.php'; ?>
 </body>
 
 </html>

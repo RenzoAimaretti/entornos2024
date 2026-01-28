@@ -1,5 +1,5 @@
 <?php
-ob_start(); // Limpieza de seguridad
+ob_start();
 header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 ini_set('display_errors', 0);
@@ -35,7 +35,6 @@ $mapeo = [
 ];
 $dia_busqueda = $mapeo[$dia_ingles];
 
-// SQL para obtener médicos sin duplicados
 $sql = "SELECT u.id, u.nombre
         FROM usuarios u
         INNER JOIN profesionales_horarios ph ON u.id = ph.idPro

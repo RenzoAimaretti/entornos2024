@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   require 'vendor/autoload.php';
   $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
   $dotenv->load();
-  // Crear conexión
+
   $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
 
 
@@ -19,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     die("Conexión fallida: " . $conn->connect_error);
   }
 
-  // Eliminar la mascota
   $sql = "DELETE FROM mascotas WHERE id = ? AND id_cliente = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('ii', $mascotaId, $_SESSION['usuario_id']);

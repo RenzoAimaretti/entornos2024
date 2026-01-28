@@ -55,7 +55,6 @@ session_start();
       die("Error de conexión: " . $conn->connect_error);
     }
 
-    // Consulta
     $sql = "SELECT usuarios.nombre, usuarios.email, profesionales.telefono, especialidad.nombre AS especialidad 
             FROM profesionales 
             INNER JOIN usuarios ON profesionales.id = usuarios.id 
@@ -70,7 +69,6 @@ session_start();
     if ($result->num_rows > 0) {
       echo "<div class='container mb-5'>";
 
-      // --- CAMBIO AQUÍ: Franja oscura para el título de resultados ---
       echo "<div class='bg-green p-3 mb-3 rounded text-center shadow-sm'>
               <h3 class='mb-0 text-white'>Resultados de la búsqueda</h3>
             </div>";
@@ -88,7 +86,6 @@ session_start();
       echo "</ul></div>";
 
     } else {
-      // Mensaje de no encontrado
       echo "<div class='container text-center mb-5'>
               <div class='bg-green p-3 rounded text-white shadow-sm'>
                 <h4 class='mb-0'>No se encontraron profesionales con ese criterio.</h4>

@@ -58,34 +58,6 @@ $conn->close();
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="styles.css" rel="stylesheet">
-  <style>
-    /* Estilo para el input group y el ojo */
-    .input-group-text {
-      background-color: #f8f9fa;
-      border-right: 0;
-    }
-
-    .input-with-icon {
-      border-left: 0;
-    }
-
-    .input-group-append .input-group-text {
-      border-left: 0;
-      border-right: 1px solid #ced4da;
-      cursor: pointer;
-      background-color: #fff;
-    }
-
-    /* Iconos de la izquierda */
-    .icon-prepend {
-      color: #00897b;
-      width: 40px;
-      justify-content: center;
-      border: 1px solid #ced4da;
-      border-right: 0;
-      background: #fff;
-    }
-  </style>
 </head>
 
 <body>
@@ -168,7 +140,6 @@ $conn->close();
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Script para alternar la visibilidad de la contraseña
     document.querySelectorAll('.toggle-password').forEach(item => {
       item.addEventListener('click', function () {
         const targetId = this.getAttribute('data-target');

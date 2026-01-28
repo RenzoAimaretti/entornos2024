@@ -49,7 +49,6 @@ while ($h = $res->fetch_assoc()) {
   }
 }
 
-// Obtener horas ocupadas para esa fecha y especialista
 $sql_ocupadas = "SELECT TIME(fecha) AS hora FROM atenciones WHERE id_pro = ? AND DATE(fecha) = ?";
 $stmt_ocupadas = $conn->prepare($sql_ocupadas);
 $stmt_ocupadas->bind_param("is", $id_pro, $fecha_raw);
@@ -58,10 +57,9 @@ $res_ocupadas = $stmt_ocupadas->get_result();
 
 $horas_ocupadas = [];
 while ($row = $res_ocupadas->fetch_assoc()) {
-  $horas_ocupadas[] = substr($row['hora'], 0, 5); // Convertir "HH:MM:SS" a "HH:MM"
+  $horas_ocupadas[] = substr($row['hora'], 0, 5);
 }
 
-// Filtrar horas disponibles excluyendo las ocupadas
 $response['disponibles'] = array_filter($response['disponibles'], function ($hora) use ($horas_ocupadas) {
   return !in_array($hora, $horas_ocupadas);
 });

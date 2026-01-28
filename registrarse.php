@@ -18,13 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password = $_POST['password'];
   $confirm_password = $_POST['confirm_password'];
 
-  // Validaciones
   if ($password !== $confirm_password) {
     $error = "Las contraseñas no coinciden.";
   } elseif (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
     $error = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.";
   } else {
-    // Verificar si el correo ya está registrado
     $sql_check = "SELECT id FROM usuarios WHERE email = ?";
     $stmt = $conn->prepare($sql_check);
     $stmt->bind_param("s", $email);
@@ -34,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->num_rows > 0) {
       $error = "El correo ya está registrado.";
     } else {
-      // Insertar usuario en la base de datos
       $sql = "INSERT INTO usuarios (nombre, email, password, tipo) VALUES (?, ?, ?, 'cliente')";
       $stmt = $conn->prepare($sql);
       $stmt->bind_param("sss", $nombre, $email, $password);
@@ -71,33 +68,6 @@ $conn->close();
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="styles.css" rel="stylesheet">
-  <style>
-    /* Estilos para los inputs con iconos integrados */
-    .input-group-text {
-      background-color: #fff;
-      border-right: 0;
-    }
-
-    .input-with-icon {
-      border-left: 0;
-    }
-
-    .input-group-append .input-group-text {
-      border-left: 0;
-      border-right: 1px solid #ced4da;
-      cursor: pointer;
-    }
-
-    /* Estilo del icono a la izquierda */
-    .icon-prepend {
-      color: #00897b;
-      /* Color de la marca */
-      width: 40px;
-      justify-content: center;
-      border: 1px solid #ced4da;
-      border-right: 0;
-    }
-  </style>
 </head>
 
 <body>
@@ -207,7 +177,6 @@ $conn->close();
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Script para alternar la visibilidad de la contraseña
     document.querySelectorAll('.toggle-password').forEach(item => {
       item.addEventListener('click', function () {
         const targetId = this.getAttribute('data-target');

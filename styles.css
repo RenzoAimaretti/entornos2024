@@ -1,88 +1,18 @@
 body {
   font-family: 'Arial', sans-serif;
-
-  /* IMAGEN DE FONDO */
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
-    url('https://media.istockphoto.com/id/1540590564/es/vector/mascotas-gato-y-perro-animal-sin-costuras-fondo-de-tema.jpg?s=612x612&w=0&k=20&c=AANoX4gg8XDUbd5-v-PTzES04ybIopdkBEVftaMZCa8=');
-
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('https://media.istockphoto.com/id/1540590564/es/vector/mascotas-gato-y-perro-animal-sin-costuras-fondo-de-tema.jpg?s=612x612&w=0&k=20&c=AANoX4gg8XDUbd5-v-PTzES04ybIopdkBEVftaMZCa8=');
   background-repeat: repeat;
   background-size: auto;
   background-color: #e3f2fd;
 }
 
-.navbar-brand {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  width: 40px;
-  height: auto;
-  margin-right: 10px;
-}
-
-/* --- NUEVO: Estilo para la franja oscura del encabezado --- */
-/* Afecta al <header> que contiene las imágenes en index.php */
 header.container {
   background-color: #00897b;
-  /* Mismo color Teal Oscuro */
   width: 100%;
-  /* Ocupar todo el ancho disponible */
   max-width: 100%;
-  /* Asegura que no se limite al container de Bootstrap */
   padding: 20px 0;
-  /* Espacio arriba y abajo */
   margin-top: 0 !important;
-  /* Quitar margen superior para pegarlo al menú o título */
   margin-bottom: 20px;
-  /* Separación con el contenido de abajo */
-}
-
-.header-images {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  /* Aumenté un poco el espacio entre fotos */
-  flex-wrap: wrap;
-  /* Para que se acomoden en móviles */
-}
-
-/* --- NUEVO: Estilo para las fotos con marco clarito --- */
-.header-img {
-  max-width: 300px;
-  /* Tamaño máximo controlado */
-  height: 200px;
-  /* Altura fija para que se vean uniformes */
-  object-fit: cover;
-  /* Recorta la imagen sin deformarla para llenar el cuadro */
-
-  /* El marco clarito */
-  border: 5px solid #e0f2f1;
-  /* Un tono muy claro del verde azulado */
-
-  /* Opcional: Bordes redondeados y sombra suave */
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-
-  transition: transform 0.3s ease;
-  /* Efecto suave al pasar el mouse */
-}
-
-/* Efecto opcional: las fotos crecen un poco al pasar el mouse */
-.header-img:hover {
-  transform: scale(1.05);
-}
-
-.lead {
-  margin-top: 10px;
-  font-size: 1.2rem;
-  color: #555;
-}
-
-.bg-green {
-  background-color: #00897b;
-  color: #ffffff;
 }
 
 footer {
@@ -95,25 +25,6 @@ footer p {
   font-size: 0.9rem;
 }
 
-.navbar-nav .nav-link.active {
-  font-weight: bold;
-  color: #333;
-}
-
-.btn .icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-}
-
-.user-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
-
-/* Estilos específicos para el Footer y Mapa del Sitio */
 .footer-custom {
   background-color: #343a40;
   color: #ffffff;
@@ -146,7 +57,254 @@ footer p {
   font-size: 0.85rem;
 }
 
+.bg-green,
+.bg-teal {
+  background-color: #00897b;
+  color: #ffffff;
+}
+
+.text-teal {
+  color: #00897b;
+}
+
+.lead {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.navbar-custom {
+  background-color: #00897b;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 1rem;
+}
+
+.navbar-custom .navbar-brand {
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 40px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.navbar-custom .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin: 0 5px;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  transform: translateY(-1px);
+  font-weight: 800 !important;
+}
+
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: #333;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+#adminDropdown {
+  color: #b2dfdb !important;
+}
+
+#adminDropdown:hover,
+#adminDropdown.active {
+  color: #fff !important;
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.dropdown-item {
+  padding: 10px 20px;
+  color: #555;
+}
+
+.dropdown-item:hover {
+  background-color: #e0f2f1;
+  color: #00897b;
+}
+
+.dropdown-item.active {
+  background-color: #00897b;
+  color: white;
+  font-weight: bold;
+}
+
+.header-images {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.header-img {
+  max-width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border: 5px solid #e0f2f1;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.header-img:hover {
+  transform: scale(1.05);
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #00897b 0%, #004d40 100%);
+  padding: 30px 0;
+  border-radius: 10px 10px 0 0;
+  color: white;
+  position: relative;
+}
+
+.profile-img-container {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 5px solid #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  background-color: #e0f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ficha-medica {
+  background-color: white;
+  border-top: 5px solid #00897b;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+}
+
+.label-dato {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #6c757d;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.valor-dato {
+  font-size: 1.1rem;
+  color: #343a40;
+  margin-bottom: 1.5rem;
+}
+
+.nav-tabs .nav-link {
+  color: #555;
+  font-weight: bold;
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #00897b;
+  border-bottom: 3px solid #00897b;
+  background-color: transparent;
+}
+
+.page-item.active .page-link {
+  background-color: #00897b !important;
+  border-color: #00897b !important;
+}
+
+.btn .icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.btn-disabled-look {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #e9ecef;
+  border-color: #e9ecef;
+  color: #6c757d;
+}
+
+.user-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.breadcrumb-container {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.breadcrumb-item a {
+  color: #00897b;
+  text-decoration: none;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d;
+}
+
 .input-group-text {
+  background-color: #fff;
+  border-right: 0;
+  cursor: pointer;
+}
+
+.input-group-append .input-group-text {
+  border-left: 0;
+  border-right: 1px solid #ced4da;
   cursor: pointer;
   background-color: #fff;
+}
+
+.input-with-icon {
+  border-left: 0;
+}
+
+.icon-prepend {
+  color: #00897b;
+  width: 40px;
+  justify-content: center;
+  border: 1px solid #ced4da;
+  border-right: 0;
+  background: #fff;
 }

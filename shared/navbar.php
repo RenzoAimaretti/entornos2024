@@ -1,8 +1,7 @@
 <?php
-// 1. Detectamos la página actual al inicio para usarla en los botones
+
 $pagina_actual = basename($_SERVER['PHP_SELF']);
 
-// Definimos qué páginas pertenecen a la sección "Gestión" para resaltar el menú padre
 $paginas_gestion = [
   'gestionar-hospitalizacion.php',
   'gestionar-atenciones.php',
@@ -19,102 +18,6 @@ $paginas_gestion = [
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-<style>
-  /* Estilos personalizados para la Navbar */
-  .navbar-custom {
-    background-color: #00897b;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 0.8rem 1rem;
-  }
-
-  .navbar-custom .navbar-brand {
-    color: #fff !important;
-    font-weight: 700;
-    font-size: 1.3rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .navbar-custom .nav-link {
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-weight: 500;
-    /* Peso normal */
-    transition: all 0.3s ease;
-    margin: 0 5px;
-  }
-
-  /* ESTILO ACTIVO: Fondo semitransparente y NEGRITA */
-  .navbar-custom .nav-link:hover,
-  .navbar-custom .nav-link.active {
-    color: #fff !important;
-    background-color: rgba(255, 255, 255, 0.2);
-    /* Un poco más visible */
-    border-radius: 5px;
-    transform: translateY(-1px);
-    font-weight: 800 !important;
-    /* Negrita fuerte */
-  }
-
-  /* Color específico para el dropdown de gestión cuando NO está activo */
-  #adminDropdown {
-    color: #b2dfdb !important;
-  }
-
-  /* Cuando gestión está activo o hover */
-  #adminDropdown:hover,
-  #adminDropdown.active {
-    color: #fff !important;
-  }
-
-  .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-
-  .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-  }
-
-  /* Dropdown Menus */
-  .dropdown-menu {
-    border: none;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    margin-top: 10px;
-  }
-
-  .dropdown-item {
-    padding: 10px 20px;
-    color: #555;
-  }
-
-  .dropdown-item:hover {
-    background-color: #e0f2f1;
-    color: #00897b;
-  }
-
-  /* Item del dropdown activo */
-  .dropdown-item.active {
-    background-color: #00897b;
-    color: white;
-    font-weight: bold;
-  }
-
-  /* Breadcrumb limpio */
-  .breadcrumb-container {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
-  }
-
-  .breadcrumb-item a {
-    color: #00897b;
-    text-decoration: none;
-  }
-
-  .breadcrumb-item.active {
-    color: #6c757d;
-  }
-</style>
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
   <div class="container">
@@ -253,7 +156,7 @@ $paginas_gestion = [
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb mb-0 p-0" style="background: transparent; font-size: 0.9rem;">
         <?php
-        // Icono de casa para el inicio
+
         echo '<li class="breadcrumb-item"><a href="../index.php"><i class="fas fa-home"></i> Inicio</a></li>';
 
         if ($pagina_actual !== 'index.php') {

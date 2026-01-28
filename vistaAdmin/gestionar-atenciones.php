@@ -10,17 +10,27 @@ $esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
 $idUsuario = $_SESSION['usuario_id'];
 $nombreUsuario = isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Especialista';
 
-// Cargar Selectores Iniciales (Mascotas) - Ahora se hace dinámicamente
+// 2. Cargar Selectores Iniciales (Mascotas)
+$resMascotas = $conn->query("SELECT id, nombre FROM mascotas ORDER BY nombre ASC");
 
-// Cargar Servicios para Especialista
-$serviciosEspecialista = [];
+// 3. Cargar servicios del profesional logueado (Server-Side)
+$serviciosDelProfesional = [];
 if (!$esAdmin) {
-    $stmtServ = $conn->prepare("SELECT s.id, s.nombre FROM servicios s INNER JOIN especialidad e ON s.id_esp = e.id INNER JOIN profesionales p ON p.id_esp = e.id WHERE p.id = ?");
-    $stmtServ->bind_param("i", $idUsuario);
-    $stmtServ->execute();
-    $resServ = $stmtServ->get_result();
-    $serviciosEspecialista = $resServ->fetch_all(MYSQLI_ASSOC);
-    $stmtServ->close();
+    $stmtEsp = $conn->prepare("SELECT id_esp FROM profesionales WHERE id = ?");
+    $stmtEsp->bind_param("i", $idUsuario);
+    $stmtEsp->execute();
+    $resEsp = $stmtEsp->get_result();
+
+    if ($rowEsp = $resEsp->fetch_assoc()) {
+        $idEspecialidad = $rowEsp['id_esp'];
+        $stmtServ = $conn->prepare("SELECT id, nombre FROM servicios WHERE id_esp = ? ORDER BY nombre ASC");
+        $stmtServ->bind_param("i", $idEspecialidad);
+        $stmtServ->execute();
+        $resServ = $stmtServ->get_result();
+        while ($rowS = $resServ->fetch_assoc()) {
+            $serviciosDelProfesional[] = $rowS;
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -35,6 +45,7 @@ if (!$esAdmin) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
 <body class="bg-light">
@@ -50,25 +61,6 @@ if (!$esAdmin) {
             <div class="col-lg-4">
                 <div class="bg-white p-4 shadow-sm rounded border">
                     <h4 class="text-primary mb-3 border-bottom pb-2">Registrar Turno</h4>
-
-                    <?php if (isset($_GET['res']) && $_GET['res'] == 'ok'): ?>
-                        <div class="alert alert-success alert-dismissible fade show">
-                            ¡Turno registrado! <button class="close" data-dismiss="alert">&times;</button>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (isset($_GET['error'])): ?>
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <?php
-                            if ($_GET['error'] == 'especialista_ocupado')
-                                echo "El especialista ya tiene turno.";
-                            elseif ($_GET['error'] == 'mascota_ocupada')
-                                echo "La mascota ya tiene turno.";
-                            else
-                                echo "Error desconocido.";
-                            ?>
-                            <button class="close" data-dismiss="alert">&times;</button>
-                        </div>
-                    <?php endif; ?>
 
                     <form action="../shared/alta-atencion.php" method="POST">
 
@@ -95,17 +87,17 @@ if (!$esAdmin) {
 
                         <div class="form-group">
                             <label>Servicio</label>
-                            <select class="form-control" name="servicio_id" id="servicio_select" required <?php if (!$esAdmin)
-                                echo 'enabled';
-                            else
-                                echo 'disabled'; ?>>
-                                <?php if (!$esAdmin): ?>
-                                    <option value="">Seleccione servicio</option>
-                                    <?php foreach ($serviciosEspecialista as $serv): ?>
-                                        <option value="<?= $serv['id'] ?>"><?= htmlspecialchars($serv['nombre']) ?></option>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
+                            <select class="form-control" name="servicio_id" id="servicio_select" required <?= $esAdmin ? 'disabled' : '' ?>>
+                                <?php if ($esAdmin): ?>
                                     <option value="">Seleccione especialista primero</option>
+                                <?php else: ?>
+                                    <option value="">Seleccione servicio</option>
+                                    <?php foreach ($serviciosDelProfesional as $s): ?>
+                                        <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['nombre']) ?></option>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($serviciosDelProfesional)): ?>
+                                        <option value="" disabled>No hay servicios asignados</option>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </select>
                         </div>
@@ -119,12 +111,18 @@ if (!$esAdmin) {
 
                         <div class="form-group">
                             <label>Mascota</label>
-                            <select class="form-control" name="mascota_id" id="mascota_select" required disabled>
-                                <option value="">Cargando...</option>
+                            <select class="form-control" name="mascota_id" required>
+                                <option value="">Seleccione...</option>
+                                <?php if ($resMascotas):
+                                    while ($m = $resMascotas->fetch_assoc()): ?>
+                                        <option value="<?= $m['id']; ?>"><?= htmlspecialchars($m['nombre']); ?></option>
+                                    <?php endwhile; endif; ?>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-block">Confirmar Cita</button>
+                        <button type="submit" class="btn btn-primary btn-block font-weight-bold py-2">
+                            <i class="fas fa-save mr-2"></i> Confirmar Cita
+                        </button>
                     </form>
                 </div>
             </div>
@@ -149,26 +147,94 @@ if (!$esAdmin) {
         </div>
     </div>
 
+    <div class="modal fade" id="modalExitoTurno" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-calendar-check text-success fa-5x"></i>
+                    </div>
+                    <h2 class="font-weight-bold text-success mb-3">¡Turno Confirmado!</h2>
+                    <p class="lead text-muted mb-4">La cita ha sido registrada correctamente.</p>
+                    <button type="button" class="btn btn-success btn-lg px-5 rounded-pill shadow" data-dismiss="modal">
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalErrorTurno" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title font-weight-bold">No se pudo registrar</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle text-danger fa-5x"></i>
+                    </div>
+                    <h3 class="font-weight-bold text-danger mb-3">¡Conflicto de Horario!</h3>
+                    <p class="lead text-muted mb-4" id="mensajeErrorTexto">
+                        Ocurrió un error al intentar reservar el turno.
+                    </p>
+                    <button type="button" class="btn btn-outline-danger btn-lg px-5 rounded-pill" data-dismiss="modal">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         $(document).ready(function () {
-            // Variables de entorno PHP a JS
+            // DETECTAR PARÁMETROS URL PARA MOSTRAR MODALES
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // CASO ÉXITO
+            if (urlParams.get('res') === 'ok') {
+                $('#modalExitoTurno').modal('show');
+            }
+
+            // CASO ERROR
+            if (urlParams.has('error')) {
+                const errorType = urlParams.get('error');
+                let mensaje = "Ocurrió un error desconocido.";
+
+                if (errorType === 'especialista_ocupado') {
+                    mensaje = "El especialista ya tiene un turno asignado en ese horario.";
+                } else if (errorType === 'mascota_ocupada') {
+                    mensaje = "Esta mascota ya tiene un turno pendiente en ese mismo horario.";
+                }
+
+                $('#mensajeErrorTexto').text(mensaje);
+                $('#modalErrorTurno').modal('show');
+            }
+
+            // Limpiar URL para que no salga al recargar
+            if (urlParams.has('res') || urlParams.has('error')) {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
+
+            // Variables y lógica de FullCalendar / AJAX...
             const esAdmin = <?= json_encode($esAdmin); ?>;
             const idUsuarioLogueado = <?= json_encode($idUsuario); ?>;
 
             const fechaInput = $('#fecha_input');
-            const espSelect = $('#especialista_select'); // Solo existe si es Admin
+            const espSelect = $('#especialista_select');
             const servicioSelect = $('#servicio_select');
             const horaSelect = $('#hora_select');
-            const mascotaSelect = $('#mascota_select');
 
-            // --- FUNCIONES AJAX SEPARADAS ---
-
-            // 1. Cargar Servicios (Solo requiere ID del profesional)
-            function cargarServicios(idPro) {
+            // --- FUNCIONES AJAX ---
+            function cargarServiciosAdmin(idPro) {
                 servicioSelect.html('<option value="">Cargando servicios...</option>').prop('disabled', true);
-
                 $.post('../shared/obtener-servicios-especialista.php', { id_especialista: idPro }, function (data) {
                     servicioSelect.html('<option value="">Seleccione servicio</option>');
                     if (Array.isArray(data) && data.length > 0) {
@@ -179,15 +245,11 @@ if (!$esAdmin) {
                     } else {
                         servicioSelect.html('<option value="">Sin servicios disponibles</option>');
                     }
-                }, 'json').fail(function () {
-                    servicioSelect.html('<option value="">Error al cargar</option>');
-                });
+                }, 'json');
             }
 
-            // 2. Cargar Horas (Requiere ID Profesional + Fecha)
             function cargarHoras(idPro, fecha) {
                 horaSelect.html('<option value="">Cargando horas...</option>').prop('disabled', true);
-
                 $.post('../shared/obtener-horas-especialista.php', { id_pro: idPro, fecha: fecha }, function (data) {
                     horaSelect.html('<option value="">Seleccione hora</option>');
                     if (data.disponibles && data.disponibles.length > 0) {
@@ -213,75 +275,18 @@ if (!$esAdmin) {
                     } else {
                         horaSelect.html('<option value="">Sin turnos libres</option>');
                     }
-                }, 'json').fail(function () {
-                    horaSelect.html('<option value="">Error al cargar</option>');
-                });
-            }
-
-            // 3. Cargar Mascotas (Requiere ID Profesional)
-            function cargarMascotas(idPro) {
-                mascotaSelect.html('<option value="">Cargando mascotas...</option>').prop('disabled', true);
-
-                $.post('../shared/obtener-mascotas-especialista.php', { id_pro: idPro }, function (data) {
-                    mascotaSelect.html('<option value="">Seleccione mascota</option>');
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(function (m) {
-                            mascotaSelect.append(`<option value="${m.id}">${m.nombre}</option>`);
-                        });
-                        mascotaSelect.prop('disabled', false);
-                    } else {
-                        mascotaSelect.html('<option value="">No hay mascotas atendidas</option>');
-                    }
-                }, 'json').fail(function () {
-                    mascotaSelect.html('<option value="">Error al cargar</option>');
-                });
-            }
-
-            // 4. Cargar Todas las Mascotas (Para Admin)
-            function cargarTodasMascotas() {
-                mascotaSelect.html('<option value="">Cargando mascotas...</option>').prop('disabled', true);
-
-                $.post('../shared/obtener-todas-mascotas.php', {}, function (data) {
-                    mascotaSelect.html('<option value="">Seleccione mascota</option>');
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(function (m) {
-                            mascotaSelect.append(`<option value="${m.id}">${m.nombre}</option>`);
-                        });
-                        mascotaSelect.prop('disabled', false);
-                    } else {
-                        mascotaSelect.html('<option value="">No hay mascotas</option>');
-                    }
-                }, 'json').fail(function () {
-                    mascotaSelect.html('<option value="">Error al cargar</option>');
-                });
-            }
-
-            // --- INICIALIZACIÓN ---
-
-            if (!esAdmin) {
-                // CASO ESPECIALISTA:
-                // Servicios ya cargados en PHP, no hacer nada más aquí
-                cargarMascotas(idUsuarioLogueado);
-            } else {
-                // CASO ADMIN:
-                // Mensaje inicial en servicios y mascotas
-                servicioSelect.html('<option value="">Seleccione especialista primero</option>');
-                mascotaSelect.html('<option value="">Seleccione especialista primero</option>');
+                }, 'json');
             }
 
             // --- EVENTOS ---
-
-            // Cambio de Fecha
             fechaInput.on('change', function () {
                 const fecha = $(this).val();
                 if (!fecha) return;
 
                 if (esAdmin) {
-                    // ADMIN: Buscar médicos disponibles ese día
                     espSelect.html('<option value="">Buscando...</option>').prop('disabled', true);
                     servicioSelect.html('<option value="">Seleccione especialista primero</option>').prop('disabled', true);
                     horaSelect.html('<option value="">Esperando...</option>').prop('disabled', true);
-                    mascotaSelect.html('<option value="">Esperando...</option>').prop('disabled', true);
 
                     $.post('../shared/obtener-medicos-por-fecha.php', { fecha: fecha }, function (data) {
                         espSelect.html('<option value="">Seleccione médico</option>');
@@ -296,35 +301,35 @@ if (!$esAdmin) {
                     }, 'json');
 
                 } else {
-                    // ESPECIALISTA: Ya tenemos ID y Servicios cargados, solo cargamos HORAS
                     cargarHoras(idUsuarioLogueado, fecha);
                 }
             });
 
-            // Cambio de Especialista (SOLO ADMIN)
             if (esAdmin) {
                 espSelect.on('change', function () {
                     const idPro = $(this).val();
                     const fecha = fechaInput.val();
-
                     if (idPro) {
-                        cargarServicios(idPro); // Cargar servicios del médico elegido
-                        cargarTodasMascotas(); // Cargar todas las mascotas para admin
+                        cargarServiciosAdmin(idPro);
                         if (fecha) {
-                            cargarHoras(idPro, fecha); // Cargar horas si ya hay fecha
+                            cargarHoras(idPro, fecha);
                         }
                     }
                 });
             }
 
-            // --- CALENDARIO FULLCALENDAR ---
+            // --- CALENDARIO ---
             var calendar = new FullCalendar.Calendar(document.getElementById('calendario'), {
                 locale: 'es',
                 initialView: 'dayGridMonth',
-                // IMPORTANTE: El archivo atenciones.php debe filtrar por $_SESSION['usuario_id'] si es especialista
                 events: '../shared/atenciones.php',
                 dateClick: function (info) {
-                    // Al hacer click en el calendario, llena la fecha en el input
+                    // Validar fecha pasada
+                    var clickedDate = new Date(info.dateStr);
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (clickedDate < today) return;
+
                     fechaInput.val(info.dateStr).trigger('change');
                 },
                 eventClick: function (info) {

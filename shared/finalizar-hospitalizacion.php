@@ -1,6 +1,6 @@
 <?php
 session_start();
-// SEGURIDAD: Solo el especialista puede dar el alta
+
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'especialista') {
   header('Location: ../vistaAdmin/gestionar-hospitalizacion.php?res=error_permiso');
   exit();

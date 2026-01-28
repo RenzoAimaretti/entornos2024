@@ -23,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Todos los campos son obligatorios.");
     }
 
-    // 1. Obtener datos del cliente y de la mascota ANTES de actualizar
     $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre
                 FROM atenciones a
                 INNER JOIN mascotas m ON a.id_mascota = m.id
@@ -36,13 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos = $stmtInfo->get_result()->fetch_assoc();
     $stmtInfo->close();
 
-    // 2. Realizar la actualización
     $query = "UPDATE atenciones SET fecha = ?, detalle = ? WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("ssi", $fecha_nueva, $detalle_nuevo, $id);
 
     if ($stmt->execute()) {
-        // 3. Enviar Mail de Notificación
+
         if ($datos) {
             $mail = new PHPMailer(true);
             try {
@@ -73,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $mail->send();
             } catch (Exception $e) {
-                // Error de mail silencioso para no interrumpir el flujo
+
             }
         }
         header("Location: detalle-atencionAP.php?id=$id&res=editado");

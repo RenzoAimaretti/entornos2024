@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Validación de sesión
 if (!isset($_SESSION['usuario_tipo']) || ($_SESSION['usuario_tipo'] !== 'admin' && $_SESSION['usuario_tipo'] !== 'especialista')) {
     header('Location: ../index.php');
     exit();
@@ -17,14 +16,12 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// Validamos que exista el ID en la URL
 if (!isset($_GET['id'])) {
     die("ID de atención no proporcionado.");
 }
 
 $idAtencion = intval($_GET['id']);
 
-// Variable para verificar si es admin (usada para ocultar botones)
 $esAdmin = ($_SESSION['usuario_tipo'] === 'admin');
 
 $query = "SELECT a.id, 
@@ -59,37 +56,6 @@ if (!$atencion) {
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
-    <style>
-        .bg-teal {
-            background-color: #00897b;
-            color: white;
-        }
-
-        .text-teal {
-            color: #00897b;
-        }
-
-        .ficha-medica {
-            background-color: white;
-            border-top: 5px solid #00897b;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border-radius: 0.25rem;
-        }
-
-        .label-dato {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: #6c757d;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .valor-dato {
-            font-size: 1.1rem;
-            color: #343a40;
-            margin-bottom: 1.5rem;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
