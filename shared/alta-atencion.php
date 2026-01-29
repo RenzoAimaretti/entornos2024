@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_serv = intval($_POST['servicio_id']);
     $fecha_hora = $fecha . ' ' . $hora . ':00';
 
-
     $check = $conn->prepare("SELECT id FROM atenciones WHERE id_pro = ? AND fecha = ?");
     $check->bind_param("is", $id_pro, $fecha_hora);
     $check->execute();

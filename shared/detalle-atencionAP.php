@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Validación de sesión
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
     header('Location: ../index.php');
     exit();
 }
 
-// 1. Importamos la conexión y las consultas
 require_once '../shared/db.php';
 require_once '../shared/consultas_atenciones.php';
 
@@ -15,7 +13,6 @@ $idAtencion = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($idAtencion <= 0)
     die("ID no válido.");
 
-// 2. Traemos los datos usando la función externa
 $atencion = obtenerDetalleAtencion($conn, $idAtencion);
 
 if (!$atencion)
