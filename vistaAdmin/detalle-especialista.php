@@ -9,6 +9,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="../styles.css" rel="stylesheet">
+
 </head>
 
 <body class="bg-light">
@@ -26,7 +27,7 @@
             <div class="col-lg-4 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="profile-header text-center">
-                        <div class="avatar-circle mx-auto">
+                        <div class="avatar-circle-lg mx-auto">
                             <i class="fas fa-user-md"></i>
                         </div>
                         <h4 class="font-weight-bold"><?php echo htmlspecialchars($nombre); ?></h4>
