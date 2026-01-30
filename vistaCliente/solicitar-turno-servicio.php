@@ -52,39 +52,60 @@
                                     </div>
                                     <div>
                                         <h5 class="card-title mb-0 font-weight-bold">
-                                            <?= htmlspecialchars($profesional['nombre']) ?></h5>
+                                            <?= htmlspecialchars($profesional['nombre']) ?>
+                                        </h5>
                                         <small
                                             class="text-teal font-weight-bold"><?= htmlspecialchars($profesional['especialidad']) ?></small>
                                     </div>
                                 </div>
                                 <hr>
+                                <h6 class="text-muted mb-2" style="font-size: 0.9rem;"><i class="far fa-clock mr-1"></i>
+                                    Horarios:</h6>
                                 <ul class="list-unstyled mb-3 small text-secondary">
                                     <?php
                                     $horarios = $horariosPorProfesional[$profesional['id']] ?? [];
-                                    foreach ($horarios as $h): ?>
-                                        <li class="mb-1"><i
-                                                class="fas fa-calendar-day mr-2 text-teal"></i><strong><?= $h['diaSem'] ?>:</strong>
-                                            <?= $h['horaIni'] ?> - <?= $h['horaFin'] ?></li>
-                                    <?php endforeach; ?>
+                                    if (!empty($horarios)):
+                                        foreach ($horarios as $h): ?>
+                                            <li class="mb-1"><i
+                                                    class="fas fa-calendar-day mr-2 text-teal"></i><strong><?= $h['diaSem'] ?>:</strong>
+                                                <?= $h['horaIni'] ?> - <?= $h['horaFin'] ?></li>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <li class="text-muted font-italic">Sin horarios asignados.</li>
+                                    <?php endif; ?>
                                 </ul>
-                                <button type="button"
-                                    class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
-                                    style="color:#00897b; border-color:#00897b;">Reservar Cita</button>
+
+                                <div class="text-center mt-auto">
+                                    <button type="button"
+                                        class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
+                                        style="color:#00897b; border-color:#00897b;">
+                                        Reservar Cita
+                                    </button>
+                                </div>
 
                                 <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
                                     data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
                                     data-id-serv="<?= $servicio_seleccionado['id'] ?>"
                                     data-service-nombre="<?= htmlspecialchars($servicio_seleccionado['nombre']) ?>"
                                     data-service-precio="<?= $servicio_seleccionado['precio'] ?>" style="display:none;">
-                                    <div class="form-group"><label class="small font-weight-bold">Fecha:</label><input
-                                            type="date" class="form-control form-control-sm" name="fecha_turno"
-                                            min="<?= date('Y-m-d') ?>" required></div>
-                                    <div class="form-group"><label class="small font-weight-bold">Hora:</label><select
-                                            class="form-control form-control-sm" name="hora_turno" required disabled>
-                                            <option value="" disabled selected>Seleccione fecha</option>
-                                        </select></div>
+
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold">Fecha:</label>
+                                        <input type="date" class="form-control form-control-sm fecha-input" name="fecha_turno"
+                                            min="<?= date('Y-m-d') ?>" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold">Hora:</label>
+                                        <select class="form-control form-control-sm hora-select" name="hora_turno" required
+                                            disabled>
+                                            <option value="" disabled selected>Seleccione fecha primero</option>
+                                        </select>
+                                        <small class="form-text text-danger error-msg" style="display:none;"></small>
+                                    </div>
+
                                     <button type="button"
-                                        class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold"
+                                        class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold shadow-sm"
                                         disabled>Continuar</button>
                                     <button type="button"
                                         class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
@@ -146,26 +167,45 @@
                         <h5 class="text-teal mb-0" id="summary-servicio-nombre"></h5>
                         <small class="text-muted">Servicio Seleccionado</small>
                     </div>
+
+                    <div class="row mb-3 text-secondary">
+                        <div class="col-6"><small>Profesional:</small><br><strong id="summary-profesional"
+                                class="text-dark"></strong></div>
+                        <div class="col-6 text-right"><small>Fecha y Hora:</small><br><strong id="summary-fecha-hora"
+                                class="text-dark"></strong></div>
+                    </div>
+
                     <form method="POST">
                         <input type="hidden" name="profesional_id" id="form-profesional-id">
                         <input type="hidden" name="fecha_turno" id="form-fecha">
                         <input type="hidden" name="hora_turno" id="form-hora">
                         <input type="hidden" name="id_serv" id="form-service-id">
-                        <div class="form-group"><label class="font-weight-bold">Mascota:</label>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Mascota:</label>
                             <select class="form-control" name="id_mascota" required>
-                                <?php foreach ($mascotas as $m): ?>
-                                    <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
-                                <?php endforeach; ?>
+                                <?php if (!empty($mascotas)): ?>
+                                    <?php foreach ($mascotas as $m): ?>
+                                        <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <option value="" disabled>No tienes mascotas registradas.</option>
+                                <?php endif; ?>
                             </select>
                         </div>
-                        <div class="form-group"><label class="font-weight-bold d-block">Modalidad:</label>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold d-block">Modalidad:</label>
                             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active"><input type="radio" name="modalidad"
-                                        value="Presencial" checked> Presencial</label>
-                                <label class="btn btn-outline-secondary"><input type="radio" name="modalidad"
-                                        value="A domicilio"> Domicilio</label>
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="modalidad" value="Presencial" checked> Presencial
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="modalidad" value="A domicilio"> Domicilio
+                                </label>
                             </div>
                         </div>
+
                         <button type="submit"
                             class="btn btn-success btn-block btn-lg font-weight-bold mt-4 shadow-sm">CONFIRMAR
                             RESERVA</button>
@@ -201,6 +241,9 @@
 
     <script>
         $(document).ready(function () {
+            const diasSemana = { 'Lun': 1, 'Mar': 2, 'Mie': 3, 'Jue': 4, 'Vie': 5, 'Sab': 6, 'Dom': 0 };
+            const horariosProfesionales = <?php echo json_encode($horariosPorProfesional) ?: '{}'; ?>;
+
             $('#tablaServicios').DataTable({
                 "pageLength": 10,
                 "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
@@ -210,40 +253,76 @@
                 "lengthChange": false
             });
 
-            $('.mostrar-formulario-btn').on('click', function () {
+            $(document).on('click', '.mostrar-formulario-btn', function () {
                 $(this).hide().closest('.card-body').find('.booking-form').slideDown();
             });
 
-            $('.cancelar-turno-btn').on('click', function () {
+            $(document).on('click', '.cancelar-turno-btn', function () {
                 const form = $(this).closest('.booking-form');
                 form.slideUp(() => form.closest('.card-body').find('.mostrar-formulario-btn').show());
+
+                form.find('.fecha-input').val('');
+                form.find('.hora-select').empty().prop('disabled', true).append('<option value="" disabled selected>Seleccione fecha primero</option>');
+                form.find('.sacar-turno-btn').prop('disabled', true);
+                form.find('.error-msg').hide();
             });
 
-            $('.booking-form').on('change', 'input[type="date"]', function () {
+            $(document).on('change', '.fecha-input', function () {
                 const form = $(this).closest('.booking-form');
                 const proId = form.data('id-pro');
                 const fecha = $(this).val();
-                const horaSelect = form.find('select[name="hora_turno"]');
+                const horaSelect = form.find('.hora-select');
+                const errorSpan = form.find('.error-msg');
+                const btn = form.find('.sacar-turno-btn');
+
+                horaSelect.prop('disabled', true).empty().append('<option value="" disabled selected>Cargando...</option>');
+                btn.prop('disabled', true);
+                errorSpan.hide();
+
                 if (fecha) {
-                    $.post('verificar-turno-disponible-servicio.php', { id_pro: proId, fecha: fecha }, function (disponibles) {
-                        horaSelect.empty().append('<option value="" disabled selected>Seleccione hora</option>');
-                        disponibles.forEach(h => horaSelect.append(`<option value="${h}">${h.substring(0, 5)}</option>`));
-                        horaSelect.prop('disabled', disponibles.length === 0);
-                    }, 'json');
+                    const fechaObj = new Date(fecha.replace(/-/g, '/'));
+                    const diaStr = Object.keys(diasSemana).find(key => diasSemana[key] === fechaObj.getDay());
+                    const horariosPro = horariosProfesionales[proId];
+
+                    if (horariosPro && horariosPro.find(h => h.diaSem === diaStr)) {
+                        $.post('verificar-turno-disponible-servicio.php', { id_pro: proId, fecha: fecha }, function (disponibles) {
+                            horaSelect.empty().append('<option value="" disabled selected>Seleccione hora</option>');
+
+                            if (disponibles.length > 0) {
+                                disponibles.forEach(h => horaSelect.append(`<option value="${h}">${h.substring(0, 5)}</option>`));
+                                horaSelect.prop('disabled', false);
+                            } else {
+                                errorSpan.text('No hay horarios disponibles para esta fecha.').show();
+                            }
+                        }, 'json').fail(function () {
+                            horaSelect.empty().append('<option value="" disabled selected>Error de conexión</option>');
+                        });
+                    } else {
+                        horaSelect.empty().append('<option value="" disabled selected>Día no laboral</option>');
+                        errorSpan.text('El profesional no atiende este día.').show();
+                    }
                 }
             });
 
-            $('.booking-form').on('change', 'select[name="hora_turno"]', function () {
+            $(document).on('change', '.hora-select', function () {
                 $(this).closest('.booking-form').find('.sacar-turno-btn').prop('disabled', false);
             });
 
-            $('.sacar-turno-btn').on('click', function () {
+            $(document).on('click', '.sacar-turno-btn', function () {
                 const form = $(this).closest('.booking-form');
+
                 $('#summary-servicio-nombre').text(form.data('service-nombre'));
+                $('#summary-profesional').text(form.data('pro-nombre'));
+
+                const fechaFormat = form.find('.fecha-input').val().split('-').reverse().join('/');
+                const horaFormat = form.find('.hora-select').val();
+                $('#summary-fecha-hora').text(`${fechaFormat} - ${horaFormat} hs`);
+
                 $('#form-profesional-id').val(form.data('id-pro'));
-                $('#form-fecha').val(form.find('input[name="fecha_turno"]').val());
-                $('#form-hora').val(form.find('select[name="hora_turno"]').val());
+                $('#form-fecha').val(form.find('.fecha-input').val());
+                $('#form-hora').val(form.find('.hora-select').val());
                 $('#form-service-id').val(form.data('id-serv'));
+
                 $('#confirmacionModal').modal('show');
             });
 
