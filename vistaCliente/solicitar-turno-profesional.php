@@ -8,9 +8,12 @@
     <title>Solicitar Turno - Por Profesional</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <link href="../styles.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 </head>
 
 <body>
@@ -45,78 +48,88 @@
                 placeholder="Escribe el nombre del veterinario...">
         </div>
 
-        <div class="row">
-            <?php foreach ($profesionales as $profesional): ?>
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card card-profesional shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="mr-3">
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                                        style="width: 50px; height: 50px; color: #00897b;">
-                                        <i class="fas fa-user-md fa-lg"></i>
+        <table id="tablaProfesionales" class="table" style="width:100%; border:none; background:transparent;">
+            <thead style="display:none;">
+                <tr>
+                    <th>Profesional</th>
+                </tr>
+            </thead>
+            <tbody class="row m-0">
+                <?php foreach ($profesionales as $profesional): ?>
+                    <tr class="col-md-6 col-lg-4 mb-4 d-flex">
+                        <td class="p-0 border-0 bg-transparent w-100">
+                            <div class="card card-profesional shadow-sm h-100 w-100">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="mr-3">
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                                style="width: 50px; height: 50px; color: #00897b;">
+                                                <i class="fas fa-user-md fa-lg"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-0 font-weight-bold text-dark">
+                                                <?= htmlspecialchars($profesional['nombre']) ?>
+                                            </h5>
+                                            <small class="text-uppercase text-teal font-weight-bold"
+                                                style="font-size: 0.75rem;"><?= htmlspecialchars($profesional['especialidad']) ?></small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <h5 class="card-title mb-0 font-weight-bold text-dark">
-                                        <?= htmlspecialchars($profesional['nombre']) ?>
-                                    </h5>
-                                    <small class="text-uppercase text-teal font-weight-bold"
-                                        style="font-size: 0.75rem;"><?= htmlspecialchars($profesional['especialidad']) ?></small>
+                                    <hr>
+                                    <h6 class="text-muted mb-3" style="font-size: 0.9rem;"><i class="far fa-clock mr-1"></i>
+                                        Horarios de atención:</h6>
+                                    <ul class="list-unstyled mb-3 small text-secondary">
+                                        <?php
+                                        $diasAtencion = $horariosPorProfesional[$profesional['id']] ?? [];
+                                        if (!empty($diasAtencion)): ?>
+                                            <?php foreach ($diasAtencion as $horario): ?>
+                                                <li class="mb-1">
+                                                    <i class="fas fa-calendar-day mr-2 text-teal"></i>
+                                                    <strong><?= $horario['diaSem'] ?>:</strong> <?= $horario['horaIni'] ?> -
+                                                    <?= $horario['horaFin'] ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <li class="text-muted font-italic">Sin horarios asignados.</li>
+                                        <?php endif; ?>
+                                    </ul>
+                                    <div class="text-center mt-auto">
+                                        <button type="button"
+                                            class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
+                                            style="color: #00897b; border-color: #00897b;">
+                                            Sacar Turno
+                                        </button>
+                                    </div>
+                                    <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
+                                        data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
+                                        data-id-esp="<?= $profesional['id_esp'] ?>" style="display:none;">
+                                        <h6 class="text-teal font-weight-bold mb-3">Reservar Cita</h6>
+                                        <div class="form-group">
+                                            <label class="small font-weight-bold">Fecha:</label>
+                                            <input type="date" class="form-control form-control-sm" name="fecha_turno"
+                                                min="<?= date('Y-m-d') ?>" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="small font-weight-bold">Hora:</label>
+                                            <select class="form-control form-control-sm" name="hora_turno" required
+                                                disabled>
+                                                <option value="" disabled selected>Seleccione fecha primero</option>
+                                            </select>
+                                            <small class="form-text text-danger" style="display:none;"></small>
+                                        </div>
+                                        <button type="button"
+                                            class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold shadow-sm"
+                                            disabled>Continuar</button>
+                                        <button type="button"
+                                            class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
+                                    </form>
                                 </div>
                             </div>
-                            <hr>
-                            <h6 class="text-muted mb-3" style="font-size: 0.9rem;"><i class="far fa-clock mr-1"></i>
-                                Horarios de atención:</h6>
-                            <ul class="list-unstyled mb-3 small text-secondary">
-                                <?php
-                                $diasAtencion = $horariosPorProfesional[$profesional['id']] ?? [];
-                                if (!empty($diasAtencion)): ?>
-                                    <?php foreach ($diasAtencion as $horario): ?>
-                                        <li class="mb-1">
-                                            <i class="fas fa-calendar-day mr-2 text-teal"></i>
-                                            <strong><?= $horario['diaSem'] ?>:</strong> <?= $horario['horaIni'] ?> -
-                                            <?= $horario['horaFin'] ?>
-                                        </li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li class="text-muted font-italic">Sin horarios asignados.</li>
-                                <?php endif; ?>
-                            </ul>
-                            <div class="text-center mt-auto">
-                                <button type="button"
-                                    class="btn btn-outline-info btn-block rounded-pill font-weight-bold mostrar-formulario-btn"
-                                    style="color: #00897b; border-color: #00897b;">
-                                    Sacar Turno
-                                </button>
-                            </div>
-                            <form class="booking-form mt-3" data-id-pro="<?= $profesional['id'] ?>"
-                                data-pro-nombre="<?= htmlspecialchars($profesional['nombre']) ?>"
-                                data-id-esp="<?= $profesional['id_esp'] ?>" style="display:none;">
-                                <h6 class="text-teal font-weight-bold mb-3">Reservar Cita</h6>
-                                <div class="form-group">
-                                    <label class="small font-weight-bold">Fecha:</label>
-                                    <input type="date" class="form-control form-control-sm" name="fecha_turno"
-                                        min="<?= date('Y-m-d') ?>" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="small font-weight-bold">Hora:</label>
-                                    <select class="form-control form-control-sm" name="hora_turno" required disabled>
-                                        <option value="" disabled selected>Seleccione fecha primero</option>
-                                    </select>
-                                    <small class="form-text text-danger" style="display:none;"></small>
-                                </div>
-                                <button type="button"
-                                    class="btn btn-success btn-sm btn-block sacar-turno-btn font-weight-bold shadow-sm"
-                                    disabled>Continuar</button>
-                                <button type="button"
-                                    class="btn btn-link btn-sm btn-block text-secondary cancelar-turno-btn">Cancelar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
     <div class="modal fade" id="confirmacionModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -225,19 +238,24 @@
                 serviciosPorEspecialidad[s.id_esp].push(s);
             });
 
-            $('#filtroProfesionales').on('input', function () {
-                const searchTerm = $(this).val().toLowerCase();
-                $('.card-profesional').each(function () {
-                    const nombrePro = $(this).find('.card-title').text().toLowerCase();
-                    $(this).closest('.col-md-6').toggle(nombrePro.includes(searchTerm));
-                });
+            const table = $('#tablaProfesionales').DataTable({
+                "pageLength": 6,
+                "dom": 'tp',
+                "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json" },
+                "ordering": false,
+                "info": false,
+                "lengthChange": false
             });
 
-            $('.mostrar-formulario-btn').on('click', function () {
+            $('#filtroProfesionales').on('input', function () {
+                table.search(this.value).draw();
+            });
+
+            $(document).on('click', '.mostrar-formulario-btn', function () {
                 $(this).hide().closest('.card-body').find('.booking-form').slideDown();
             });
 
-            $('.cancelar-turno-btn').on('click', function () {
+            $(document).on('click', '.cancelar-turno-btn', function () {
                 const form = $(this).closest('.booking-form');
                 form.slideUp(function () {
                     form.closest('.card-body').find('.mostrar-formulario-btn').show();
@@ -248,7 +266,7 @@
                 });
             });
 
-            $('.booking-form').on('change', 'input[type="date"]', function () {
+            $(document).on('change', '.booking-form input[type="date"]', function () {
                 const form = $(this).closest('.booking-form');
                 const proId = form.data('id-pro');
                 const fecha = $(this).val();
@@ -282,16 +300,16 @@
                         });
                     } else {
                         horaSelect.empty().append('<option value="" disabled selected>Día no laboral</option>');
-                        errorSpan.text('El profesional no atiende este día.').show();
+                        alert('El profesional no atiende este día.');
                     }
                 }
             });
 
-            $('.booking-form').on('change', 'select[name="hora_turno"]', function () {
+            $(document).on('change', '.booking-form select[name="hora_turno"]', function () {
                 $(this).closest('.booking-form').find('.sacar-turno-btn').prop('disabled', false);
             });
 
-            $('.sacar-turno-btn').on('click', function () {
+            $(document).on('click', '.sacar-turno-btn', function () {
                 const form = $(this).closest('.booking-form');
                 const idEsp = form.data('id-esp');
 

@@ -33,17 +33,14 @@ if ($resultEsp && $resultEsp->num_rows > 0) {
   $especialidad = $row['especialidad'];
 }
 
-// Horarios para mostrar en lista
 $hRes = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id ORDER BY CASE diaSem WHEN 'Lun' THEN 1 WHEN 'Mar' THEN 2 WHEN 'Mie' THEN 3 WHEN 'Jue' THEN 4 WHEN 'Vie' THEN 5 WHEN 'Sab' THEN 6 ELSE 7 END");
 
-// Turnos Próximos
 $atNext = $conn->query("SELECT a.id, a.fecha, s.nombre as serv, m.nombre as masc 
                         FROM atenciones a 
                         INNER JOIN servicios s ON a.id_serv = s.id 
                         INNER JOIN mascotas m ON a.id_mascota = m.id
                         WHERE a.id_pro = $id AND a.fecha >= CURDATE() ORDER BY a.fecha ASC LIMIT 5");
 
-// Historial Pasado
 $atPast = $conn->query("SELECT a.id, a.fecha, s.nombre as serv, m.nombre as masc 
                         FROM atenciones a 
                         INNER JOIN servicios s ON a.id_serv = s.id 
