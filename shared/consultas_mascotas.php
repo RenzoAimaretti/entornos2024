@@ -8,7 +8,7 @@ if (!isset($_GET['idMascota'])) {
   die("ID de mascota no proporcionado.");
 }
 
-require_once '../shared/db.php';
+require_once 'db.php';
 
 $idMascota = intval($_GET['idMascota']);
 $hoy = date('Y-m-d');

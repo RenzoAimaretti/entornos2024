@@ -10,10 +10,7 @@ $profesionalId = $_SESSION['usuario_id'];
 if (isset($_GET['fecha'])) {
     $fecha = $_GET['fecha'];
 
-    $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-    if ($conn->connect_error) {
-        die("Error de conexión: " . $conn->connect_error);
-    }
+    require_once '../shared/db.php';
 
     $sql = "SELECT a.id, a.fecha, a.hora, p.nombre AS paciente, s.nombre AS servicio
             FROM atenciones a

@@ -6,7 +6,7 @@ if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['
     exit();
 }
 
-require_once '../shared/db.php';
+require_once 'db.php';
 require_once '../shared/consultas_atenciones.php';
 
 $idAtencion = isset($_GET['id']) ? intval($_GET['id']) : 0;

@@ -6,7 +6,7 @@ if ($_SESSION['usuario_tipo'] !== 'admin') {
   die("Acceso denegado");
 }
 
-require_once '../shared/db.php';
+require_once 'db.php';
 
 $registroExitoso = false;
 

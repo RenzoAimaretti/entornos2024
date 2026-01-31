@@ -6,20 +6,12 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialis
   exit();
 }
 
-require_once '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+require_once 'db.php';
 
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 $nombre = $_SESSION['usuario_nombre'];
 $profesional_id = $_SESSION['usuario_id'];
 
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-  die("Error de conexión: " . $conn->connect_error);
-}
-
-// Lógica de POST para hospitalizaciones
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
   if ($_POST['accion'] === 'finalizar') {
     $id_hosp = $_POST['id_hosp'];
@@ -59,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
 
 $hoy = date('Y-m-d');
 
-// Consultas para el dashboard
 $turnos_hoy = $conn->query("
     SELECT a.id, DATE_FORMAT(a.fecha, '%H:%i') AS hora, m.nombre AS nombre_mascota, s.nombre AS nombre_servicio, a.detalle
     FROM atenciones a

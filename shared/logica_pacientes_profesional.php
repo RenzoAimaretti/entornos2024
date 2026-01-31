@@ -6,16 +6,9 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'especialis
   exit();
 }
 
-require_once '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+require_once 'db.php';
 
 $profesionalId = $_SESSION['usuario_id'];
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-  die("Error de conexión: " . $conn->connect_error);
-}
 
 $sql = "SELECT DISTINCT m.id, m.nombre, m.raza, m.fecha_nac
         FROM atenciones a

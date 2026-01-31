@@ -8,16 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $mascotaId = $_POST['id'];
 
-  require 'vendor/autoload.php';
-  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-  $dotenv->load();
-
-  $conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-
-  if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
-  }
+  require_once 'shared/db.php';
 
   $sql = "DELETE FROM mascotas WHERE id = ? AND id_cliente = ?";
   $stmt = $conn->prepare($sql);

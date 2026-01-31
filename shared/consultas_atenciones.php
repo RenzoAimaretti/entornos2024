@@ -1,5 +1,4 @@
 <?php
-
 function obtenerDetalleAtencion($conn, $idAtencion)
 {
   $query = "SELECT a.id, 

@@ -1,19 +1,11 @@
 <?php
 session_start();
-require '../vendor/autoload.php';
+require_once 'db.php';
 
 if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
     header('Content-Type: application/json');
     echo json_encode([]);
     exit;
-}
-
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-if ($conn->connect_error) {
-    die("Error de conexión");
 }
 
 $query = "SELECT a.id, 

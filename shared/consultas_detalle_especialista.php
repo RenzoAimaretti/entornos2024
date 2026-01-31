@@ -11,7 +11,7 @@ if ($id === 0) {
   die("ID de especialista no proporcionado.");
 }
 
-require_once '../shared/db.php';
+require_once 'db.php';
 
 $stmt = $conn->prepare("SELECT u.id, u.nombre, u.email, p.telefono, e.nombre as especialidad 
                         FROM usuarios u 

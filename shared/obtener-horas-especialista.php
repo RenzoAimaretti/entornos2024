@@ -4,17 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);
 ini_set('display_errors', 0);
 
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
-
-if ($conn->connect_error) {
-  ob_end_clean();
-  echo json_encode(['disponibles' => []]);
-  exit;
-}
+require_once 'db.php';
 
 $id_pro = $_POST['id_pro'] ?? 0;
 $fecha_raw = $_POST['fecha'] ?? '';

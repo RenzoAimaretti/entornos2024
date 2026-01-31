@@ -1,9 +1,6 @@
 <?php
 session_start();
-require '../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-$conn = new mysqli($_ENV['servername'], $_ENV['username'], $_ENV['password'], $_ENV['dbname']);
+require_once 'db.php';
 
 if (isset($_POST['id_pro'])) {
   $id_pro = intval($_POST['id_pro']);

@@ -300,7 +300,7 @@
                         });
                     } else {
                         horaSelect.empty().append('<option value="" disabled selected>Día no laboral</option>');
-                        alert('El profesional no atiende este día.');
+                        errorSpan.text('El profesional no atiende este día.').show();
                     }
                 }
             });
