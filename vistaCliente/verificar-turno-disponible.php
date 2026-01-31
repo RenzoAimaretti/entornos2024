@@ -15,7 +15,7 @@ $horariosDisponibles = [];
 
 if ($id_pro && $fecha) {
   $diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-  $diaSemanaNum = date('w', strtotime($fecha)); // 0 para Domingo, 6 para Sábado
+  $diaSemanaNum = date('w', strtotime($fecha));
   $diaSemanaStr = $diasSemana[$diaSemanaNum];
 
 

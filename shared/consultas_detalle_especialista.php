@@ -47,7 +47,6 @@ $atPast = $conn->query("SELECT a.id, a.fecha, s.nombre as serv, m.nombre as masc
                         INNER JOIN mascotas m ON a.id_mascota = m.id
                         WHERE a.id_pro = $id AND a.fecha < CURDATE() ORDER BY a.fecha DESC LIMIT 5");
 
-// Datos para JS (Horarios Editables)
 $hResJS = $conn->query("SELECT diaSem, horaIni, horaFin FROM profesionales_horarios WHERE idPro = $id");
 $horariosJS = [];
 while ($r = $hResJS->fetch_assoc()) {

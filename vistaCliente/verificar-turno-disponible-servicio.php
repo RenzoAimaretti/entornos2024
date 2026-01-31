@@ -15,7 +15,7 @@ $horariosDisponibles = [];
 
 if ($id_pro && $fecha) {
   $diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-  $diaSemanaNum = date('w', strtotime($fecha)); // 0: Domingo, 6: Sábado
+  $diaSemanaNum = date('w', strtotime($fecha));
   $diaSemanaStr = $diasSemana[$diaSemanaNum];
 
   $sql = "SELECT DISTINCT ph.horaIni, ph.horaFin
