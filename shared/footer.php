@@ -22,17 +22,13 @@
             <ul class="list-unstyled small">
 
               <?php
-              // CLIENTE
               if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'cliente'):
                 ?>
                 <li><a href="../vistaCliente/mis-mascotas.php">Mis Mascotas</a></li>
                 <li><a href="../vistaCliente/mis-turnos.php">Mis Turnos</a></li>
               <?php endif; ?>
 
-
-
               <?php
-              // ADMIN
               if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'):
                 ?>
                 <li><a href="../vistaAdmin/gestionar-hospitalizacion.php">Gestión de Hospitalizaciones</a></li>
@@ -43,7 +39,6 @@
               <?php endif; ?>
 
               <?php
-              // INVITADO
               if (!isset($_SESSION['usuario_id'])):
                 ?>
                 <li><a href="../iniciar-sesion.php">Ingresar</a></li>
