@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo "Error al guardar.";
   }
 }
-
 function get_param($key)
 {
   if (isset($_GET[$key]))

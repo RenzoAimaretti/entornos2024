@@ -220,7 +220,7 @@
                 </div>
                 <div class="modal-footer justify-content-center bg-light">
                     <a href="mis-turnos.php" class="btn btn-primary px-4">Ir a Mis Turnos</a>
-                    <a href="solicitar-turno-profesional.php" class="btn btn-outline-secondary px-4">Nueva Reserva</a>
+                    <a href="solicitar-turno.php" class="btn btn-outline-secondary px-4">Nueva Reserva</a>
                 </div>
             </div>
         </div>
