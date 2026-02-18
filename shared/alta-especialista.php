@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
+    die("Acceso denegado");
+}
+
 require_once 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -10,12 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $especialidad = $_POST['esp'];
     $password = $_POST['password'];
     $repassword = $_POST['repassword'];
-    $dias = $_POST['dias'];
+    $dias = $_POST['dias'] ?? [];
 
     if ($password != $repassword) {
-        echo "Las contraseñas no coinciden";
-        echo $password;
-        echo $repassword;
+        die("Las contraseñas no coinciden");
     } else {
         $queryUser = "INSERT INTO usuarios (nombre,email,password,tipo) VALUES ('$nombre','$email','$password','especialista')";
         $resultUser = $conn->query($queryUser);
@@ -24,8 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $queryProf = "INSERT INTO profesionales (id,telefono,id_esp) VALUES ('$id','$telefono','$especialidad')";
             $resultProf = $conn->query($queryProf);
             if ($resultProf) {
-                echo "Especialista registrado con éxito";
-
                 foreach ($dias as $dia) {
                     $diaSem = $dia['dia'];
                     $horaIni = $dia['horaInicio'];
@@ -33,11 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $queryDia = "INSERT INTO profesionales_horarios (idPro, diaSem, horaIni, horaFin) VALUES ('$id', '$diaSem', '$horaIni', '$horaFin')";
                     $conn->query($queryDia);
                 }
-
-                $_SESSION['usuario_id'] = $id;
-                $_SESSION['usuario_nombre'] = $nombre;
-                $_SESSION['usuario_tipo'] = 'especialista';
-                header("Location: ../vistaAdmin/gestionar-especialistas.php");
+                header("Location: ../vistaAdmin/gestionar-especialistas.php?res=ok");
+                exit();
             } else {
                 echo "Error al registrar especialista";
             }

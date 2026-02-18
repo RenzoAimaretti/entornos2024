@@ -16,6 +16,14 @@
     <?php require_once '../shared/navbar.php'; ?>
 
     <div class="container mt-5 mb-5">
+        <?php if (isset($_GET['res']) && $_GET['res'] === 'ok'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>¡Éxito!</strong> Especialista registrado correctamente.
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="font-weight-bold text-dark mb-0">Gestión de Especialistas</h2>
