@@ -1,80 +1,66 @@
-# entornos2024
+# Veterinaria San Antón 🐾
 
-Veterinaria San Antón 🐾
-Sistema integral de gestión para clínicas veterinarias, desarrollado como proyecto para la cátedra de Entornos Gráficos. La plataforma permite la gestión de turnos, historiales médicos, internaciones y comunicación automatizada por correo electrónico.
+Sistema integral de gestión para clínicas veterinarias, desarrollado como proyecto para la cátedra de **Entornos Gráficos**. La plataforma permite la gestión de turnos, historiales médicos, internaciones y comunicación automatizada por correo electrónico.
 
-URL del Proyecto: https://entornosgraficos.infinityfreeapp.com/
+**🔗 URL del Proyecto:** [https://entornosgraficos.infinityfreeapp.com/](https://entornosgraficos.infinityfreeapp.com/)
 
-🏗️ Scaffolding del Proyecto
+---
+
+## 🏗️ Scaffolding del Proyecto
+
 El proyecto sigue una estructura modular para facilitar el mantenimiento y la reutilización de componentes:
 
-/ (Raíz): Contiene las vistas principales públicas (Inicio, Nosotros, Contacto) y el archivo de estilos global styles.css.
+- **`/` (Raíz):** Contiene las vistas principales públicas (`index.php`, `nosotros.php`, `contactanos.php`) y el archivo de estilos global `styles.css`.
+- **`/shared`:** Componentes reutilizables de lógica y frontend (Navbar, Footer, Head unificado, Scripts comunes) y la conexión centralizada a la base de datos `db.php`.
+- **`/vistaAdmin`:** Módulos exclusivos para la administración total de la clínica: gestión de especialistas, clientes, mascotas y control de hospitalizaciones.
+- **`/vistaCliente`:** Interfaz privada para dueños de mascotas donde pueden gestionar sus perfiles y turnos.
+- **`/vistaProfesional`:** Panel dedicado a veterinarios, enfocado en la atención médica diaria, carga de historias clínicas y visualización de agenda.
 
-/shared: Componentes reutilizables de lógica y frontend (Navbar, Footer, Head unificado, Scripts) y la conexión a la base de datos db.php.
+---
 
-/vistaAdmin: Módulos exclusivos para la gestión total de la clínica (especialistas, clientes, mascotas y hospitalizaciones).
+## 👥 Roles de Usuario y Acceso
 
-/vistaCliente: Interfaz para que los dueños de mascotas gestionen sus turnos y perfiles.
+El sistema implementa un robusto control de acceso basado en **sesiones PHP** para tres perfiles distintos:
 
-/vistaProfesional: Panel para veterinarios, enfocado en la atención diaria, historial médico y calendario de turnos.
+| Rol               | Descripción                                                                      | Credenciales de Acceso                                      |
+| :---------------- | :------------------------------------------------------------------------------- | :---------------------------------------------------------- |
+| **Administrador** | Control total del sistema, auditoría de datos y gestión de personal médico.      | **User:** `admin@gmail.com` <br> **Pass:** `Admin123`       |
+| **Especialista**  | Perfil médico: consulta de agenda, carga de evoluciones y atención de pacientes. | **User:** `pro@gmail.com` <br> **Pass:** `Pro123`           |
+| **Cliente**       | Usuario final: registro de mascotas y autogestión de turnos médicos.             | **User:** `mateospertino@gmail.com` <br> **Pass:** `Mateo1` |
 
-👥 Roles de Usuario y Acceso
-El sistema implementa un control de acceso basado en sesiones PHP para tres perfiles distintos:
+---
 
-Rol:
-Administrador
-Descripción:
-Control total: altas de especialistas, gestión de internaciones y auditoría.
-Credenciales de Acceso:
-Email: admin@gmail.com
-Pass: Admin123
+## 🛠️ Tecnologías y Librerías
 
-Rol:
-Especialista
-Descripción:
-Perfil médico: consulta de turnos asignados, carga de atenciones y pacientes.
-Credenciales de Acceso:
-Email: pro@gmail.com
-Pass: Pro123
+Se utilizaron tecnologías estándar de la industria para garantizar un entorno web robusto y responsivo:
 
-Rol:
-Cliente
-Descripción:
-Usuario final: autogestión de turnos y visualización de sus mascotas.
-Credenciales de Acceso:
-Email: mateospertino@gmail.com
-Pass: Mateo1
+### **Backend y Base de Datos**
 
-🛠️ Tecnologías y Librerías
-Se utilizaron tecnologías estándar de la industria para garantizar un entorno web responsivo y funcional:
+- **PHP:** Lógica del lado del servidor y gestión de sesiones.
+- **MySQL:** Almacenamiento relacional (Usuarios, Mascotas, Atenciones, Horarios).
+- **PHPMailer:** Motor para el envío automatizado de correos electrónicos de confirmación y cancelación.
 
-Backend y Base de Datos
-PHP: Lógica del servidor y gestión de sesiones de usuario.
+### **Frontend (UI/UX)**
 
-MySQL: Almacenamiento relacional de datos (Tablas de usuarios, mascotas, atenciones, etc.).
+- **Bootstrap 4.5.2:** Framework para el diseño responsivo y componentes de interfaz.
+- **FontAwesome 5.15.4:** Iconografía técnica.
+- **DataTables:** Gestión avanzada de tablas con búsqueda, filtrado y paginación.
+- **FullCalendar 5.11.5:** Calendario interactivo para la visualización de turnos.
+- **SweetAlert2:** Librería para ventanas emergentes y confirmaciones estéticas.
+- **jQuery 3.6.0:** Manipulación del DOM y peticiones AJAX para carga dinámica de datos.
 
-PHPMailer: Motor para el envío de correos electrónicos de confirmación y cancelación de turnos.
+---
 
-Frontend (UI/UX)
-Bootstrap 4.5.2: Framework principal para el diseño responsivo.
+## ✨ Principales Funcionalidades
 
-FontAwesome 5.15.4: Iconografía técnica y de interfaz.
+- **📅 Autogestión de Turnos:** Selección inteligente de turnos filtrando por profesional o servicio con validación de disponibilidad en tiempo real.
+- **🩺 Gestión Médica:** Registro detallado de evoluciones médicas y acceso rápido al historial clínico de los pacientes.
+- **🏥 Sistema de Hospitalización:** Control de internaciones, permitiendo el seguimiento de estados y la gestión de altas médicas.
+- **📧 Notificaciones Automáticas:** Comunicación inmediata vía email al cliente ante cualquier cambio o cancelación en su turno.
+- **🔒 Seguridad de Datos:**
+  - Validaciones _Server-side_ para prevenir accesos no autorizados mediante manipulación de parámetros URL.
+  - Implementación de `LIMIT 1` y saneamiento de datos en operaciones críticas (Delete/Update) para garantizar la integridad de la base de datos.
 
-DataTables: Gestión avanzada de tablas con búsqueda y paginación en tiempo real.
+---
 
-FullCalendar 5.11.5: Interfaz de calendario para la visualización de turnos médicos.
-
-SweetAlert2: Sistema de alertas interactivas para confirmaciones y errores.
-
-jQuery 3.6.0: Manipulación del DOM y peticiones AJAX para carga dinámica de datos.
-
-✨ Principales Funcionalidades
-Autogestión de Turnos: Los clientes pueden solicitar turnos filtrando por profesional o servicio, con validación de horarios disponibles.
-
-Gestión Médica: Los especialistas pueden registrar evoluciones médicas y consultar atenciones previas de cada paciente.
-
-Sistema de Hospitalización: Módulo para el seguimiento de mascotas internadas, permitiendo el alta médica y actualización de estado.
-
-Notificaciones Automáticas: Envío de correos electrónicos ante cambios en el estado de los turnos.
-
-Seguridad de Datos: Validaciones en el lado del servidor para prevenir accesos no autorizados a través de parámetros URL y uso de LIMIT 1 en operaciones críticas de base de datos.
+© 2026 Veterinaria San Antón - Proyecto Académico de Entornos Gráficos.
