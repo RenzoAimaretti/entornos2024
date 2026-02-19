@@ -1,14 +1,11 @@
-<?php require_once '../shared/consultas_detalle_cliente.php'; ?>
+<?php require_once '../shared/consultas_detalle_cliente.php';
+$ruta_base = "../";
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle Cliente - San Antón</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-    <link href="../styles.css" rel="stylesheet">
+    <?php require_once '../shared/head.php'; ?>
 </head>
 <body class="bg-light">
     <?php require_once '../shared/navbar.php'; ?>
@@ -74,7 +71,7 @@
                                                         <div class="d-flex align-items-center">
                                                             <?php if (!empty($mascota['foto'])): ?>
                                                                 <img src="<?php echo htmlspecialchars($mascota['foto']); ?>"
-                                                                    class="pet-avatar mr-3">
+                                                                    alt="avatar de mascota" class="pet-avatar mr-3">
                                                             <?php else: ?>
                                                                 <div
                                                                     class="pet-avatar d-flex align-items-center justify-content-center mr-3 bg-light text-muted">

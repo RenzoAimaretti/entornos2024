@@ -4,16 +4,14 @@ if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'especiali
   header("Location: vistaProfesional/dashboardProfesional.php");
   exit();
 }
+$ruta_base = "";
 ?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veterinaria San Antón</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/styles.css" rel="stylesheet">
+  <?php require_once 'shared/head.php'; ?>
 </head>
 
 <body>

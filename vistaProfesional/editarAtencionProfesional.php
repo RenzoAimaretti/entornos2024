@@ -1,14 +1,12 @@
-<?php require_once '../shared/logica_editar_atencion.php'; ?>
+<?php require_once '../shared/logica_editar_atencion.php';
+$ruta_base = "../";
+?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evolución Médica - San Antón</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="../styles.css" rel="stylesheet">
+    <?php require_once '../shared/head.php'; ?>
 </head>
 
 <body class="bg-light">
@@ -37,9 +35,10 @@
                                     <i class="fas fa-paw text-teal fa-lg"></i>
                                 </div>
                                 <div>
+
                                     <div class="valor-dato"><?php echo htmlspecialchars($atencion['mascota']); ?></div>
-                                    <small
-                                        class="text-muted"><?php echo htmlspecialchars($atencion['raza'] ?? 'Raza no esp.'); ?></small>
+                                    <sma ll class="text-muted">
+                                        <?php echo htmlspecialchars($atencion['raza'] ?? 'Raza no esp.'); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -51,6 +50,7 @@
                                     style="width: 45px; height: 45px;">
                                     <i class="fas fa-stethoscope text-teal fa-lg"></i>
                                 </div>
+
                                 <div class="valor-dato"><?php echo htmlspecialchars($atencion['servicio']); ?></div>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                     <i class="fas fa-calendar-alt text-teal fa-lg"></i>
                                 </div>
                                 <div>
-                                    <div class="valor-dato"><?php echo htmlspecialchars($fecha); ?></div>
+                                    <div c lass="valor-dato"><?php echo htmlspecialchars($fecha); ?></div>
                                     <span class="badge badge-pill badge-info"><?php echo htmlspecialchars($hora); ?>
                                         hs</span>
                                 </div>
@@ -74,10 +74,12 @@
             </div>
 
             <div class="col-lg-8">
-                <form method="post" class="card shadow border-0 h-100">
+                <for m method="post" class="card shadow border-0 h-100">
                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($atencion['id']); ?>">
 
-                    <div class="card-header bg-teal text-white d-flex justify-content-between align-items-center">
+
+                    <div class="card-header bg-teal text-white d-flex justify-content-between align-items-cent
+                  e                 r">
                         <h5 class="mb-0 font-weight-bold"><i class="fas fa-file-medical-alt mr-2"></i> Informe Médico
                         </h5>
                         <span class="badge badge-light text-teal">N° <?php echo $atencion['id']; ?></span>
@@ -85,21 +87,22 @@
 
                     <div class="card-body d-flex flex-column">
                         <div class="form-group flex-grow-1">
-                            <label class="font-weight-bold text-secondary mb-2">Evolución / Diagnóstico /
+                            <lab el class="font-weight-bold text-secondary mb-2">Evolución / Diagnóstico /
                                 Tratamiento:</label>
-                            <textarea name="detalle" class="form-control editor-area h-100"
-                                placeholder="Escriba aquí los detalles de la consulta, diagnóstico y tratamiento indicado..."
-                                rows="12" required><?php echo htmlspecialchars($atencion['detalle']); ?></textarea>
+                                <tex tarea name="detalle" class="form-control editor-area h-100" placehold e
+                                    r="Escriba aquí los detalles de la consulta, diagnóstico y tratamiento indicado..."
+                                    rows="12" required><?php echo htmlspecialchars($atencion['detalle']); ?></textarea>
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white border-top-0 pb-4 pt-0 text-right">
+                    <div class="card-footer bg-white borde
+            r                       -top-0 pb-4 pt-0 text-right">
                         <a href="dashboardProfesional.php" class="btn btn-outline-secondary px-4 mr-2">Cancelar</a>
-                        <button type="submit" class="btn btn-success px-4 font-weight-bold shadow-sm">
+                        <but ton type="submit" class="btn btn-success px-4 font-weight-bold shadow-sm">
                             <i class="fas fa-save mr-2"></i> Guardar Informe
-                        </button>
+                            </button>
                     </div>
-                </form>
+                    </form>
             </div>
         </div>
     </div>

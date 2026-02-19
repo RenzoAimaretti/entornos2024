@@ -1,15 +1,12 @@
-<?php require_once '../shared/logica_dashboard_profesional.php'; ?>
+<?php require_once '../shared/logica_dashboard_profesional.php';
+$ruta_base = "../";
+?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Profesional - San Antón</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-    <link href="../styles.css" rel="stylesheet">
+    <?php require_once '../shared/head.php'; ?>
 </head>
 
 <body class="bg-light">
@@ -65,9 +62,11 @@
                                         <?php foreach ($turnos_hoy as $turno): ?>
                                             <tr class="<?php echo !empty($turno['detalle']) ? 'table-success' : ''; ?>">
                                                 <td class="align-middle font-weight-bold">
-                                                    <?php echo htmlspecialchars($turno['hora']); ?></td>
+                                                    <?php echo htmlspecialchars($turno['hora']); ?>
+                                                </td>
                                                 <td class="align-middle">
-                                                    <?php echo htmlspecialchars($turno['nombre_mascota']); ?></td>
+                                                    <?php echo htmlspecialchars($turno['nombre_mascota']); ?>
+                                                </td>
                                                 <td class="align-middle">
                                                     <span
                                                         class="badge <?php echo !empty($turno['detalle']) ? 'badge-light text-success' : 'badge-info'; ?> px-2 py-1">
@@ -150,7 +149,8 @@
                                         <?php foreach ($hosp_activas as $hosp): ?>
                                             <tr>
                                                 <td class="align-middle font-weight-bold">
-                                                    <?php echo htmlspecialchars($hosp['nombre_mascota']); ?></td>
+                                                    <?php echo htmlspecialchars($hosp['nombre_mascota']); ?>
+                                                </td>
                                                 <td class="align-middle"
                                                     data-order="<?php echo strtotime($hosp['fecha_ingreso']); ?>">
                                                     <?php echo date('d/m/Y H:i', strtotime($hosp['fecha_ingreso'])); ?> hs
@@ -161,7 +161,8 @@
                                                     hs
                                                 </td>
                                                 <td class="align-middle text-muted small">
-                                                    <?php echo htmlspecialchars($hosp['motivo']); ?></td>
+                                                    <?php echo htmlspecialchars($hosp['motivo']); ?>
+                                                </td>
                                                 <td class="text-right align-middle">
                                                     <button type="button"
                                                         class="btn btn-outline-success btn-sm rounded-pill px-3 btn-dar-alta"
@@ -252,10 +253,10 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script> -->
 
     <script>
         $(document).ready(function () {
