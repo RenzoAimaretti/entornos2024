@@ -11,15 +11,15 @@ if (!isset($_SESSION['usuario_id'])) {
 
 require_once '../shared/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-  $turno_id = $_POST['id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && intval($_POST['id']) > 0) {
+  $turno_id = intval($_POST['id']);
 
   $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre, a.fecha
                 FROM atenciones a
                 INNER JOIN mascotas m ON a.id_mascota = m.id
                 INNER JOIN usuarios u ON m.id_cliente = u.id
                 INNER JOIN servicios s ON a.id_serv = s.id
-                WHERE a.id = ?";
+                WHERE a.id = ? LIMIT 1";
 
   $stmtInfo = $conn->prepare($sqlInfo);
   $stmtInfo->bind_param('i', $turno_id);
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
   $stmtInfo->close();
 
   if ($datosTurno) {
-    $sql = "DELETE FROM atenciones WHERE id = ?";
+    $sql = "DELETE FROM atenciones WHERE id = ? LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $turno_id);
 
@@ -80,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     }
     $stmt->close();
   }
+} else {
+  header('Location: ../vistaCliente/mis-turnos.php');
+  exit();
 }
 $conn->close();
 ?>

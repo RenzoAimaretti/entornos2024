@@ -6,11 +6,16 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $mascotaId = $_POST['id'];
+  $mascotaId = isset($_POST['id']) ? intval($_POST['id']) : 0;
+
+  if ($mascotaId <= 0) {
+    header('Location: mis-mascotas.php');
+    exit();
+  }
 
   require_once 'shared/db.php';
 
-  $sql = "DELETE FROM mascotas WHERE id = ? AND id_cliente = ?";
+  $sql = "DELETE FROM mascotas WHERE id = ? AND id_cliente = ? LIMIT 1";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('ii', $mascotaId, $_SESSION['usuario_id']);
   $stmt->execute();

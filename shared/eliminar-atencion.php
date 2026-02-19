@@ -5,7 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once 'db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && intval($_POST['id']) > 0) {
     $id = intval($_POST['id']);
 
     $sqlInfo = "SELECT u.email, u.nombre as cliente_nombre, m.nombre as mascota_nombre, s.nombre as servicio_nombre, a.fecha
@@ -13,14 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 INNER JOIN mascotas m ON a.id_mascota = m.id
                 INNER JOIN usuarios u ON m.id_cliente = u.id
                 INNER JOIN servicios s ON a.id_serv = s.id
-                WHERE a.id = ?";
+                WHERE a.id = ? LIMIT 1";
     $stmtInfo = $conn->prepare($sqlInfo);
     $stmtInfo->bind_param("i", $id);
     $stmtInfo->execute();
     $datos = $stmtInfo->get_result()->fetch_assoc();
     $stmtInfo->close();
 
-    $query = "DELETE FROM atenciones WHERE id = ?";
+    $query = "DELETE FROM atenciones WHERE id = ? LIMIT 1";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $id);
 
