@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
+  header('Content-Type: application/json; charset=utf-8');
+  echo json_encode(['error' => 'No autorizado']);
+  exit();
+}
+
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
 error_reporting(0);

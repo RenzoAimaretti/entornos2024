@@ -25,7 +25,7 @@ $ruta_base = "../";
 
     <?php include '../shared/form-turno.php'; ?>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script> -->
+    <?php require_once '../shared/scripts.php'; ?>
 </body>
 
 </html>

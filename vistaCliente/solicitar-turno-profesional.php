@@ -218,7 +218,7 @@ $ruta_base = "../";
             </div>
         </div>
     </div>
-
+    <?php require_once '../shared/scripts.php'; ?>
     <script>
         $(document).ready(function () {
             const diasSemana = { 'Lun': 1, 'Mar': 2, 'Mie': 3, 'Jue': 4, 'Vie': 5, 'Sab': 6, 'Dom': 0 };

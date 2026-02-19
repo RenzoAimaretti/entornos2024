@@ -1,6 +1,12 @@
 <?php
 require_once 'db.php';
 
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['admin', 'especialista'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'No autorizado']);
+    exit();
+}
+
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $resultados = [];
 
