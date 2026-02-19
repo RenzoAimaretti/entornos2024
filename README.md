@@ -10,7 +10,7 @@ Sistema integral de gestión para clínicas veterinarias, desarrollado como proy
 
 El proyecto sigue una estructura modular para facilitar el mantenimiento y la reutilización de componentes:
 
-- **`/` (Raíz):** Contiene las vistas principales públicas (`index.php`, `nosotros.php`, `contactanos.php`) y el archivo de estilos global `styles.css`.
+- **`/` (Raíz):** Contiene las vistas principales públicas (`index.php`, `nosotros.php`, `contactanos.php`, `profesionales.php`) y el archivo de estilos global `styles.css`.
 - **`/shared`:** Componentes reutilizables de lógica y frontend (Navbar, Footer, Head unificado, Scripts comunes) y la conexión centralizada a la base de datos `db.php`.
 - **`/vistaAdmin`:** Módulos exclusivos para la administración total de la clínica: gestión de especialistas, clientes, mascotas y control de hospitalizaciones.
 - **`/vistaCliente`:** Interfaz privada para dueños de mascotas donde pueden gestionar sus perfiles y turnos.
