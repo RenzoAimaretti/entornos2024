@@ -112,6 +112,8 @@ $ruta_base = "../";
                                     <thead class="thead-light">
                                         <tr>
                                             <?php foreach ($data['cols'] as $col): ?>
+                                                <?php if ($col === 'Detalle' && !($esAdmin || $esProfesional))
+                                                    continue; ?>
                                                 <th <?php echo $col === 'Detalle' ? 'class="text-center"' : ''; ?>>
                                                     <?php echo $col; ?>
                                                 </th>
@@ -125,9 +127,11 @@ $ruta_base = "../";
                                                 <td><?php echo date('d/m/Y', strtotime($row['fecha'])); ?></td>
                                                 <td><?php echo $row['servicio']; ?></td>
                                                 <td><?php echo $row['profesional']; ?></td>
-                                                <td class="text-center"><a href="<?php echo $btnHref; ?>"
-                                                        class="btn btn-sm btn-info rounded-pill px-3"><i
-                                                            class="fas fa-eye"></i></a></td>
+                                                <?php if ($esAdmin || $esProfesional): ?>
+                                                    <td class="text-center"><a href="<?php echo $btnHref; ?>"
+                                                            class="btn btn-sm btn-info rounded-pill px-3"><i
+                                                                class="fas fa-eye"></i></a></td>
+                                                <?php endif; ?>
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
