@@ -24,9 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->num_rows > 0) {
       $error = "El correo ya está registrado.";
     } else {
+      $hashed_password = password_hash($password, PASSWORD_DEFAULT);
       $sql = "INSERT INTO usuarios (nombre, email, password, tipo) VALUES (?, ?, ?, 'cliente')";
       $stmt = $conn->prepare($sql);
-      $stmt->bind_param("sss", $nombre, $email, $password);
+      $stmt->bind_param("sss", $nombre, $email, $hashed_password);
 
       if ($stmt->execute()) {
         $usuario_id = $stmt->insert_id;
@@ -165,7 +166,7 @@ $conn->close();
 
   <?php require_once 'shared/footer.php'; ?>
 
-  <?php require_once '../shared/scripts.php'; ?>
+  <?php require_once 'shared/scripts.php'; ?>
 
   <script>
     document.querySelectorAll('.toggle-password').forEach(item => {

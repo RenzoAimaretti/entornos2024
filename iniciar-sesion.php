@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows > 0) {
       $row = $result->fetch_assoc();
 
-      if ($password === $row['password']) {
+      if (password_verify($password, $row['password'])) {
         $_SESSION['usuario_id'] = $row['id'];
         $_SESSION['usuario_nombre'] = $row['nombre'];
         $_SESSION['usuario_tipo'] = $row['tipo'];
@@ -125,7 +125,7 @@ $ruta_base = "";
 
   <?php require_once 'shared/footer.php'; ?>
 
-  <?php require_once '../shared/scripts.php'; ?>
+  <?php require_once 'shared/scripts.php'; ?>
 
   <script>
     document.querySelectorAll('.toggle-password').forEach(item => {
