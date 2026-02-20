@@ -41,7 +41,7 @@ $ruta_base = "../";
                 <?php foreach ($profesionales as $profesional): ?>
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card card-profesional shadow-sm h-100">
-                            <div class="card-body d-flex flex-column">
+                            <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3"
                                         style="width: 50px; height: 50px; color: #00897b;">
@@ -182,6 +182,7 @@ $ruta_base = "../";
                             <label class="font-weight-bold">Mascota:</label>
                             <select class="form-control" name="id_mascota" required>
                                 <?php if (!empty($mascotas)): ?>
+                                    <option value="" disabled selected>Seleccione mascota</option>
                                     <?php foreach ($mascotas as $m): ?>
                                         <option value="<?= $m['id'] ?>"><?= $m['nombre'] ?></option>
                                     <?php endforeach; ?>
@@ -194,11 +195,11 @@ $ruta_base = "../";
                         <div class="form-group">
                             <label class="font-weight-bold d-block">Modalidad:</label>
                             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                <label class="btn btn-outline-secondary active">
-                                    <input type="radio" name="modalidad" value="Presencial" checked> Presencial
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="modalidad" value="Presencial" required> Presencial
                                 </label>
                                 <label class="btn btn-outline-secondary">
-                                    <input type="radio" name="modalidad" value="A domicilio"> Domicilio
+                                    <input type="radio" name="modalidad" value="A domicilio" required> Domicilio
                                 </label>
                             </div>
                         </div>

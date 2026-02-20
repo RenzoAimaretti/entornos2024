@@ -145,10 +145,8 @@ $ruta_base = "../";
                                 id="summary-hora" style="font-size: 1.1rem;"></strong></div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-6"><small class="text-muted d-block">Mascota:</small><strong
+                        <div class="col-12"><small class="text-muted d-block">Mascota:</small><strong
                                 id="summary-mascota" style="font-size: 1.1rem;">--</strong></div>
-                        <div class="col-6 text-right"><small class="text-muted d-block">Modalidad:</small><strong
-                                id="summary-modalidad" style="font-size: 1.1rem;">Presencial</strong></div>
                     </div>
                     <form method="POST" id="confirmacionForm">
                         <input type="hidden" name="profesional_id" id="form-profesional-id">
@@ -323,7 +321,6 @@ $ruta_base = "../";
 
                 $('#confirmacionModal').modal('show');
                 $('#summary-mascota').text('--');
-                $('#summary-modalidad').text('Presencial');
             });
 
             $('#id_serv_modal').on('change', function () {
@@ -335,11 +332,6 @@ $ruta_base = "../";
             $('#confirmacionForm select[name="id_mascota"]').on('change', function () {
                 const nombreMascota = $(this).find(':selected').text();
                 $('#summary-mascota').text(nombreMascota);
-            });
-
-            $('#confirmacionForm input[name="modalidad"]').on('change', function () {
-                const modalidad = $(this).val();
-                $('#summary-modalidad').text(modalidad);
             });
 
             if (<?php echo json_encode($turnoExitoso); ?>) {

@@ -57,7 +57,11 @@ $ruta_base = "../";
                   <?php if ($filter === 'upcoming'): ?>
                     <span class="badge badge-success px-2 py-1">Activo</span>
                   <?php else: ?>
-                    <span class="badge badge-secondary px-2 py-1">Finalizado</span>
+                    <?php if (!empty($turno['detalle'])): ?>
+                      <span class="badge badge-primary px-2 py-1">Atendido</span>
+                    <?php else: ?>
+                      <span class="badge badge-secondary px-2 py-1">Finalizado</span>
+                    <?php endif; ?>
                   <?php endif; ?>
                 </div>
                 <hr>

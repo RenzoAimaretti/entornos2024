@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
   $id_mascota = $_POST['id_mascota'];
   $id_serv = $_POST['id_serv'];
   $modalidad = $_POST['modalidad'];
+  $detalle_vacio = "";
 
   $fecha_datetime = $fecha_turno . ' ' . $hora_turno;
 
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profesional_id'])) {
     try {
       $sqlInsert = "INSERT INTO atenciones (id_mascota, id_serv, id_pro, fecha, detalle) VALUES (?, ?, ?, ?, ?)";
       $stmtInsert = $conn->prepare($sqlInsert);
-      $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $modalidad);
+      $stmtInsert->bind_param("iiiss", $id_mascota, $id_serv, $id_pro, $fecha_datetime, $detalle_vacio);
       $stmtInsert->execute();
 
       $sqlInfo = "SELECT u_cli.email as mail_cliente, u_cli.nombre as nombre_cliente, 
