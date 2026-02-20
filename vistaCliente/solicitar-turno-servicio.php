@@ -41,7 +41,7 @@ $ruta_base = "../";
                 <?php foreach ($profesionales as $profesional): ?>
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card card-profesional shadow-sm h-100">
-                            <div class="card-body">
+                            <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3"
                                         style="width: 50px; height: 50px; color: #00897b;">

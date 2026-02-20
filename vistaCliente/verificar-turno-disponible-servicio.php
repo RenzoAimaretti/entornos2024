@@ -9,6 +9,8 @@ require_once '../shared/db.php';
 
 header('Content-Type: application/json');
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 $id_pro = $_POST['id_pro'] ?? null;
 $fecha = $_POST['fecha'] ?? null;
 $horariosDisponibles = [];
@@ -41,15 +43,26 @@ if ($id_pro && $fecha) {
     $horariosOcupados = array_column($resultOcupados->fetch_all(MYSQLI_ASSOC), 'hora_ocupada');
     $stmtOcupados->close();
 
-    $horaActual = strtotime($hora_inicio);
+    $horaActualIteracion = strtotime($hora_inicio);
     $horaFinTimestamp = strtotime($hora_fin);
 
-    while ($horaActual < $horaFinTimestamp) {
-      $slot = date('H:i:s', $horaActual);
-      if (!in_array($slot, $horariosOcupados)) {
+    $fechaHoy = date('Y-m-d');
+    $ahora = time();
+
+    while ($horaActualIteracion < $horaFinTimestamp) {
+      $slot = date('H:i:s', $horaActualIteracion);
+
+      $esFuturo = true;
+      if ($fecha === $fechaHoy) {
+        if ($horaActualIteracion <= $ahora) {
+          $esFuturo = false;
+        }
+      }
+
+      if ($esFuturo && !in_array($slot, $horariosOcupados)) {
         $horariosDisponibles[] = $slot;
       }
-      $horaActual = strtotime('+15 minutes', $horaActual);
+      $horaActualIteracion = strtotime('+15 minutes', $horaActualIteracion);
     }
   }
 }

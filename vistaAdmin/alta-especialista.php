@@ -72,11 +72,19 @@ $ruta_base = "../";
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Contraseña</label>
                                         <div class="input-group" id="grupo-pass">
-                                            <div class="input-group-prepend"><span
-                                                    class="input-group-text bg-white border-right-0"><i
-                                                        class="fas fa-lock text-teal"></i></span></div>
-                                            <input type="password" class="form-control border-left-0" id="password"
-                                                name="password" required placeholder="******">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-white border-right-0">
+                                                    <i class="fas fa-lock text-teal"></i>
+                                                </span>
+                                            </div>
+                                            <input type="password" class="form-control border-left-0 border-right-0"
+                                                id="password" name="password" required placeholder="******">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text toggle-password bg-white"
+                                                    data-target="password" style="cursor: pointer;">
+                                                    <i class="fas fa-eye text-muted"></i>
+                                                </span>
+                                            </div>
                                         </div>
                                         <div class="invalid-feedback font-weight-bold" id="error-pass">Debe tener 8
                                             caracteres, 1 mayúscula y 1 número.</div>
@@ -86,11 +94,19 @@ $ruta_base = "../";
                                     <div class="form-group">
                                         <label class="font-weight-bold small text-muted">Repetir Contraseña</label>
                                         <div class="input-group" id="grupo-repass">
-                                            <div class="input-group-prepend"><span
-                                                    class="input-group-text bg-white border-right-0"><i
-                                                        class="fas fa-lock text-teal"></i></span></div>
-                                            <input type="password" class="form-control border-left-0" id="repassword"
-                                                name="repassword" required placeholder="******">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-white border-right-0">
+                                                    <i class="fas fa-lock text-teal"></i>
+                                                </span>
+                                            </div>
+                                            <input type="password" class="form-control border-left-0 border-right-0"
+                                                id="repassword" name="repassword" required placeholder="******">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text toggle-password bg-white"
+                                                    data-target="repassword" style="cursor: pointer;">
+                                                    <i class="fas fa-eye text-muted"></i>
+                                                </span>
+                                            </div>
                                         </div>
                                         <div class="invalid-feedback font-weight-bold" id="error-repass">Las contraseñas
                                             no coinciden.</div>
@@ -107,8 +123,6 @@ $ruta_base = "../";
                                     <option value="" disabled selected>Seleccione una especialidad</option>
                                     <?php foreach ($especialidades as $esp): ?>
                                         <option value="<?= htmlspecialchars($esp['id']) ?>">
-
-
                                             <?= htmlspecialchars($esp['nombre']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -146,6 +160,24 @@ $ruta_base = "../";
     <?php require_once '../shared/scripts.php'; ?>
 
     <script>
+        document.querySelectorAll('.toggle-password').forEach(item => {
+            item.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+
         $(document).ready(function () {
             $('#email').on('blur', function () {
                 var email = $(this).val();
@@ -186,7 +218,6 @@ $ruta_base = "../";
             $('#formAlta').on('submit', function (e) {
                 if ($('.is-invalid').length > 0 || !this.checkValidity()) {
                     e.preventDefault();
-                    alert("Por favor corrija los errores antes de enviar.");
                 }
             });
 
@@ -195,16 +226,46 @@ $ruta_base = "../";
                 let idx = $('.day-row').length;
                 let dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
                 let opts = dias.map(d => `<option value="${d.substring(0, 3)}">${d}</option>`).join('');
-                let horas = '';
-                for (let i = 8; i <= 20; i++) { let h = (i < 10 ? '0' : '') + i; horas += `<option value="${h}:00">${h}:00</option>`; }
+
+                let horasInicio = '';
+                for (let i = 8; i < 20; i++) {
+                    let h = (i < 10 ? '0' : '') + i;
+                    horasInicio += `<option value="${h}:00">${h}:00</option>`;
+                }
+
+                let horasFin = '';
+                for (let i = 8; i <= 20; i++) {
+                    let h = (i < 10 ? '0' : '') + i;
+                    horasFin += `<option value="${h}:00">${h}:00</option>`;
+                }
 
                 let row = $(`
                     <div class="day-row shadow-sm mb-2 p-2 bg-white rounded border">
                         <div class="form-row align-items-center">
-                            <div class="col-md-4"><select name="dias[${idx}][dia]" class="form-control" required><option disabled selected>Día</option>${opts}</select></div>
-                            <div class="col-md-3"><select name="dias[${idx}][horaInicio]" class="form-control hora-ini" required><option disabled selected>Inicio</option>${horas}</select></div>
-                            <div class="col-md-3"><select name="dias[${idx}][horaFin]" class="form-control hora-fin" required><option disabled selected>Fin</option>${horas}</select></div>
-                            <div class="col-md-2 text-right"><button type="button" class="btn btn-outline-danger btn-sm rounded-circle rm-btn"><i class="fas fa-trash-alt"></i></button></div>
+                            <div class="col-md-4">
+                                <select name="dias[${idx}][dia]" class="form-control" required>
+                                    <option disabled selected>Día</option>
+                                    ${opts}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="dias[${idx}][horaInicio]" class="form-control hora-ini" required>
+                                    <option disabled selected>Inicio</option>
+                                    ${horasInicio}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="dias[${idx}][horaFin]" class="form-control hora-fin" required>
+                                    <option disabled selected>Fin</option>
+                                    ${horasFin}
+                                </select>
+                                <div class="invalid-feedback">La hora de fin debe ser mayor.</div>
+                            </div>
+                            <div class="col-md-2 text-right">
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle rm-btn">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `);
@@ -219,7 +280,6 @@ $ruta_base = "../";
                     let fin = row.find('.hora-fin').val();
                     if (ini && fin && fin <= ini) {
                         row.find('.hora-fin').addClass('is-invalid');
-                        alert('La hora de fin debe ser mayor.');
                     } else {
                         row.find('.hora-fin').removeClass('is-invalid');
                     }

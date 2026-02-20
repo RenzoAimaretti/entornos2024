@@ -218,6 +218,7 @@ $ruta_base = "../";
             </div>
         </div>
     </div>
+
     <?php require_once '../shared/scripts.php'; ?>
     <script>
         $(document).ready(function () {
