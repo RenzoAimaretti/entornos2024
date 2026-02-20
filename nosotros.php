@@ -75,7 +75,7 @@ $ruta_base = "";
 
   </div>
 
-  <?php require_once '../shared/scripts.php'; ?>
+  <?php require_once 'shared/scripts.php'; ?>
 
   <?php require_once 'shared/footer.php'; ?>
 </body>

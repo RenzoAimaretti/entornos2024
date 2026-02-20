@@ -80,7 +80,7 @@ $ruta_base = "";
     </div>
   </section>
 
-  <?php require_once '../shared/scripts.php'; ?>
+  <?php require_once 'shared/scripts.php'; ?>
   <?php require_once 'shared/footer.php'; ?>
 </body>
 

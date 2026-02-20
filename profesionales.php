@@ -90,7 +90,7 @@ session_start();
   }
   ?>
 
-  <?php require_once '../shared/scripts.php'; ?>
+  <?php require_once 'shared/scripts.php'; ?>
   <?php require_once 'shared/footer.php'; ?>
 </body>
 
